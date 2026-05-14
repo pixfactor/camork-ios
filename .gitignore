@@ -1,0 +1,38 @@
+# Xcode
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+DerivedData/
+build/
+*.moved-aside
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+Packages/
+
+# XcodeGen artifact (재생성 가능 — 필요시 추적 가능)
+# Camork.xcodeproj/
+
+# Node (agent-office)
+agent-office/node_modules/
+agent-office/build/
+agent-office/dist/
+
+# OMC/Claude/Sisyphus state
+.omc/
+.claude/
+.sisyphus/
+.team-os/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
