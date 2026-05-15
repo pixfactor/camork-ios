@@ -251,8 +251,10 @@ struct PhotoEditorView: View {
 
     private func loadImage() async {
         let url = FileStorageManager.shared.getMediaURL(fileName: item.fileName)
-        guard let data = try? Data(contentsOf: url),
-              let img = UIImage(data: data) else {
+        let data = await Task.detached(priority: .userInitiated) {
+            try? Data(contentsOf: url)
+        }.value
+        guard let data, let img = UIImage(data: data) else {
             isLoading = false
             return
         }

@@ -54,6 +54,7 @@ struct FolderPickerView: View {
                     .frame(width: 12, height: 12)
 
                 Text(folder.name)
+                    .lineLimit(1).truncationMode(.tail)
                     .foregroundStyle(.primary)
 
                 Spacer()

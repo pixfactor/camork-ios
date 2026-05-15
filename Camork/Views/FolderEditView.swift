@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CryptoKit
 
 struct FolderEditView: View {
     @Environment(\.modelContext) private var modelContext
@@ -9,6 +10,9 @@ struct FolderEditView: View {
 
     @State private var name: String = ""
     @State private var selectedColor: Color = Color(hex: "#007AFF")
+    @State private var isPasswordEnabled: Bool = false
+    @State private var passwordInput: String = ""
+    @State private var passwordConfirm: String = ""
 
     private let presetColors: [String] = [
         "#007AFF", "#34C759", "#FF3B30", "#FF9500",
@@ -22,6 +26,9 @@ struct FolderEditView: View {
         if let folder {
             _name = State(initialValue: folder.name)
             _selectedColor = State(initialValue: Color(hex: folder.colorHex))
+            _isPasswordEnabled = State(initialValue: folder.isLocked)
+            _passwordInput = State(initialValue: "")
+            _passwordConfirm = State(initialValue: "")
         }
     }
 
@@ -41,6 +48,29 @@ struct FolderEditView: View {
                     .padding(.vertical, 4)
 
                     ColorPicker("커스텀 색상", selection: $selectedColor, supportsOpacity: false)
+                }
+
+                Section("보안") {
+                    Toggle("비밀번호 잠금", isOn: $isPasswordEnabled)
+
+                    if isPasswordEnabled {
+                        SecureField("4자리 숫자", text: $passwordInput)
+                            .keyboardType(.numberPad)
+                            .onChange(of: passwordInput) { _, newValue in
+                                if newValue.count > 4 {
+                                    passwordInput = String(newValue.prefix(4))
+                                }
+                                passwordInput = newValue.filter { $0.isNumber }
+                            }
+                        SecureField("비밀번호 확인", text: $passwordConfirm)
+                            .keyboardType(.numberPad)
+                            .onChange(of: passwordConfirm) { _, newValue in
+                                if newValue.count > 4 {
+                                    passwordConfirm = String(newValue.prefix(4))
+                                }
+                                passwordConfirm = newValue.filter { $0.isNumber }
+                            }
+                    }
                 }
 
                 Section {
@@ -113,12 +143,34 @@ struct FolderEditView: View {
         guard !trimmed.isEmpty else { return }
         let hex = selectedColor.toHex()
 
+        // Handle password
+        var lockFlag = false
+        var hash: String? = nil
+
+        if isPasswordEnabled && passwordInput.count == 4 && passwordInput == passwordConfirm {
+            lockFlag = true
+            hash = SHA256.hash(data: Data(passwordInput.utf8))
+                .compactMap { String(format: "%02x", $0) }
+                .joined()
+        } else if !isPasswordEnabled {
+            lockFlag = false
+            hash = nil
+        }
+
         if let folder {
             folder.name = trimmed
             folder.colorHex = hex
+            folder.isLocked = lockFlag
+            folder.passwordHash = hash
         } else {
             let maxOrder = try? modelContext.fetch(FetchDescriptor<Folder>()).map(\.sortOrder).max()
-            let newFolder = Folder(name: trimmed, colorHex: hex, sortOrder: (maxOrder ?? -1) + 1)
+            let newFolder = Folder(
+                name: trimmed,
+                colorHex: hex,
+                sortOrder: (maxOrder ?? -1) + 1,
+                isLocked: lockFlag,
+                passwordHash: hash
+            )
             modelContext.insert(newFolder)
         }
         dismiss()

@@ -13,10 +13,9 @@ enum WatermarkRenderer {
         let result = renderer.image { ctx in
             image.draw(at: .zero)
 
-            let scale = image.size.width / UIScreen.main.bounds.width
-            let fontSize = max(14, 16 * scale)
-            let margin = max(10, 14 * scale)
-            let lineSpacing: CGFloat = 4 * scale
+            let fontSize = max(14, image.size.width * 0.025)
+            let margin = max(10, image.size.width * 0.022)
+            let lineSpacing: CGFloat = max(4, image.size.width * 0.006)
 
             let shadow = NSShadow()
             shadow.shadowColor = UIColor.black.withAlphaComponent(0.8)

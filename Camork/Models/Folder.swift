@@ -8,6 +8,8 @@ final class Folder {
     var colorHex: String
     var createdAt: Date
     var sortOrder: Int
+    var isLocked: Bool = false
+    var passwordHash: String? = nil
     @Relationship(deleteRule: .cascade, inverse: \MediaItem.folder)
     var items: [MediaItem]
 
@@ -16,13 +18,17 @@ final class Folder {
         name: String,
         colorHex: String = "#007AFF",
         createdAt: Date = .now,
-        sortOrder: Int = 0
+        sortOrder: Int = 0,
+        isLocked: Bool = false,
+        passwordHash: String? = nil
     ) {
         self.id = id
         self.name = name
         self.colorHex = colorHex
         self.createdAt = createdAt
         self.sortOrder = sortOrder
+        self.isLocked = isLocked
+        self.passwordHash = passwordHash
         self.items = []
     }
 

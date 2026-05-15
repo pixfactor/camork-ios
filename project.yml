@@ -24,6 +24,10 @@ targets:
       path: Camork/Info.plist
       properties:
         UILaunchScreen: {}
+        NSCameraUsageDescription: "업무용 사진과 영상을 촬영해 Camork의 분리된 로컬 앨범에 저장하기 위해 카메라 접근이 필요합니다."
+        NSFaceIDUsageDescription: "업무용 사진첩을 보호하기 위해 Face ID 또는 기기 인증으로 앱 잠금을 해제합니다."
+        NSLocationWhenInUseUsageDescription: "촬영 위치를 기록해 업무 사진을 더 정확하게 관리할 수 있도록 위치 접근을 요청합니다."
+        NSMicrophoneUsageDescription: "업무용 동영상을 녹화할 때 소리를 함께 저장하기 위해 마이크 접근이 필요합니다."
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UISupportedInterfaceOrientations~ipad:
@@ -38,5 +42,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_EMIT_LOC_STRINGS: "YES"
         ENABLE_PREVIEWS: "YES"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: RCNZ7N94S3
     entitlements:
       path: Camork/Camork.entitlements

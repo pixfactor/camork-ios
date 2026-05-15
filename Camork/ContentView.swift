@@ -1,6 +1,10 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
         TabView {
             FolderListView()
@@ -23,5 +27,25 @@ struct ContentView: View {
                     Label("설정", systemImage: "gearshape")
                 }
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                purgeExpiredItems()
+            }
+        }
+    }
+
+    private func purgeExpiredItems() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+        let descriptor = FetchDescriptor<MediaItem>(
+            predicate: #Predicate { $0.isDeleted && $0.deletedAt != nil && $0.deletedAt! < cutoff }
+        )
+        guard let expired = try? modelContext.fetch(descriptor) else { return }
+        for item in expired {
+            Task {
+                try? await FileStorageManager.shared.deleteMedia(fileName: item.fileName)
+            }
+            modelContext.delete(item)
+        }
+        try? modelContext.save()
     }
 }

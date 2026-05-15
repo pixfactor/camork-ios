@@ -104,9 +104,6 @@ final class CameraManager: NSObject, ObservableObject {
         if captureSession.canAddOutput(photoOutput) {
             captureSession.addOutput(photoOutput)
             photoOutput.isHighResolutionCaptureEnabled = true
-            if photoOutput.availablePhotoCodecTypes.contains(.hevc) {
-                // HEVC available
-            }
         }
 
         // Movie output
@@ -252,10 +249,6 @@ final class CameraManager: NSObject, ObservableObject {
 
         if captureMode == .photo {
             settings.flashMode = flashMode
-        }
-
-        if photoOutput.availablePhotoCodecTypes.contains(.hevc) {
-            // Use HEVC if available
         }
 
         photoOutput.capturePhoto(with: settings, delegate: self)

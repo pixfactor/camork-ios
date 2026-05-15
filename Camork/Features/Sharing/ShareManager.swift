@@ -13,6 +13,11 @@ enum ShareManager {
         shareItems([item])
     }
 
+    /// Creates a [URL] for a ZIP file to share
+    static func shareZip(from url: URL) -> [Any] {
+        return [url as Any]
+    }
+
     /// Creates a UIActivityViewController for the given items
     static func shareSheet(items: [Any]) -> UIActivityViewController {
         let controller = UIActivityViewController(

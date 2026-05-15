@@ -15,6 +15,7 @@ struct CameraContainerView: View {
 
     @StateObject private var cameraManager = CameraManager()
     @StateObject private var locationManager = LocationManager()
+    @StateObject private var batteryMonitor = BatteryMonitor()
     @AppStorage("camera.lastSelectedFolderID") private var lastSelectedFolderID = ""
 
     @State private var selectedFolder: Folder?
@@ -28,6 +29,13 @@ struct CameraContainerView: View {
     @State private var showFolderRequiredAlert = false
     @State private var feedback: CameraFeedback?
     @State private var feedbackDismissTask: Task<Void, Never>?
+
+    @State private var showMemoSheet = false
+    @State private var lastCapturedItem: MediaItem?
+    @AppStorage("camera.skipMemoSheet") private var skipMemoSheetSetting = false
+
+    @State private var isStorageLow = false
+    @State private var freeSpaceString = ""
 
     @State private var lastZoomFactor: CGFloat = 1.0
 
@@ -49,12 +57,18 @@ struct CameraContainerView: View {
                     cameraManager.startSession()
                 }
                 locationManager.startUpdating()
+
+                let storageLow = await StorageWarningService.shared.isStorageLow()
+                let space = await StorageWarningService.shared.formattedFreeSpace()
+                isStorageLow = storageLow
+                freeSpaceString = space
             }
             applySelectedFolderPreference()
         }
         .onDisappear {
             cameraManager.stopSession()
             locationManager.stopUpdating()
+            batteryMonitor.stopMonitoring()
             stopRecordingTimer()
             feedbackDismissTask?.cancel()
         }
@@ -67,6 +81,15 @@ struct CameraContainerView: View {
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(selectedFolder: $selectedFolder)
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showMemoSheet) {
+            if let item = lastCapturedItem {
+                MemoTemplateSheet(item: item) { skip in
+                    skipMemoSheetSetting = skip
+                    showMemoSheet = false
+                    showFeedback("\(selectedFolder?.name ?? "선택한 폴더")에 저장했어요.")
+                }
+            }
         }
         .statusBarHidden(true)
         .alert("폴더를 선택하세요", isPresented: $showFolderRequiredAlert) {
@@ -100,6 +123,14 @@ struct CameraContainerView: View {
             if let feedback {
                 feedbackBanner(feedback)
                     .padding(.top, 12)
+            }
+            if isStorageLow {
+                warningBanner(message: "저장 공간 부족 (\(freeSpaceString))", icon: "internaldrive")
+                    .padding(.top, 12)
+            }
+            if batteryMonitor.isLowBattery {
+                warningBanner(message: "배터리 부족 (\(Int(batteryMonitor.batteryLevel * 100))%)", icon: "battery.25")
+                    .padding(.top, isStorageLow ? 4 : 12)
             }
             Spacer()
             bottomBar
@@ -157,7 +188,7 @@ struct CameraContainerView: View {
                     .font(.system(size: 16))
                 Text(selectedFolder?.name ?? "폴더 선택")
                     .font(.system(size: 14, weight: .medium))
-                    .lineLimit(1)
+                    .lineLimit(1).truncationMode(.tail)
                 Image(systemName: "chevron.down")
                     .font(.system(size: 11))
             }
@@ -255,7 +286,7 @@ struct CameraContainerView: View {
                 }
             }
         }
-        .disabled(isSaving)
+        .disabled(isSaving || isStorageLow)
         .animation(.easeInOut(duration: 0.15), value: cameraManager.isRecording)
     }
 
@@ -305,6 +336,22 @@ struct CameraContainerView: View {
             .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
             .padding(.horizontal, 20)
             .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    private func warningBanner(message: String, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+            Text(message)
+                .font(.caption.weight(.medium))
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color.orange.opacity(0.92))
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
+        .padding(.horizontal, 20)
+        .transition(.move(edge: .top).combined(with: .opacity))
     }
 
     private var permissionDeniedView: some View {
@@ -405,7 +452,12 @@ struct CameraContainerView: View {
                 if let folder = selectedFolder {
                     item.folder = folder
                 }
-                showFeedback("\(selectedFolder?.name ?? "선택한 폴더")에 사진을 저장했어요.")
+                if !skipMemoSheetSetting {
+                    lastCapturedItem = item
+                    showMemoSheet = true
+                } else {
+                    showFeedback("\(selectedFolder?.name ?? "선택한 폴더")에 사진을 저장했어요.")
+                }
             }
         } catch {
             await MainActor.run {
@@ -464,7 +516,12 @@ struct CameraContainerView: View {
                     item.folder = folder
                 }
                 recordingDuration = 0
-                showFeedback("\(selectedFolder?.name ?? "선택한 폴더")에 동영상을 저장했어요.")
+                if !skipMemoSheetSetting {
+                    lastCapturedItem = item
+                    showMemoSheet = true
+                } else {
+                    showFeedback("\(selectedFolder?.name ?? "선택한 폴더")에 동영상을 저장했어요.")
+                }
             }
         } catch {
             await MainActor.run {

@@ -5,13 +5,12 @@ enum ImageEditingManager {
 
     // MARK: - Crop
 
-    /// Crops `image` to `rect`, where `rect` is in the image's coordinate space (pixels).
+    /// Crops `image` to `rect`, where `rect` is in CGImage pixel coordinates.
     static func cropImage(_ image: UIImage, to rect: CGRect) -> UIImage? {
         guard let cgImage = image.cgImage else { return nil }
-
-        // Normalize rect for the image orientation
-        let normalizedRect = normalizedCropRect(rect, in: image)
-        guard let croppedCG = cgImage.cropping(to: normalizedRect) else { return nil }
+        let imageRect = CGRect(origin: .zero, size: CGSize(width: cgImage.width, height: cgImage.height))
+        let clamped = rect.intersection(imageRect)
+        guard !clamped.isEmpty, let croppedCG = cgImage.cropping(to: clamped) else { return nil }
         return UIImage(cgImage: croppedCG, scale: image.scale, orientation: image.imageOrientation)
     }
 
@@ -52,24 +51,4 @@ enum ImageEditingManager {
     }
 
     // MARK: - Private helpers
-
-    /// Converts a rect expressed in the view's display coordinate space back to
-    /// the CGImage's pixel coordinate space, accounting for image orientation.
-    private static func normalizedCropRect(_ rect: CGRect, in image: UIImage) -> CGRect {
-        let imageSize = image.size
-        let scaleX = imageSize.width  / imageSize.width   // already in image points; keep scale
-        let scaleY = imageSize.height / imageSize.height
-
-        // rect is already expressed in image-size points, just clamp it
-        let clamped = rect.intersection(CGRect(origin: .zero, size: imageSize))
-
-        // Map to pixel coordinates
-        let pixelScale = image.scale
-        return CGRect(
-            x: clamped.origin.x * pixelScale * scaleX,
-            y: clamped.origin.y * pixelScale * scaleY,
-            width: clamped.width * pixelScale * scaleX,
-            height: clamped.height * pixelScale * scaleY
-        )
-    }
 }

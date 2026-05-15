@@ -125,17 +125,8 @@ struct SettingsView: View {
     }
 
     private func clearCache() {
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-        if let cachesURL = caches {
-            let contents = (try? FileManager.default.contentsOfDirectory(
-                at: cachesURL,
-                includingPropertiesForKeys: nil
-            )) ?? []
-            for url in contents {
-                try? FileManager.default.removeItem(at: url)
-            }
-        }
         Task {
+            await ThumbnailCache.shared.clearAll()
             storageUsed = await FileStorageManager.shared.calculateStorageUsed()
         }
         showClearCacheSuccess = true

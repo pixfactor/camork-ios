@@ -88,7 +88,7 @@ struct MediaDetailView: View {
             Button("삭제", role: .destructive) { deleteCurrentItem() }
             Button("취소", role: .cancel) {}
         } message: {
-            Text("이 항목을 영구 삭제합니다.")
+            Text("이 항목을 휴지통으로 이동합니다.")
         }
     }
 
@@ -136,12 +136,10 @@ struct MediaDetailView: View {
 
     private func deleteCurrentItem() {
         guard let item = currentItem else { return }
-        let fileName = item.fileName
         let newIndex = min(currentIndex, sortedItems.count - 2)
-        Task {
-            try? await FileStorageManager.shared.deleteMedia(fileName: fileName)
-        }
-        modelContext.delete(item)
+        item.isDeleted = true
+        item.deletedAt = Date()
+        item.folder = nil
         if sortedItems.count <= 1 {
             dismiss()
         } else {
@@ -335,6 +333,7 @@ private struct InfoPanel: View {
                     .foregroundStyle(.secondary)
                 Text(value)
                     .font(.subheadline)
+                    .lineLimit(2).truncationMode(.tail)
             }
         }
     }

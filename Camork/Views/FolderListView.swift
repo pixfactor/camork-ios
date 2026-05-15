@@ -69,6 +69,11 @@ struct FolderListView: View {
                 FolderDetailView(folder: folder)
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(destination: TrashFolderView()) {
+                        Image(systemName: "trash")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingAddFolder = true
@@ -87,7 +92,7 @@ struct FolderListView: View {
                 Button("삭제", role: .destructive) { deleteFolder(folder) }
                 Button("취소", role: .cancel) {}
             } message: { folder in
-                Text("'\(folder.name)' 폴더와 모든 미디어를 영구 삭제합니다.")
+                Text("'\(folder.name)' 폴더와 모든 미디어를 휴지통으로 이동합니다.")
             }
         }
     }
@@ -111,11 +116,10 @@ struct FolderListView: View {
     }
 
     private func deleteFolder(_ folder: Folder) {
-        let fileNames = folder.items.map(\.fileName)
-        Task {
-            for name in fileNames {
-                try? await FileStorageManager.shared.deleteMedia(fileName: name)
-            }
+        for item in folder.items {
+            item.isDeleted = true
+            item.deletedAt = Date()
+            item.folder = nil
         }
         modelContext.delete(folder)
     }
@@ -204,7 +208,7 @@ private struct FolderCard: View {
                 Text(folder.name)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .lineLimit(1)
+                    .lineLimit(1).truncationMode(.tail)
                     .foregroundStyle(.primary)
                 Text("\(folder.itemCount)개")
                     .font(.caption)

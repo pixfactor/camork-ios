@@ -20,6 +20,15 @@ struct FolderDetailView: View {
     @State private var showingShareSheet = false
     @State private var shareItems: [Any] = []
     @State private var itemFrames: [UUID: CGRect] = [:]
+    @State private var zipExportURL: URL?
+    @State private var showingZipShareSheet = false
+    @State private var isExporting = false
+    @State private var isFolderUnlocked: Bool
+
+    init(folder: Folder) {
+        self.folder = folder
+        _isFolderUnlocked = State(initialValue: !folder.isLocked)
+    }
 
     private let gridColumns = [
         GridItem(.flexible(), spacing: 2),
@@ -42,10 +51,36 @@ struct FolderDetailView: View {
     }
 
     var body: some View {
+        if folder.isLocked && !isFolderUnlocked {
+            FolderPasswordView(folder: folder) {
+                isFolderUnlocked = true
+            }
+        } else {
+            unlockedBody
+        }
+    }
+
+    private var unlockedBody: some View {
         ZStack(alignment: .bottom) {
             mainContent
             if isSelectMode && !selectedIDs.isEmpty {
                 selectionActionBar
+            }
+            if isExporting {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .overlay {
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                            Text("압축 중...")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                        }
+                        .padding(32)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }
             }
         }
         .navigationTitle(folder.name)
@@ -67,11 +102,17 @@ struct FolderDetailView: View {
             }
         }
         .shareSheet(isPresented: $showingShareSheet, items: shareItems)
+        .sheet(isPresented: $showingZipShareSheet) {
+            if let url = zipExportURL {
+                ShareSheetView(activityItems: [url as Any])
+                    .presentationDetents([.medium, .large])
+            }
+        }
         .alert("미디어 삭제", isPresented: $showingDeleteAlert) {
             Button("삭제", role: .destructive) { deleteSelectedItems() }
             Button("취소", role: .cancel) {}
         } message: {
-            Text("선택한 \(selectedIDs.count)개 항목을 영구 삭제합니다.")
+            Text("선택한 \(selectedIDs.count)개 항목을 휴지통으로 이동합니다.")
         }
     }
 
@@ -190,6 +231,11 @@ struct FolderDetailView: View {
                         } label: {
                             Label("폴더 전체 공유", systemImage: "square.and.arrow.up")
                         }
+                        Button {
+                            exportZip()
+                        } label: {
+                            Label("ZIP으로 내보내기", systemImage: "doc.zipper")
+                        }
                     }
                     Button {
                         showingEditFolder = true
@@ -290,13 +336,11 @@ struct FolderDetailView: View {
 
     private func deleteSelectedItems() {
         let toDelete = folder.items.filter { selectedIDs.contains($0.id) }
-        let fileNames = toDelete.map(\.fileName)
-        Task {
-            for name in fileNames {
-                try? await FileStorageManager.shared.deleteMedia(fileName: name)
-            }
+        for item in toDelete {
+            item.isDeleted = true
+            item.deletedAt = Date()
+            item.folder = nil
         }
-        for item in toDelete { modelContext.delete(item) }
         exitSelectMode()
     }
 
@@ -305,5 +349,25 @@ struct FolderDetailView: View {
         guard !activityItems.isEmpty else { return }
         shareItems = activityItems
         showingShareSheet = true
+    }
+
+    private func exportZip() {
+        isExporting = true
+        Task {
+            let allItems = folder.items.filter { !$0.isDeleted }
+            guard !allItems.isEmpty else {
+                await MainActor.run { isExporting = false }
+                return
+            }
+            if let url = try? await ZipExporter.shared.export(items: allItems, folderName: folder.name) {
+                await MainActor.run {
+                    zipExportURL = url
+                    isExporting = false
+                    showingZipShareSheet = true
+                }
+            } else {
+                await MainActor.run { isExporting = false }
+            }
+        }
     }
 }

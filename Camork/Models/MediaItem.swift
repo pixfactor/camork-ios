@@ -8,6 +8,9 @@ final class MediaItem {
     var fileName: String
     var thumbnailFileName: String
     var memo: String
+    var templateTag: String?
+    var isDeleted: Bool = false
+    var deletedAt: Date? = nil
     var capturedAt: Date
     var latitude: Double?
     var longitude: Double?
@@ -20,6 +23,9 @@ final class MediaItem {
         fileName: String,
         thumbnailFileName: String,
         memo: String = "",
+        templateTag: String? = nil,
+        isDeleted: Bool = false,
+        deletedAt: Date? = nil,
         capturedAt: Date = .now,
         latitude: Double? = nil,
         longitude: Double? = nil,
@@ -31,6 +37,9 @@ final class MediaItem {
         self.fileName = fileName
         self.thumbnailFileName = thumbnailFileName
         self.memo = memo
+        self.templateTag = templateTag
+        self.isDeleted = isDeleted
+        self.deletedAt = deletedAt
         self.capturedAt = capturedAt
         self.latitude = latitude
         self.longitude = longitude
