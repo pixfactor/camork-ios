@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+// 회사 컴 연동 테스트용 주석입니다.
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
