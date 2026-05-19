@@ -78,7 +78,8 @@ Camork/
 │  ├─ GalleryPlaceholderView.swift
 │  └─ SettingsPlaceholderView.swift
 └─ AppShell/
-   └─ AppBackgroundShield.swift   — 백그라운드 가림막 (Plan A에 placeholder hook, Plan E에서 구현)
+   ├─ AppBackgroundShield.swift   — 백그라운드 가림막 (Plan A에 placeholder hook, Plan E에서 구현)
+   └─ CamorkBundleToken.swift     — app bundle lookup용 internal token class (test의 Bundle(for:) lookup에 사용)
 
 CamorkTests/
 ├─ ThemeTests.swift               — Spacing/CornerRadius 토큰 검증
@@ -282,9 +283,6 @@ mkdir -p CamorkTests
 {
   "colors" : [
     {
-      "appearances" : [
-        { "appearance" : "luminosity", "value" : "light" }
-      ],
       "color" : {
         "color-space" : "srgb",
         "components" : {
@@ -319,7 +317,9 @@ mkdir -p CamorkTests
 }
 ```
 
-(라이트: rgb(255, 149, 0) = `#FF9500`, 다크: rgb(255, 159, 0) = `#FF9F00`. 정확한 값은 frontend-design 단계에서 디자이너 확정 — Task 12 보고서에 미해결로 기록.)
+**(v3 errata 적용)** light는 `appearances` 키 **없이** Any default로 두는 것이 iOS 표준 — light/dark 둘 다 명시하면 trait collection 매칭 시 Any fallback이 부재해 `UIColor(named:)` lookup이 nil. dark만 variant 명시.
+
+(라이트: rgb(255, 149, 0) = `#FF9500`, 다크: rgb(255, 159, 0) = `#FF9F00`. 정확한 값은 frontend-design 단계에서 디자이너 확정 — Task 11 보고서에 미해결로 기록.)
 
 - [ ] **Step 4: AppIcon JSON** (이미지는 Plan E)
 
@@ -657,12 +657,13 @@ import UIKit
 struct ColorsTests {
     @Test("AccentColor는 라이트/다크에서 다른 RGBA를 가진다")
     func accentDiffersBetweenAppearances() {
-        // host app에 호스팅된 unit test이므로 Bundle.main = Camork app bundle.
-        // AccentColor는 app target의 Asset Catalog에 있다.
-        // (이전 v3에서 Bundle(for: BundleToken.self)로 작성했으나 BundleToken이 test target에
-        //  속해 test bundle을 잡는 버그가 있어 실행 직전 errata로 Bundle.main + RGBA 비교로 정정)
-        guard let asset = UIColor(named: "AccentColor", in: .main, compatibleWith: nil) else {
-            Issue.record("AccentColor가 host app 번들에 등록돼 있어야 함")
+        // Bundle.main은 unit test 환경에서 host app bundle이 아닐 수 있어 lookup 실패.
+        // app target에 internal class CamorkBundleToken를 두고 (Camork/AppShell/CamorkBundleToken.swift)
+        // Bundle(for: CamorkBundleToken.self)로 명시적으로 app bundle을 잡는 것이 견고.
+        // (v3 → v3-errata: BundleToken(test target) → Bundle.main → Bundle(for: CamorkBundleToken.self in app target))
+        let appBundle = Bundle(for: CamorkBundleToken.self)
+        guard let asset = UIColor(named: "AccentColor", in: appBundle, compatibleWith: nil) else {
+            Issue.record("AccentColor가 app 번들에 등록돼 있어야 함")
             return
         }
 
@@ -1407,3 +1408,10 @@ xcodebuild clean -scheme Camork
 | `SWIFT_VERSION: "5.9"` 부정확 (Xcode 빌드 세팅은 language mode) | `"5.0"`으로 정정 — Swift 5 mode 유지, Swift 6 전환은 Plan B의 동시성 ADR 후 별도 결정 |
 | 시뮬레이터 `iPhone 16 Pro / 15 Pro` 가정 (실제 환경엔 iPhone 17 시리즈만 가용) | destination을 `$CAMORK_SIM` 환경변수로 일괄 변경, 기본값 `iPhone 17 Pro` |
 | `Camork/Info.plist` `.gitignore` 누락 | `.gitignore`에 추가 + tracked 여부 확인 절차 Task 0 Step 3에 명시 |
+
+### v3 errata — Task 6 실행 중 발견 (Bundle lookup + AccentColor appearances)
+
+| 항목 | 반영 위치 |
+|---|---|
+| `Bundle.main`으로는 unit test에서 app bundle lookup 실패 | Task 6 ColorsTests — app target에 `Camork/AppShell/CamorkBundleToken.swift` (internal class) 신설 → test는 `Bundle(for: CamorkBundleToken.self)` 명시 사용. **Plan B+의 모든 Asset 자산 lookup에 같은 패턴 답습.** |
+| AccentColor JSON에서 light/dark 둘 다 `appearances` 명시 → trait Any fallback 부재로 lookup nil | Task 2 Step 3 — light는 `appearances` 키 **없이** Any default, dark만 variant 명시. iOS 표준 패턴. Plan B+의 다른 Asset Catalog 자산(BrandColor 등)도 같은 패턴 준수. |
