@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */; };
 		3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */; };
 		42EEF308903DC1C6B8F66B92 /* CameraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */; };
 		6BA14EDA68E3D44BF32D733C /* AppBackgroundShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = D174F2FDA24F471B4AE62E98 /* AppBackgroundShield.swift */; };
+		7350EA82727FFDA235B1269F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F466C97AE444836B684994 /* Theme.swift */; };
 		75EB773C45562339A9725378 /* CamorkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13B28107AE53591B28E00D /* CamorkApp.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
 		B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E16FBB8537135AEAA25D510 /* Assets.xcassets */; };
@@ -31,7 +33,9 @@
 		2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryPlaceholderView.swift; sourceTree = "<group>"; };
 		4EF68029697FFE4F2C27ABD8 /* Camork.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Camork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C13B28107AE53591B28E00D /* CamorkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkApp.swift; sourceTree = "<group>"; };
+		88F466C97AE444836B684994 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlaceholderView.swift; sourceTree = "<group>"; };
+		8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeTests.swift; sourceTree = "<group>"; };
 		991350B9E5716E0F43BF7BEC /* Camork.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Camork.entitlements; sourceTree = "<group>"; };
 		9E16FBB8537135AEAA25D510 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BDDFC1D1B9B451D3F4DAA926 /* CamorkTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CamorkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,6 +63,7 @@
 		60091220D6B0C226BC4C933E /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
+				88F466C97AE444836B684994 /* Theme.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -108,6 +113,7 @@
 		EC8F7C5D938E5ADDA284844A /* CamorkTests */ = {
 			isa = PBXGroup;
 			children = (
+				8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */,
 			);
 			path = CamorkTests;
 			sourceTree = "<group>";
@@ -201,6 +207,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,6 +221,7 @@
 				3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */,
 				826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */,
 				C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */,
+				7350EA82727FFDA235B1269F /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
