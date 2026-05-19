@@ -30,6 +30,7 @@
 		7350EA82727FFDA235B1269F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F466C97AE444836B684994 /* Theme.swift */; };
 		736638AEDA70D44F5E4E2A29 /* CamorkBundleToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */; };
 		753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */; };
+		7568D9FC2A05ABA3DB652F1F /* MediaCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6165FFA504FB244DB02F113 /* MediaCapture.swift */; };
 		75EB773C45562339A9725378 /* CamorkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13B28107AE53591B28E00D /* CamorkApp.swift */; };
 		7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B888956B201EB0ED26CC34 /* PermissionsService.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
@@ -94,6 +95,7 @@
 		991350B9E5716E0F43BF7BEC /* Camork.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Camork.entitlements; sourceTree = "<group>"; };
 		9CC19C01569B96793E8631B7 /* MediaStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorage.swift; sourceTree = "<group>"; };
 		9E16FBB8537135AEAA25D510 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A6165FFA504FB244DB02F113 /* MediaCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCapture.swift; sourceTree = "<group>"; };
 		A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsServiceTests.swift; sourceTree = "<group>"; };
 		AA140D0E346D56C7AA3628E2 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				661C72790B8B0D9C11813E0A /* CameraSession.swift */,
+				A6165FFA504FB244DB02F113 /* MediaCapture.swift */,
 				E361B9EB071C39F1DF2E23FA /* Internal */,
 			);
 			path = Camera;
@@ -411,6 +414,7 @@
 				3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */,
 				DC0532E20909F08A139C0D34 /* LocationService.swift in Sources */,
 				8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */,
+				7568D9FC2A05ABA3DB652F1F /* MediaCapture.swift in Sources */,
 				1EA7A05186D76B980FB76848 /* MediaFileSystem.swift in Sources */,
 				9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */,
 				A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */,
