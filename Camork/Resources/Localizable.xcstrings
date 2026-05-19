@@ -1,0 +1,93 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "button_cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
+      }
+    },
+    "button_delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "삭제" } }
+      }
+    },
+    "button_share" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유하기" } }
+      }
+    },
+    "camera_tab_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라" } }
+      }
+    },
+    "gallery_tab_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
+      }
+    },
+    "placeholder_camera_description" : {
+      "extractionState" : "manual",
+      "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "준비 중" } }
+      }
+    },
+    "placeholder_camera_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라" } }
+      }
+    },
+    "placeholder_gallery_description" : {
+      "extractionState" : "manual",
+      "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "준비 중" } }
+      }
+    },
+    "placeholder_gallery_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
+      }
+    },
+    "placeholder_settings_description" : {
+      "extractionState" : "manual",
+      "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "준비 중" } }
+      }
+    },
+    "placeholder_settings_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
+      }
+    },
+    "settings_tab_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
