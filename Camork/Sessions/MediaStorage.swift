@@ -46,10 +46,13 @@ struct SessionWithPreview: Sendable {
 /// | 4 GRDB transaction fail | `Media/<UUID>.heic` orphan | best-effort `removeFinal` → 실패 시 reaper |
 /// | crash after mv before commit | `Media/<UUID>.heic` orphan | reaper (다음 앱 시작) |
 actor MediaStorage {
-    /// MediaStorage 도메인 에러. 현재는 loadPhotoData가 canonical fileName invariant를
-    /// 어긴 Photo를 거부할 때 throw.
+    /// MediaStorage 도메인 에러.
+    /// - `invalidFileName`: loadPhotoData가 canonical fileName invariant를 어긴 Photo를 거부.
+    /// - `sessionNotFound`: updateSession* 의 UPDATE가 0 rows affected — sessionId가
+    ///   존재하지 않거나 이미 deleted (deletedAt IS NULL 필터가 제외). Plan C Phase 1.3.
     enum Error: Swift.Error, Sendable, Equatable {
         case invalidFileName
+        case sessionNotFound
     }
 
     private var pendingManualSessionStart: Bool = false
@@ -317,6 +320,36 @@ actor MediaStorage {
                 sql: "UPDATE Photo SET note = ? WHERE id = ?",
                 arguments: [note, photoId.uuidString]
             )
+        }
+    }
+
+    /// 세션명 변경 (Plan C Phase 1.3). UPDATE는 `deletedAt IS NULL` 필터 적용 — deleted
+    /// 세션도 changesCount == 0 으로 결과되어 `Error.sessionNotFound` throw. SessionNameEditor가
+    /// 빈/whitespace-only 이름을 차단한 뒤 trimmed name으로 호출 (도메인 invariant 분리).
+    func updateSessionName(sessionId: UUID, name: String) async throws {
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Session SET name = ? WHERE id = ? AND deletedAt IS NULL",
+                arguments: [name, sessionId.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.sessionNotFound
+            }
+        }
+    }
+
+    /// 세션 메모 변경 (Plan C Phase 1.3). nil → SQL NULL (clear). 빈 문자열은 그대로 저장
+    /// (SessionNoteEditor 가 trim 없이 그대로 전달). UPDATE의 `deletedAt IS NULL` 필터로
+    /// deleted session은 `Error.sessionNotFound`.
+    func updateSessionNote(sessionId: UUID, note: String?) async throws {
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Session SET note = ? WHERE id = ? AND deletedAt IS NULL",
+                arguments: [note, sessionId.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.sessionNotFound
+            }
         }
     }
 
