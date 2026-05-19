@@ -1,4 +1,4 @@
-# Camork v1 Core — Plan B: Storage + Camera Implementation Plan (v1.3)
+# Camork v1 Core — Plan B: Storage + Camera Implementation Plan (v1.4)
 
 > **For agentic workers:**
 > **Default mode for Plan B: `superpowers:executing-plans` (Inline).** Plan A는 Inline으로 성공했고, 본 세션은 사용자 terminal review 중심으로 진행됨.
@@ -8,10 +8,11 @@
 > **개정 이력 (2026-05-19):**
 > - **v1.0**: 초안 (spec v3.3 기반).
 > - **v1.1**: ai-slop-cleaner workflow 1st pass — 8 Critical + 1 Should-fix (GRDB 버전 / 실행 모드 / 중복 Sessions / Phase 2~3 expansion / FileOps protocol / self closure 제거 / DatabaseMigrator API / Date codec / XcodeGen product). 부록 §A.
-> - **v1.2**: 데이터 무결성 + 에러 경로 — 9 Critical + 2 Should-fix (Int64 codec 명시 / UUID validate throw / appliedMigrations Array / `try MediaFileSystem` / FileOps naming / Data Protection class / Bootstrap enum / MediaCapture 단일 owner / `if case` 패턴 / FK PRAGMA + CASCADE / testHooks ordering only). 부록 §C.
-> - **v1.3 (이 문서)**: 본문 일관성 + finalize — 8 Critical + 3 Should-fix (title/revision/Appendix A 갱신 / DB attribute 순서 + WAL/SHM / MediaFileSystem 단일 canonical / Task 1.6 makeMigrator / Migration test 공통 config / CameraScreen MainActor do/catch / MediaCapture @Sendable boundary / File Structure 표현 정정 / FileOps 이전 이름 / StorageInitErrorView 명시 / rg 검증). 부록 §D.
+> - **v1.2**: 데이터 무결성 + 에러 경로 — 9 Critical + 2 Should-fix (Int64 codec 명시 / UUID validate throw / appliedMigrations Array / `try MediaFileSystem` / FileOps naming / Data Protection class / Bootstrap enum / MediaCapture 단일 owner / `if case` 패턴 / FK PRAGMA + CASCADE / testHooks ordering only).
+> - **v1.3**: 본문 일관성 + finalize — 8 Critical + 3 Should-fix (title/revision/Appendix 갱신 / DB attribute 순서 + WAL/SHM / MediaFileSystem 단일 canonical / Task 1.6 makeMigrator / Migration test 공통 config / CameraScreen MainActor do/catch / MediaCapture @Sendable boundary / File Structure 표현 정정 / FileOps 이전 이름 / StorageInitErrorView 명시 / rg 검증).
+> - **v1.4 (이 문서)**: appendix presence + MediaFileSystem 단일 canonical 실 적용 + stray fence 제거 + S1 typo 진짜 정정 + CameraScreen Step 3 단일 helper-style — 5 Critical. 부록 §B에 v1.2+v1.3+v1.4 통합 매핑.
 >
-> 모든 부록은 historical record로 보존. 본문 모든 코드/설명은 v1.3 단일 권위.
+> 본문 모든 코드/설명은 v1.4 단일 권위. 부록 §A (v1.1) + 부록 §B (v1.2~v1.4)는 historical record.
 
 **Goal:** Spec v3.3의 v1 Core 핵심 루프(촬영 → 자동 세션 묶음 → 로컬 저장 → 직전 사진 확인 → 메모 편집)를 구현. Storage 인프라(GRDB + 단일 writer actor) + Camera(AVFoundation thin wrapper + UI) + PhotoDetail(메모 편집)을 닫는다.
 
@@ -705,7 +706,7 @@ protocol FileOps: Sendable {
 }
 ```
 
-**C5 (v1.2)**: 명명은 `stagingExists` / `finalExists`로 통일 (이전 `stagingExists`/`finalExists` 변종 제거). 모든 test/impl 일관.
+**C5 (v1.2)**: 명명은 `stagingExists` / `finalExists`로 통일 (이전 변종은 `stagingDataExists`/`finalDataExists`였음 — v1.2에서 모두 정정). 모든 test/impl 일관.
 
 ```swift
 // Camork/Storage/MediaFileSystem.swift (C5 — init throws)
@@ -746,7 +747,6 @@ struct MediaFileSystem: FileOps {
     func finalExists(fileName: String) throws -> Bool { /* ... */ }
     func enumerateFinal() throws -> [String] { /* ... */ }
 }
-```
 ```
 
 - [ ] **Step 1: 실패 테스트**
@@ -791,47 +791,9 @@ private func tempDir() -> URL {
 
 - [ ] **Step 2~5**: 실패 확인 → 구현 → 통과 → 커밋 (Lore)
 
-```swift
-// Camork/Storage/MediaFileSystem.swift  (v1.1 C5 + v1.2 C6 + v1.3 C3 통합 canonical)
-import Foundation
+**구현은 Task 1.4 첫 sample (위 "v1.3 C3 단일 canonical" 블록)을 그대로 사용**. 두 번째 sample 없음 (v1.4 C2 — 단일 canonical, 중복 제거).
 
-struct MediaFileSystem: FileOps {
-    let root: URL  // 보통 Application Support/Camork
-
-    init(root: URL) throws {
-        self.root = root
-        try Self.bootstrap(root: root)   // v1.1 C5: 에러 swallow 금지
-    }
-
-    static func bootstrap(root: URL) throws {
-        for sub in ["Media", "Media/.staging"] {
-            var dir = root.appendingPathComponent(sub, isDirectory: true)
-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            try dir.setResourceValues(values)
-        }
-    }
-
-    // v1.3 C3 — atomic + 명시적 protection (위 canonical sample 참조)
-    func writeStaging(fileName: String, data: Data) throws {
-        let url = root.appendingPathComponent("Media/.staging/\(fileName)")
-        try data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-    }
-
-    func moveStagingToFinal(fileName: String) throws {
-        let from = root.appendingPathComponent("Media/.staging/\(fileName)")
-        let to = root.appendingPathComponent("Media/\(fileName)")
-        try FileManager.default.moveItem(at: from, to: to)
-    }
-
-    func removeStaging(fileName: String) throws { /* ... */ }
-    func removeFinal(fileName: String) throws { /* ... */ }
-    func stagingExists(fileName: String) throws -> Bool { /* ... */ }
-    func finalExists(fileName: String) throws -> Bool { /* ... */ }
-    func enumerateFinal() throws -> [String] { /* ... */ }
-}
-```
+`moveStagingToFinal` 구현 가설: `FileManager.default.moveItem(at: stagingURL, to: finalURL)`. 나머지 method는 표준 `FileManager` 호출.
 
 ---
 
@@ -1509,38 +1471,44 @@ enum CameraScreenViewState: Equatable {
 }
 ```
 
-- [ ] **Step 3** (v1.3 C6): 셔터 탭 → MediaCapture trigger → MediaCapture `onPayloadReady` callback (AVFoundation queue, `@Sendable`)에서 CameraScreen으로 result 전달 → CameraScreen은 MainActor에서:
+- [ ] **Step 3** (v1.3 C6 + v1.4 C5 — 단일 canonical, helper-style):
+
+**inFlight lifecycle**:
+- 셔터 탭 시 `isInFlight = true` 즉시 set (UI feedback: chip disabled, 셔터 disabled).
+- MediaCapture는 payload result를 `@Sendable (Result<PhotoCapturePayload, Error>) -> Void` callback으로 CameraScreen에 전달 (AVFoundation queue).
+- CameraScreen은 MainActor에서 `handleCaptureResult(_:)` 호출 — `defer { isInFlight = false }`로 capture **성공/실패 모두** 반드시 clear.
 
 ```swift
-.task(id: capturedResultId) {
-    guard case .success(let payload) = capturedResult else { return }
-    isInFlight = true
-    defer { isInFlight = false }
+// Camork/Camera/CameraScreen.swift (v1.4 단일 canonical)
+@MainActor
+private func handleCaptureResult(_ result: Result<PhotoCapturePayload, Error>) async {
+    defer { isInFlight = false }   // 성공/실패 무조건 clear
     do {
+        let payload = try result.get()                 // capture failure도 여기서 throw
         _ = try await mediaStorage.saveCapture(payload)
-        // refresh latest thumb
+        // 직전 사진 thumb refresh — captureLatestThumbnail() trigger
     } catch {
-        captureError = error   // UI에 에러 표시 (alert / toast)
+        captureError = error                           // UI에 alert / toast
+    }
+}
+
+// shutter 탭 핸들러:
+private func onShutterTap() {
+    guard !isInFlight else { return }   // re-entrancy 차단
+    isInFlight = true
+    mediaCapture.requestCapture { @Sendable result in
+        Task { @MainActor in
+            await handleCaptureResult(result)
+        }
     }
 }
 ```
 
-또는 동등하게:
-
-```swift
-@MainActor private func handleCaptureResult(_ result: Result<PhotoCapturePayload, Error>) async {
-    isInFlight = true
-    defer { isInFlight = false }
-    do {
-        let payload = try result.get()
-        _ = try await mediaStorage.saveCapture(payload)
-    } catch {
-        captureError = error
-    }
-}
-```
-
-**핵심**: detached `Task { ... }`로 hop 금지. inFlight clear는 `defer`로 보장. 에러는 do/catch로 captureError state에 반영.
+**핵심 (v1.4)**:
+- detached `Task { ... }`로 hop 금지.
+- `.task(id:)` 변종 제거 (v1.3 잔재) — `guard case .success` 패턴이 failure를 silent ignore했음.
+- 단일 helper `handleCaptureResult` 만 canonical. capture failure(MediaCapture에서 오는 `.failure`)도 `try result.get()`에서 throw되어 동일 `catch`로 흐름.
+- inFlight clear는 `defer`로 capture 성공/실패 모두 보장 — UI inFlight stuck 0.
 
 - [ ] **Step 4**: "새 현장" 칩 — disabled when isInFlight, otherwise `await mediaStorage.markPendingNewSession()`.
 
@@ -1719,6 +1687,52 @@ xcodebuild -scheme Camork \
 | **C4** | Phase 2/3 skeletal | Phase 2a/2b/2c (10 task) + Phase 3.1/3.2 (8 task) — 각 task에 files/실패 테스트/구현/검증/Lore commit step. |
 | **C5** | race/failure 테스트 비결정적 | `MediaStorageTestHooks` (`#if DEBUG`) + `FileOps` protocol + `MediaFileSystem.init throws` (try? 제거). |
 | **C6** | closure에 `self.policy` 등 캡쳐 | DB helpers를 free functions (`fetchLatestPhoto`/`resolveSessionId`/`insertPhoto`). closure capture는 `[manualFlag, policy, photoId, fileName]`만, self 미참조. |
-| **C7** | `db.schemaVersion()` API misuse | `Migrations.makeMigrator()` 노출 → test는 `DatabaseMigrator.appliedMigrations(_:) -> [String]` 사용 (v1.2 부록 §C에서 추가 정합). |
-| **C8** | Date ↔ Int64 codec 미정 | Task 1.3 — 각 모델에 `Columns` enum + `init(row:)`/`encode(to:)`. v1.1은 `timeIntervalSince1970` 명시만, v1.2 부록 §C에서 `Int64` 명시 read/write로 보강. |
+| **C7** | `db.schemaVersion()` API misuse | `Migrations.makeMigrator()` 노출 → test는 `DatabaseMigrator.appliedMigrations(_:) -> [String]` 사용 (v1.2 부록 §B에서 추가 정합). |
+| **C8** | Date ↔ Int64 codec 미정 | Task 1.3 — 각 모델에 `Columns` enum + `init(row:)`/`encode(to:)`. v1.1은 `timeIntervalSince1970` 명시만, v1.2 부록 §B에서 `Int64` 명시 read/write로 보강. |
 | **S1** | XcodeGen package product | Task 1.1 — `url: ...git`, `product: GRDB` 명시. |
+
+---
+
+## 부록 B — Plan B v1.2 + v1.3 + v1.4 통합 정정 매핑
+
+### v1.2 (사용자 review 9 Critical + 2 Should-fix)
+
+| # | 지적 | 반영 위치 |
+|---|---|---|
+| C1 | Date codec Int64 vs Double | row decode/encode 모두 `Int64` 명시 + INTEGER typeof 테스트 + epoch seconds |
+| C2 | UUID/MediaKind silent mint | `PhotoDecodingError.invalidUUID/invalidMediaKind` throw |
+| C3 | appliedIdentifiers Set vs Array | `appliedMigrations(_:) -> [String]` (등록 순서) |
+| C4 | `MediaFileSystem(root:)` try 누락 | 모든 snippet에 `try` 적용 |
+| C5 | FileOps naming | `stagingExists`/`finalExists` 통일 |
+| C6 | Data Protection class | `.completeUntilFirstUserAuthentication` 명시 |
+| C7 | `try! DependencyContainer()` | `Bootstrap` enum + StorageInitErrorView |
+| C8 | MediaCapture detached Task | 단일 owner (CameraScreen do/catch) |
+| C9 | `viewState == .cameraActive` | `if case .cameraActive = viewState` |
+| S1 | FK enforcement | `PRAGMA foreign_keys = ON` + CASCADE test |
+| S2 | testHooks overlap | ordering gates 전용, file failure는 FakeFileOps |
+
+### v1.3 (사용자 review 8 Critical + 3 Should-fix)
+
+| # | 지적 | 반영 위치 |
+|---|---|---|
+| C1 | doc identity stale (title/revision/Appendix) | title v1.3 + 개정 이력 + 부록 §B 통합 (v1.4에서 실제 추가) |
+| C2 | DB attribute 순서 + WAL/SHM | metaDir 먼저 → open+migrate → 3 sidecar 각각 |
+| C3 | MediaFileSystem 두 sample | 단일 canonical (v1.4 C2에서 실제 통합 완료) |
+| C4 | Task 1.6 `Migrations.register` 잔재 | `makeMigrator().migrate(db)` |
+| C5 | Migration FK test config 미공유 | `CamorkDatabase.makeConfiguration()` 공유 helper |
+| C6 | CameraScreen detached Task | MainActor + defer + do/catch (v1.4 C5에서 단일 helper로 finalize) |
+| C7 | MediaCapture @Sendable boundary | `@Sendable (Result<...,Error>) -> Void` 명시 |
+| C8 | File Structure "actor hop" 표현 | "AVFoundation callback → CameraScreen payload result → MediaStorage saveCapture" |
+| S1 | FileOps 이전 이름 정정 텍스트 | (v1.4 C4에서 진짜 정정) |
+| S2 | StorageInitErrorView 누락 | File Structure + Phase 2c.1 |
+| S3 | rg 검증 | 검증 완료 |
+
+### v1.4 (사용자 review 5 Critical)
+
+| # | 지적 | 반영 위치 |
+|---|---|---|
+| C1 | Appendix B/C/D 부재 — header가 broken reference | 단일 부록 §B 신설 (v1.2+v1.3+v1.4 통합). header/§A의 `§C`/`§D` 참조를 `§B`로 정정 |
+| C2 | MediaFileSystem 두 sample 여전 | Task 1.4 첫 canonical만 유지, 두 번째 sample (Step 2~5) 제거 + "위 sample 그대로 사용" 명시 |
+| C3 | stray closing fence (line 750) | 중복 ``` 제거 |
+| C4 | S1 typo (line 708) "이전 stagingExists/finalExists" | "옛 이름은 stagingDataExists/finalDataExists였음 — v1.2에서 모두 정정"으로 정정 |
+| C5 | CameraScreen Step 3 두 sample (`.task(id:)` failure ignore + helper) | helper-style `handleCaptureResult` 단일 canonical. `.task(id:)` 잔재 제거. inFlight lifecycle 명시 (shutter tap → set / defer 무조건 clear) |
