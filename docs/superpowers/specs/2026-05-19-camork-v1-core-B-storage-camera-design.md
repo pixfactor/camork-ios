@@ -76,23 +76,24 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
 
 1. **GRDB DatabaseWriter** 선택 (DatabaseQueue vs DatabasePool 비교 + 채택 이유). **GRDB 정확 버전 결정 + `Package.resolved` 고정** (momus S-9 — §12에서 이동).
 
-2. **단일 capture-save path** (v3 Critical 1 — split-brain 방지, v3.1 sequence 명시):
+2. **단일 capture-save path** (v3 Critical 1 — split-brain 방지, 현행 sequence):
    - **단일 actor `MediaStorage`**가 모든 capture-save 흐름 소유. `SessionManager` actor는 **제거**.
    - **`struct SessionAssignmentPolicy` (pure helper)** — `decideSession(previous: Photo?, current: PhotoCapturePayload, manualFlag: Bool) -> Decision`. actor / DB / instance state 의존 없음. 단위 테스트 직진.
    - 공개 API는 하나: `MediaStorage.saveCapture(payload: PhotoCapturePayload) async throws -> Photo`
-   - **공식 sequence (v3.1 — 본문 모든 곳이 이 순서 준수)**:
+   - **공식 sequence (현행 — 본문 모든 곳이 이 순서 준수)**:
+     0. **manualFlag snapshot** — `await` 호출 전 actor isolation에서 `let manualFlag = pendingManualSessionStart` capture
      1. **allocate photo id/path** (UUID + relative fileName 결정 — 메모리 상)
      2. **write staging file** — `Media/.staging/<UUID>.heic` 작성 (GRDB transaction 밖, DB-lock 영향 최소화)
      3. **atomic mv to final** — `Media/.staging/<UUID>.heic` → `Media/<UUID>.heic`
-     4. **GRDB transaction 시작** — previous photo fetch → `policy.decideSession(...)` → (newSession이면) Session insert + UUID 획득 → Photo insert (sessionId 포함) → commit
-     5. **commit 성공 후에만** `pendingManualSessionStart = false` clear
+     4. **GRDB transaction 시작** — previous photo fetch → `policy.decideSession(previous:, current:, manualFlag:)` (snapshot 값 전달) → (newSession이면) Session insert + UUID 획득 → Photo insert (sessionId 포함) → commit
+     5. **commit 성공 후, snapshot 값이 true인 경우에만** `if manualFlag { pendingManualSessionStart = false }` — consumed flag만 clear. captured manualFlag가 false면 in-flight 중 새로 set된 플래그를 wipe하지 않음.
    - **DB 트랜잭션 실패 시 (step 4)**: best-effort `Media/<UUID>.heic` 삭제 → 실패해도 OK, Orphan reaper가 정리.
    - **mv 실패 시 (step 3)**: staging file 삭제 후 abort.
    - **staging write 실패 시 (step 2)**: 즉시 abort, 잔존물 없음.
    - **file IO는 GRDB transaction 밖** — DB-lock 영향 최소화. ADR이 이 정책을 명시 채택.
    - `pendingManualSessionStart` 플래그는 `MediaStorage` actor 내부 in-memory state (별도 actor 없음). clear는 step 5에서만 (commit 실패 시 flag 유지).
 
-3. **Failure matrix** (v3.1 — sequence 5단계와 일관):
+3. **Failure matrix** (현행 — sequence 5단계와 일관):
 
 | 실패 시점 | 잔존물 | Cleanup 주체 |
 |---|---|---|
@@ -149,14 +150,15 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
 - `enum Decision { case newSession; case continueSession(sessionId: UUID) }`
 - actor / DB 의존성 없음. 단위 테스트 직진 — 6 edge case + GPS accuracy 25/30/35m 경계 + 시간 29/30/31min 경계 + `horizontalAccuracy nil` case.
 
-**Phase 1.4 — `actor MediaStorage` (단일 writer) + Orphan reaper** (v3.1 sequence 일관)
+**Phase 1.4 — `actor MediaStorage` (단일 writer) + Orphan reaper** (현행 sequence 일관)
 
 - **공식 sequence (ADR 항목 #2와 동일)**:
+  0. `manualFlag` snapshot — `await` 전 actor isolation에서 capture
   1. allocate photo id/path (UUID + relative fileName)
   2. write staging file (`Media/.staging/<UUID>.heic`, GRDB transaction 밖)
   3. atomic mv → `Media/<UUID>.heic`
-  4. GRDB transaction: previous fetch → `policy.decideSession(...)` → (newSession) Session insert → Photo insert (sessionId 포함) → commit
-  5. commit 성공 후 `pendingManualSessionStart = false`
+  4. GRDB transaction: previous fetch → `policy.decideSession(..., manualFlag: snapshot)` → (newSession) Session insert → Photo insert (sessionId 포함) → commit
+  5. commit 성공 후, **snapshot이 true인 경우에만** `if manualFlag { pendingManualSessionStart = false }` — consumed flag만 clear
 
 - **공개 API**:
   - `saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo`
@@ -166,7 +168,7 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
   - `fetchPhoto(id:)` async — PhotoDetail 로드용
   - `isPendingNewSession() async -> Bool` — UI dot indicator용
 - thumbnail 생성 + 캐시 (`Library/Caches/Camork/Thumbnails/<UUID>.jpg`)
-- 단위 테스트: in-memory DB + temp dir로 격리. 6 edge case 통합 검증 (policy + actor + DB), Failure matrix 4 cases (staging fail / mv fail / commit fail / crash 시뮬), Reaper 검증, `pendingManualSessionStart` clear는 commit 성공 후에만 발생.
+- 단위 테스트: in-memory DB + temp dir로 격리. 6 edge case 통합 검증 (policy + actor + DB), Failure matrix 4 cases (staging fail / mv fail / commit fail / crash 시뮬), Reaper 검증, `pendingManualSessionStart` clear는 **commit 성공 후 + captured manualFlag가 true였던 경우에만** 발생 (in-flight 중 새 markPending이 wipe되지 않음을 검증하는 race-style 테스트 포함).
 
 ### Phase 2 — Camera 캡처 + UI
 
@@ -345,7 +347,7 @@ struct PhotoCapturePayload: Sendable {
 
 ## 5. Session 자동 묶기 정책 (6 edge case, 단위 테스트 대상)
 
-### 5.1 자동 분리 규칙 (pure pseudocode — actor/DB/instance state 의존 없음, v3.1)
+### 5.1 자동 분리 규칙 (pure pseudocode — actor/DB/instance state 의존 없음, 현행)
 
 ```
 struct SessionAssignmentPolicy {
@@ -392,7 +394,7 @@ struct SessionAssignmentPolicy {
 }
 ```
 
-**중요 (v3.1 정정)**: pseudocode body는 `pendingManualSessionStart`를 직접 읽지 않는다. signature의 `manualFlag` 인자만 사용. 이렇게 해야 `SessionAssignmentPolicy`가 actor/DB 의존 없는 pure struct로 단위 테스트 직진 가능.
+**중요 (현행 정책)**: pseudocode body는 `pendingManualSessionStart`를 직접 읽지 않는다. signature의 `manualFlag` 인자만 사용. 이렇게 해야 `SessionAssignmentPolicy`가 actor/DB 의존 없는 pure struct로 단위 테스트 직진 가능.
 
 **`horizontalAccuracy` nil 또는 둘 중 하나라도 > 30m**: 거리 규칙 skip (위치 권한 거부 case b와 동일 fallback).
 
@@ -426,7 +428,7 @@ struct SessionAssignmentPolicy {
     }
 }
 
-// 단일 writer actor (v3.1 — file IO를 GRDB transaction 밖에 두어 DB-lock 영향 최소화)
+// 단일 writer actor (현행 — file IO를 GRDB transaction 밖에 두어 DB-lock 영향 최소화)
 actor MediaStorage {
     private var pendingManualSessionStart: Bool = false
     private let db: DatabaseWriter
@@ -442,9 +444,10 @@ actor MediaStorage {
     }
 
     func saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo {
-        // v3.2 — manualFlag를 await 전 actor isolation에서 snapshot.
-        // 이렇게 해야 db.write closure 안에서 actor state 직접 접근을 피하고,
-        // in-flight save 중 markPendingNewSession() 호출이 의도치 않게 consumed/cleared 되지 않음.
+        // manualFlag를 await 전 actor isolation에서 snapshot. db.write closure 안에서
+        // actor state 직접 접근을 피하고, captured manualFlag만 정책 결정/clear에 사용.
+        // 한계: boolean 자체로는 "in-flight 중 두 번째 탭"을 구분할 수 없음 → UX에서 chip을
+        // in-flight 동안 disabled/ignored 처리 (§7.3 참조). 반복 탭은 idempotent no-op.
         let manualFlag = pendingManualSessionStart
 
         // Step 1: id/path allocate (메모리 상)
@@ -484,8 +487,10 @@ actor MediaStorage {
             throw error
         }
 
-        // Step 5: commit 성공 후에만, 그리고 **consumed flag만** clear.
-        // 새로 들어온 markPendingNewSession()의 set을 wipe하지 않음.
+        // Step 5: commit 성공 후, captured manualFlag가 true였던 경우에만 clear.
+        // captured manualFlag가 false면 in-flight 중 새로 set된 플래그를 wipe하지 않음.
+        // 단 captured manualFlag가 true였고 in-flight 중 사용자가 다시 탭하는 경우는 boolean
+        // 자체로 구분 불가 — UX에서 chip을 in-flight 동안 disabled/ignored 처리(§7.3).
         if manualFlag {
             pendingManualSessionStart = false
         }
@@ -494,10 +499,11 @@ actor MediaStorage {
 }
 ```
 
-**중요 (v3.2 정정)**:
+**중요 (현행 정책)**:
 - 파일 staging/mv는 GRDB transaction **밖**에서 수행.
 - `manualFlag`는 `await` 전 actor isolation에서 **snapshot**. `db.write` closure는 capture된 값만 사용, actor state 직접 접근 X.
-- commit 성공 후, **consumed flag만** clear (`if manualFlag { ... }`). 이렇게 해야 in-flight save 중 새로운 `markPendingNewSession()` 호출이 wipe되지 않음.
+- commit 성공 후, **captured manualFlag == true 인 경우에만** clear (`if manualFlag { ... }`). 이렇게 해야 captured == false인 경우에 in-flight 중 새로 set된 플래그가 wipe되지 않음.
+- **boolean 한계 + UX 보완**: captured manualFlag가 true였고 in-flight 중 사용자가 다시 탭하는 경우, 두 번째 탭의 의도를 boolean 자체로는 구분 불가. v1 Core는 **UX 정책으로 보완** — chip을 in-flight save 동안 disabled/ignored 처리, 반복 탭은 idempotent no-op (§7.3 참조). 추후 필요 시 generation token 도입 가능 (v1.1+).
 - transaction 실패 시 best-effort final 삭제, 실패해도 reaper가 cover.
 
 `SessionAssignmentPolicy`는 actor 의존 없이 단위 테스트 가능. 6 edge case 모두.
@@ -540,6 +546,8 @@ actor MediaStorage {
 - 시각 피드백: 칩이 잠시 강조 색 (오렌지 액센트) 으로 깜빡임, 햅틱 light tap.
 - 화면 다른 변화 없음 (다음 촬영 시 새 세션 생성됨).
 - 칩 상태 유지: `@State` 또는 actor의 `isPendingNewSession()` async getter — UI에 작은 dot indicator 표시 가능.
+- **in-flight 동안 chip disabled/ignored** (현행 — boolean flag 한계 보완): `saveCapture`가 진행 중인 동안에는 chip을 disabled 상태로 표시하거나 탭 입력을 ignore. 반복 탭은 idempotent no-op (boolean이므로 set이 set으로 덮어써질 뿐 아무 추가 효과 없음). 사용자가 진짜 두 번째 의도로 탭하려면 saveCapture 완료 후 탭 가능.
+- **단위 테스트 항목**: in-flight 중 chip 입력이 ignore되는지 (CameraScreenViewState에서 검증). actor 차원의 race는 boolean idempotent로 자연 해결.
 
 ---
 
@@ -548,7 +556,7 @@ actor MediaStorage {
 ### 8.1 단위 테스트 (Swift Testing, in-memory DB)
 
 - **SessionAssignmentPolicy** (pure, actor 의존 없음, v3): 6 edge case (a~f), GPS accuracy 25/30/35m 경계, 시간 29/30/31min 경계, `horizontalAccuracy == nil` case.
-- **MediaStorage** (단일 writer actor, v3.2 sequence): `saveCapture` 흐름 (allocate id/path → staging write → atomic mv → GRDB transaction(fetch previous + decide + insert Session/Photo + commit) → commit 성공 후 flag clear), `isExcludedFromBackup` 플래그, 동시 쓰기 순서, `runReaper()` orphan 삭제 검증, `pendingManualSessionStart` clear는 commit 성공 후에만 + consumed flag만.
+- **MediaStorage** (단일 writer actor, 현행 sequence): `saveCapture` 흐름 (manualFlag snapshot → allocate id/path → staging write → atomic mv → GRDB transaction(fetch previous + decide + insert Session/Photo + commit) → commit 성공 후 `if manualFlag { clear }`), `isExcludedFromBackup` 플래그, 동시 쓰기 순서, `runReaper()` orphan 삭제 검증, **clear는 commit 성공 후 + captured manualFlag == true 인 경우에만** (race-style 테스트로 in-flight markPending wipe 안 되는지 검증).
 - **Failure matrix** (v3.2 — 4 buckets, sequence 5단계와 일관): staging write fail / mv fail / GRDB transaction fail (row insert + commit 모두 포함) / crash after mv before commit. 각 case의 cleanup 검증 — staging cleanup 또는 best-effort final 삭제 + reaper.
 - **Database/Migration** (momus S-2): GRDB `DatabaseMigrator`에 v1 등록 후 두 번 호출해도 `schemaVersion` 변화 없음, 빈 DB에서 schema 생성 후 fetch가 빈 결과 반환, CHECK 제약 위반 시 insert 실패.
 - **PermissionsService** (v3 마이크 제거): 권한 상태 매핑 — **카메라/위치만** (granted/denied/notDetermined/restricted), Info.plist 키 일치.
@@ -712,7 +720,7 @@ actor MediaStorage {
     func runReaper() async throws                                            // 앱 시작 시
 
     // Plan B test-only — PhotoDetail/통합 테스트용
-    // 격리 규칙 (v3.1): production code path에 노출되지 않음. 다음 중 하나로 박음:
+    // 격리 규칙 (현행): production code path에 노출되지 않음. 다음 중 하나로 박음:
     //   - #if DEBUG 가드로 컴파일 단위 격리
     //   - 또는 test target 안의 extension으로 분리 (테스트 헬퍼 어댑터)
     //   - 또는 internal init을 통해 test harness만 인스턴스 주입
