@@ -18,6 +18,8 @@ build/
 .build/
 .swiftpm/
 Package.resolved
+# Exception: Xcode shared workspace lockfile must be tracked for reproducible SPM resolves
+!Camork.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # XcodeGen 산출물 (project.yml이 진실의 원천 — 재생성 가능)
 # Camork.xcodeproj/

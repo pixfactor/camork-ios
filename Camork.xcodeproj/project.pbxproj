@@ -23,6 +23,7 @@
 		BD254E1236CDC71DA1B02956 /* CamorkCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */; };
 		C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */; };
 		D10176543AB36929C85D6372 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4BD3E8CC262B2CCF547DB4C2 /* Localizable.xcstrings */; };
+		EE76E668847A5474E7CD8E28 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D9B7771CD3044CEC2329E0CE /* GRDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,17 @@
 		DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPlaceholderView.swift; sourceTree = "<group>"; };
 		E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkBundleToken.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8214795230552DA116792CBE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EE76E668847A5474E7CD8E28 /* GRDB in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		23982103FFF5527584024BC1 /* AppShell */ = {
@@ -156,6 +168,7 @@
 			buildPhases = (
 				ED5107ABEADDEC1044B68117 /* Sources */,
 				87CFDD9933959080707EAF47 /* Resources */,
+				8214795230552DA116792CBE /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -163,6 +176,7 @@
 			);
 			name = Camork;
 			packageProductDependencies = (
+				D9B7771CD3044CEC2329E0CE /* GRDB */,
 			);
 			productName = Camork;
 			productReference = 4EF68029697FFE4F2C27ABD8 /* Camork.app */;
@@ -211,6 +225,9 @@
 			);
 			mainGroup = 79E59F8DA354CEA99276F5DE;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8880BAD3D5A2B4D58E6AE096 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
@@ -505,6 +522,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8880BAD3D5A2B4D58E6AE096 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 7.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D9B7771CD3044CEC2329E0CE /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8880BAD3D5A2B4D58E6AE096 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 86E12914763B2ABAC337532F /* Project object */;
 }
