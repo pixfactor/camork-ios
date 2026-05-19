@@ -200,6 +200,84 @@ struct MediaStorageTests {
         #expect(sessionCount == 1)
     }
 
+    // MARK: - Gallery query API (Phase 1.1, Plan C)
+
+    @Test("fetchSessions: 시간순 역방향 (가장 최근이 첫 번째)")
+    func fetchSessionsOrdering() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        await storage.markPendingNewSession()
+        _ = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+        await storage.markPendingNewSession()
+        _ = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 2_000)))
+        await storage.markPendingNewSession()
+        _ = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 3_000)))
+
+        let sessions = try await storage.fetchSessions()
+        #expect(sessions.count == 3)
+        #expect(sessions[0].createdAt.timeIntervalSince1970 == 3_000)
+        #expect(sessions[2].createdAt.timeIntervalSince1970 == 1_000)
+    }
+
+    @Test("fetchSessions: deletedAt non-null 세션 제외")
+    func fetchSessionsFiltersDeleted() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Session SET deletedAt = ? WHERE id = ?",
+                arguments: [Int64(1_500), photo.sessionId.uuidString]
+            )
+        }
+
+        let sessions = try await storage.fetchSessions()
+        #expect(sessions.isEmpty)
+    }
+
+    @Test("fetchSessions: 빈 DB → 빈 배열")
+    func fetchSessionsEmpty() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let sessions = try await storage.fetchSessions()
+        #expect(sessions.isEmpty)
+    }
+
+    @Test("fetchPhotos: sessionId 매칭 + 시간순 (오래된 것부터)")
+    func fetchPhotosBasic() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_100), location: loc))
+        let p3 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_200), location: loc))
+
+        #expect(p1.sessionId == p2.sessionId)  // same session 확인
+        #expect(p2.sessionId == p3.sessionId)
+
+        let photos = try await storage.fetchPhotos(sessionId: p1.sessionId)
+        #expect(photos.count == 3)
+        #expect(photos[0].id == p1.id)
+        #expect(photos[1].id == p2.id)
+        #expect(photos[2].id == p3.id)
+    }
+
+    @Test("fetchPhotos: deletedAt non-null photo 제외")
+    func fetchPhotosFiltersDeleted() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_100), location: loc))
+
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = ? WHERE id = ?",
+                arguments: [Int64(1_500), p2.id.uuidString]
+            )
+        }
+
+        let photos = try await storage.fetchPhotos(sessionId: p1.sessionId)
+        #expect(photos.count == 1)
+        #expect(photos[0].id == p1.id)
+    }
+
     // MARK: - Latest photo + raw data load (Phase 3.2)
 
     @Test("fetchLatestPhoto: 가장 최근 capturedAt의 Photo 반환")

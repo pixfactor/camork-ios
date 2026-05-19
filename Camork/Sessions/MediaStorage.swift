@@ -1,6 +1,11 @@
 import Foundation
 import GRDB
 
+/// 갤러리에서 세션 목록 정렬 옵션 (Plan C Phase 1.1). v1 Core는 createdAt 역방향만.
+enum SessionSort: Sendable, Equatable {
+    case createdAtDesc
+}
+
 /// 단일 capture-save writer (ADR #2). 모든 capture-save 흐름이 본 actor를 통해 직렬화된다.
 ///
 /// ## saveCapture 5-step sequence (ADR #2 + v1.2 C6)
@@ -146,6 +151,34 @@ actor MediaStorage {
     func fetchLatestPhoto() async throws -> Photo? {
         try await db.read { db in
             try queryLatestPhoto(db: db)
+        }
+    }
+
+    /// 갤러리 진입용 세션 목록 (Plan C Phase 1.1). deletedAt IS NULL 필터.
+    /// 정렬은 `sortedBy` 매개변수로 결정 — v1 Core는 createdAt 역방향만 (`SessionSort`
+    /// case 추가 시 본 switch도 확장).
+    func fetchSessions(sortedBy: SessionSort = .createdAtDesc) async throws -> [Session] {
+        try await db.read { db in
+            let ordering: SQLOrdering = {
+                switch sortedBy {
+                case .createdAtDesc: return Column("createdAt").desc
+                }
+            }()
+            return try Session
+                .filter(Column("deletedAt") == nil)
+                .order(ordering)
+                .fetchAll(db)
+        }
+    }
+
+    /// 세션 내 photo 전체 (Plan C Phase 1.1). capturedAt 오름차순 + deletedAt IS NULL.
+    func fetchPhotos(sessionId: UUID) async throws -> [Photo] {
+        try await db.read { db in
+            try Photo
+                .filter(Column("sessionId") == sessionId.uuidString)
+                .filter(Column("deletedAt") == nil)
+                .order(Column("capturedAt").asc)
+                .fetchAll(db)
         }
     }
 
