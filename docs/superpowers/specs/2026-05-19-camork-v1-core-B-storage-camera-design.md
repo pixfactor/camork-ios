@@ -442,6 +442,11 @@ actor MediaStorage {
     }
 
     func saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo {
+        // v3.2 — manualFlag를 await 전 actor isolation에서 snapshot.
+        // 이렇게 해야 db.write closure 안에서 actor state 직접 접근을 피하고,
+        // in-flight save 중 markPendingNewSession() 호출이 의도치 않게 consumed/cleared 되지 않음.
+        let manualFlag = pendingManualSessionStart
+
         // Step 1: id/path allocate (메모리 상)
         let photoId = UUID()
         let fileName = "\(photoId.uuidString).heic"
@@ -457,12 +462,11 @@ actor MediaStorage {
             throw error
         }
 
-        // Step 4: DB transaction
+        // Step 4: DB transaction (manualFlag는 closure에 capture된 값만 사용 — actor state 직접 접근 X)
         let photo: Photo
         do {
-            photo = try await db.write { db in
+            photo = try await db.write { [manualFlag] db in
                 let previous = try fetchLatestPhoto(db: db)
-                let manualFlag = self.pendingManualSessionStart  // actor isolation
                 let decision = policy.decideSession(
                     previous: previous,
                     current: payload,
@@ -480,14 +484,21 @@ actor MediaStorage {
             throw error
         }
 
-        // Step 5: commit 성공 후에만 flag clear
-        pendingManualSessionStart = false
+        // Step 5: commit 성공 후에만, 그리고 **consumed flag만** clear.
+        // 새로 들어온 markPendingNewSession()의 set을 wipe하지 않음.
+        if manualFlag {
+            pendingManualSessionStart = false
+        }
         return photo
     }
 }
 ```
 
-**중요 (v3.1 정정)**: 파일 staging/mv는 GRDB transaction **밖**에서 수행. transaction commit 성공 후에만 `pendingManualSessionStart` clear. 실패 시 final 삭제 best-effort, 실패해도 reaper가 cover.
+**중요 (v3.2 정정)**:
+- 파일 staging/mv는 GRDB transaction **밖**에서 수행.
+- `manualFlag`는 `await` 전 actor isolation에서 **snapshot**. `db.write` closure는 capture된 값만 사용, actor state 직접 접근 X.
+- commit 성공 후, **consumed flag만** clear (`if manualFlag { ... }`). 이렇게 해야 in-flight save 중 새로운 `markPendingNewSession()` 호출이 wipe되지 않음.
+- transaction 실패 시 best-effort final 삭제, 실패해도 reaper가 cover.
 
 `SessionAssignmentPolicy`는 actor 의존 없이 단위 테스트 가능. 6 edge case 모두.
 
@@ -537,8 +548,8 @@ actor MediaStorage {
 ### 8.1 단위 테스트 (Swift Testing, in-memory DB)
 
 - **SessionAssignmentPolicy** (pure, actor 의존 없음, v3): 6 edge case (a~f), GPS accuracy 25/30/35m 경계, 시간 29/30/31min 경계, `horizontalAccuracy == nil` case.
-- **MediaStorage** (단일 writer actor): `saveCapture` 흐름 (previous fetch → decide → Session/Photo insert → staging → mv → commit), `isExcludedFromBackup` 플래그, 동시 쓰기 순서, `runReaper()` orphan 삭제 검증, `pendingManualSessionStart` flag clear 시점.
-- **Failure matrix** (v3 Critical 4): 5 cases — staging fail / row insert fail / mv fail / commit fail / crash 시뮬 (FileManager mock으로 mv 실패 강제). 각 case의 cleanup 검증.
+- **MediaStorage** (단일 writer actor, v3.2 sequence): `saveCapture` 흐름 (allocate id/path → staging write → atomic mv → GRDB transaction(fetch previous + decide + insert Session/Photo + commit) → commit 성공 후 flag clear), `isExcludedFromBackup` 플래그, 동시 쓰기 순서, `runReaper()` orphan 삭제 검증, `pendingManualSessionStart` clear는 commit 성공 후에만 + consumed flag만.
+- **Failure matrix** (v3.2 — 4 buckets, sequence 5단계와 일관): staging write fail / mv fail / GRDB transaction fail (row insert + commit 모두 포함) / crash after mv before commit. 각 case의 cleanup 검증 — staging cleanup 또는 best-effort final 삭제 + reaper.
 - **Database/Migration** (momus S-2): GRDB `DatabaseMigrator`에 v1 등록 후 두 번 호출해도 `schemaVersion` 변화 없음, 빈 DB에서 schema 생성 후 fetch가 빈 결과 반환, CHECK 제약 위반 시 insert 실패.
 - **PermissionsService** (v3 마이크 제거): 권한 상태 매핑 — **카메라/위치만** (granted/denied/notDetermined/restricted), Info.plist 키 일치.
 - **MediaCapture**: PhotoCapturePayload 변환, EXIF 임베드, file naming UUID 형식.
@@ -761,8 +772,8 @@ actor MediaStorage {
 |---|---|---|
 | **1 (Critical)** | MediaStorage / SessionManager save flow inconsistent — Photo.sessionId 필수인데 PhotoCapturePayload에 sessionId 없음 | §1.0 ADR 항목 #2/#4, §4, §5.3, §14 — **단일 `actor MediaStorage` + `struct SessionAssignmentPolicy` pure helper**로 통합. `saveCapture(payload)` 단일 path. SessionManager actor 제거. |
 | **2 (Critical)** | Simulator camera 가정 unsafe — Apple AVCam은 simulator에서 capture 불가 | §1.4 Phase 2 완료 기준, §8.2 통합 테스트, §9 에러 처리 — simulator는 build/run + 권한 UI + seeded payload PhotoDetail. 실제 캡처는 실기기 manual. `injectSeededCapture` test-only API 도입. AVCaptureSession mock 미도입. |
-| **3 (Should)** | microphone 권한은 v1 Core photo-only이므로 제거 | §1.2, Phase 2a, §9, §8.1 — 마이크 모든 언급 제거. v1.2에서 추가. NSMicrophoneUsageDescription도 v1.2까지 미사용. Plan A의 `project.yml` Info.plist에서도 제거 필요 (별도 errata commit). |
-| **4 (Critical)** | staging → mv → DB commit 모순 — mv 후 commit 실패 시 final orphan | §1.0 ADR 항목 #3 — **Failure matrix 5 cases** 명시: staging write fail / row insert fail / mv fail / commit fail / crash. 각 case별 cleanup 주체 (즉시 staging cleanup vs Orphan reaper). §8.1 단위 테스트로 검증. §10.2 실기기 검증. |
+| **3 (Should)** | microphone 권한은 v1 Core photo-only이므로 제거 | §1.2, Phase 2a, §9, §8.1 — 마이크 모든 언급 제거. **runtime Info.plist에 `NSMicrophoneUsageDescription` 키 없음** (XcodeGen으로 생성되는 Info.plist에는 마이크 키가 들어가지 않음). v1.2 video phase에서 추가 가능. `project.yml`은 documentation-only 주석으로 v1.2 의도 메모만 유지. |
+| **4 (Critical)** | staging → mv → DB commit 모순 — mv 후 commit 실패 시 final orphan | §1.0 ADR 항목 #3 — **Failure matrix 4 buckets** (v3.2 정정): staging write fail / mv fail / GRDB transaction fail (row insert + commit 포함) / crash after mv before commit. 각 case별 cleanup 주체: 즉시 staging cleanup vs best-effort final 삭제 + Orphan reaper. §8.1 단위 테스트 + §10.2 실기기 검증. |
 | **5 (Should)** | `isExcludedFromBackup = true`는 product/privacy 결정, 조용한 implementation detail X | §1.0 ADR 항목 **#12 신설** — backup 정책 명시 결정. v1 Core: metadata DB + media 파일 모두 exclude (격리 + 보안 정체성). Trade-off (기기 분실/복원 시 데이터 손실) 명시. v2 Trust에서 사용자 옵션. §10.2 manual 검증. |
 
 ---
