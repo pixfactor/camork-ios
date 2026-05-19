@@ -200,6 +200,83 @@ struct MediaStorageTests {
         #expect(sessionCount == 1)
     }
 
+    // MARK: - Latest photo + raw data load (Phase 3.2)
+
+    @Test("fetchLatestPhoto: 가장 최근 capturedAt의 Photo 반환")
+    func fetchLatestPhotoOrdering() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        _ = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 2_000), location: loc))
+
+        let latest = try await storage.fetchLatestPhoto()
+        #expect(latest?.id == p2.id)
+    }
+
+    @Test("fetchLatestPhoto: 저장된 Photo가 없으면 nil")
+    func fetchLatestPhotoEmpty() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let latest = try await storage.fetchLatestPhoto()
+        #expect(latest == nil)
+    }
+
+    @Test("loadPhotoData: 방금 저장한 capture Photo로 Data 반환 (round-trip)")
+    func loadPhotoDataRoundTrip() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let payload = makePayload()
+        let photo = try await storage.saveCapture(payload)
+
+        let data = try await storage.loadPhotoData(for: photo)
+        #expect(data == payload.data)
+    }
+
+    @Test("loadPhotoData: canonical fileName이지만 파일이 없으면 error throw (silent empty Data 금지)")
+    func loadPhotoDataMissingThrows() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let id = UUID()
+        let phantom = Photo(
+            id: id,
+            sessionId: UUID(),
+            fileName: "\(id.uuidString).heic",
+            kind: .photo,
+            capturedAt: Date(timeIntervalSince1970: 0)
+        )
+
+        await #expect(throws: (any Swift.Error).self) {
+            _ = try await storage.loadPhotoData(for: phantom)
+        }
+    }
+
+    @Test("loadPhotoData: path traversal fileName → MediaStorage.Error.invalidFileName")
+    func loadPhotoDataPathTraversalRejected() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let traversal = Photo(
+            id: UUID(),
+            sessionId: UUID(),
+            fileName: "../../etc/passwd",
+            kind: .photo,
+            capturedAt: Date(timeIntervalSince1970: 0)
+        )
+        await #expect(throws: MediaStorage.Error.invalidFileName) {
+            _ = try await storage.loadPhotoData(for: traversal)
+        }
+    }
+
+    @Test("loadPhotoData: photo.id와 fileName UUID 불일치 → MediaStorage.Error.invalidFileName")
+    func loadPhotoDataMismatchedUUIDRejected() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let mismatched = Photo(
+            id: UUID(),
+            sessionId: UUID(),
+            fileName: "\(UUID().uuidString).heic",  // canonical 구조지만 다른 UUID
+            kind: .photo,
+            capturedAt: Date(timeIntervalSince1970: 0)
+        )
+        await #expect(throws: MediaStorage.Error.invalidFileName) {
+            _ = try await storage.loadPhotoData(for: mismatched)
+        }
+    }
+
     // MARK: - Codec / Decoding contracts
 
     @Test("Date codec: capturedAt이 SQLite INTEGER로 저장됨 (ADR #11)")

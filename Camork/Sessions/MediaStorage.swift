@@ -24,6 +24,12 @@ import GRDB
 /// | 4 GRDB transaction fail | `Media/<UUID>.heic` orphan | best-effort `removeFinal` → 실패 시 reaper |
 /// | crash after mv before commit | `Media/<UUID>.heic` orphan | reaper (다음 앱 시작) |
 actor MediaStorage {
+    /// MediaStorage 도메인 에러. 현재는 loadPhotoData가 canonical fileName invariant를
+    /// 어긴 Photo를 거부할 때 throw.
+    enum Error: Swift.Error, Sendable, Equatable {
+        case invalidFileName
+    }
+
     private var pendingManualSessionStart: Bool = false
     private let db: any DatabaseWriter
     private let fs: any FileOps
@@ -90,7 +96,7 @@ actor MediaStorage {
             #endif
 
             photo = try await db.write { [manualFlag, policy, photoId, fileName, payload] db in
-                let previous = try fetchLatestPhoto(db: db)
+                let previous = try queryLatestPhoto(db: db)
                 let decision = policy.decideSession(
                     previous: previous,
                     current: payload,
@@ -135,6 +141,40 @@ actor MediaStorage {
         }
     }
 
+    /// 가장 최근 capturedAt + 미삭제 Photo (Phase 3.2 PhotoDetailView 진입점). Photo가
+    /// 하나도 없으면 nil.
+    func fetchLatestPhoto() async throws -> Photo? {
+        try await db.read { db in
+            try queryLatestPhoto(db: db)
+        }
+    }
+
+    /// Photo의 raw 이미지 Data를 메모리로 로드 (Phase 3.2 PhotoDetailView 진입점).
+    ///
+    /// **Canonical fileName invariant**: `photo.fileName == "\(photo.id.uuidString).heic"`
+    /// 가 깨진 Photo (DB corruption / 외부 도구 수정 / 잠재적 path traversal)는
+    /// `Error.invalidFileName`으로 즉시 reject — fs.readFinal에 도달하기 전에
+    /// 보안 boundary 차단.
+    ///
+    /// API가 String fileName 대신 Photo를 받는 이유: 호출자(현재는 CameraScreen)는
+    /// 항상 DB에서 fetch한 Photo를 가지고 있고, raw fileName을 actor 경계 너머로
+    /// 전달하는 것은 invariant 우회 위험. 외부 caller가 임의 fileName으로 actor를
+    /// 사용할 수 없도록 표면 좁힘.
+    ///
+    /// 파일이 없으면 fs.readFinal이 throw — silent empty Data 반환 금지.
+    func loadPhotoData(for photo: Photo) throws -> Data {
+        let name = photo.fileName
+        // Defense-in-depth: equality check만으로도 path traversal/separator를 제거
+        // 하지만 invariant를 명시적으로 표현.
+        guard !name.contains("/"), !name.contains("..") else {
+            throw Error.invalidFileName
+        }
+        guard name == "\(photo.id.uuidString).heic" else {
+            throw Error.invalidFileName
+        }
+        return try fs.readFinal(fileName: name)
+    }
+
     func updatePhotoNote(photoId: UUID, note: String?) async throws {
         try await db.write { db in
             try db.execute(
@@ -159,7 +199,7 @@ actor MediaStorage {
 
 // MARK: - DB free functions (C6 — closure self 캡쳐 회피)
 
-private func fetchLatestPhoto(db: Database) throws -> Photo? {
+private func queryLatestPhoto(db: Database) throws -> Photo? {
     try Photo
         .order(Column("capturedAt").desc)
         .filter(Column("deletedAt") == nil)

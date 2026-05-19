@@ -65,6 +65,10 @@ struct MediaFileSystem: FileOps {
         FileManager.default.fileExists(atPath: finalURL(for: fileName).path)
     }
 
+    func readFinal(fileName: String) throws -> Data {
+        try Data(contentsOf: finalURL(for: fileName))
+    }
+
     /// `Media/` 직속 파일 이름만 반환. `.staging` 서브디렉토리는 hidden(`.` prefix)으로
     /// `skipsHiddenFiles`에 의해 자연스럽게 제외된다.
     func enumerateFinal() throws -> [String] {

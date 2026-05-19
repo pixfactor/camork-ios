@@ -15,4 +15,7 @@ protocol FileOps: Sendable {
     func stagingExists(fileName: String) throws -> Bool
     func finalExists(fileName: String) throws -> Bool
     func enumerateFinal() throws -> [String]
+    /// `Media/<fileName>`을 메모리로 읽어들임. 파일이 없으면 throw — silent empty
+    /// Data 반환 금지 (호출자가 unavailable 분기를 명시 처리).
+    func readFinal(fileName: String) throws -> Data
 }

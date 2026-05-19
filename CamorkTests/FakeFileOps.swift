@@ -7,7 +7,8 @@ import Foundation
 /// - `writeStaging` / `moveStagingToFinal`은 `failOn`이 지정된 경우 즉시 throw.
 /// - `removeStaging` / `removeFinal`은 cleanup 호출 횟수만 카운트 (실제 best-effort
 ///   호출 시 throw하지 않는 production 동작과 동일).
-/// - in-memory store만 사용 — 실제 파일 시스템 접근 없음.
+/// - in-memory `[fileName: Data]` store만 사용 — 실제 파일 시스템 접근 없음.
+///   readFinal (Phase 3.2)이 추가되며 staging/final 저장소가 Set에서 Dict으로 확장.
 enum FakeFileOpsOperation: Sendable {
     case writeStaging
     case moveStagingToFinal
@@ -15,14 +16,15 @@ enum FakeFileOpsOperation: Sendable {
 
 enum FakeFileOpsError: Error, Sendable {
     case simulated(FakeFileOpsOperation)
+    case fileNotFound(fileName: String)
 }
 
 final class FakeFileOps: FileOps, @unchecked Sendable {
     let failOn: FakeFileOpsOperation?
 
     private let lock = NSLock()
-    private var stagingStore: Set<String> = []
-    private var finalStore: Set<String> = []
+    private var stagingContents: [String: Data] = [:]
+    private var finalContents: [String: Data] = [:]
     private var _stagingCleanupCount = 0
     private var _finalRemoveCount = 0
 
@@ -43,40 +45,53 @@ final class FakeFileOps: FileOps, @unchecked Sendable {
     func writeStaging(fileName: String, data: Data) throws {
         if failOn == .writeStaging { throw FakeFileOpsError.simulated(.writeStaging) }
         lock.lock(); defer { lock.unlock() }
-        stagingStore.insert(fileName)
+        stagingContents[fileName] = data
     }
 
     func moveStagingToFinal(fileName: String) throws {
         if failOn == .moveStagingToFinal { throw FakeFileOpsError.simulated(.moveStagingToFinal) }
         lock.lock(); defer { lock.unlock() }
-        stagingStore.remove(fileName)
-        finalStore.insert(fileName)
+        if let data = stagingContents.removeValue(forKey: fileName) {
+            finalContents[fileName] = data
+        } else {
+            // production parity: mv는 staging이 없으면 OS-level error를 raise. 본 fake는
+            // 기본 시나리오에서 saveCapture가 항상 writeStaging 후 mv 호출 — 도달 불가
+            finalContents[fileName] = Data()
+        }
     }
 
     func removeStaging(fileName: String) throws {
         lock.lock(); defer { lock.unlock() }
         _stagingCleanupCount += 1
-        stagingStore.remove(fileName)
+        stagingContents.removeValue(forKey: fileName)
     }
 
     func removeFinal(fileName: String) throws {
         lock.lock(); defer { lock.unlock() }
         _finalRemoveCount += 1
-        finalStore.remove(fileName)
+        finalContents.removeValue(forKey: fileName)
     }
 
     func stagingExists(fileName: String) throws -> Bool {
         lock.lock(); defer { lock.unlock() }
-        return stagingStore.contains(fileName)
+        return stagingContents.keys.contains(fileName)
     }
 
     func finalExists(fileName: String) throws -> Bool {
         lock.lock(); defer { lock.unlock() }
-        return finalStore.contains(fileName)
+        return finalContents.keys.contains(fileName)
     }
 
     func enumerateFinal() throws -> [String] {
         lock.lock(); defer { lock.unlock() }
-        return Array(finalStore)
+        return Array(finalContents.keys)
+    }
+
+    func readFinal(fileName: String) throws -> Data {
+        lock.lock(); defer { lock.unlock() }
+        guard let data = finalContents[fileName] else {
+            throw FakeFileOpsError.fileNotFound(fileName: fileName)
+        }
+        return data
     }
 }

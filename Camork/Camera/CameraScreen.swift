@@ -29,6 +29,9 @@ struct CameraScreen: View {
     @State private var isInFlight: Bool = false
     @State private var captureError: String?
     @State private var mediaCapture: MediaCapture?
+    @State private var latestPhoto: Photo?
+    @State private var latestThumbnailData: Data?
+    @State private var detailItem: PhotoDetailItem?
 
     var body: some View {
         let viewState = CameraScreenViewState.compute(
@@ -53,6 +56,7 @@ struct CameraScreen: View {
         .task {
             await refreshPermissions()
             await refreshPending()
+            await refreshLatestPhoto()
             handleScenePhase(scenePhase)
         }
         .onChange(of: scenePhase) { _, newPhase in
@@ -60,6 +64,7 @@ struct CameraScreen: View {
                 if newPhase == .active {
                     await refreshPermissions()
                     await refreshPending()
+                    await refreshLatestPhoto()
                 }
                 handleScenePhase(newPhase)
             }
@@ -72,6 +77,16 @@ struct CameraScreen: View {
             Button("button_ok", role: .cancel) { captureError = nil }
         } message: { message in
             Text(message)
+        }
+        .fullScreenCover(item: $detailItem, onDismiss: {
+            Task { await refreshLatestPhoto() }
+        }) { item in
+            PhotoDetailView(
+                photo: item.photo,
+                data: item.data,
+                memoEditor: PhotoMemoEditor(mediaStorage: deps.mediaStorage),
+                onDismiss: { detailItem = nil }
+            )
         }
     }
 
@@ -86,7 +101,7 @@ struct CameraScreen: View {
             VStack(spacing: 16) {
                 newSiteChip(chip: chip)
                 HStack(alignment: .center, spacing: 24) {
-                    thumbnailPlaceholder
+                    thumbnailButton
                     Spacer()
                     shutterButton(chip: chip)
                     Spacer()
@@ -120,10 +135,24 @@ struct CameraScreen: View {
         .opacity(chip == .disabled ? 0.6 : 1.0)
     }
 
-    private var thumbnailPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(Color.secondary.opacity(0.3))
+    private var thumbnailButton: some View {
+        Button {
+            Task { await openLatestPhotoDetail() }
+        } label: {
+            Group {
+                if let data = latestThumbnailData, let image = UIImage(data: data) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.secondary.opacity(0.3))
+                }
+            }
             .frame(width: 56, height: 56)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .disabled(latestPhoto == nil)
     }
 
     private func shutterButton(chip: CameraScreenViewState.ChipState) -> some View {
@@ -245,6 +274,33 @@ struct CameraScreen: View {
         isPendingNewSession = await deps.mediaStorage.isPendingNewSession()
     }
 
+    /// 최신 photo + thumbnail Data를 한 번에 새로고침. 파일이 없거나 디코드 실패하면
+    /// latestThumbnailData = nil → thumbnailButton이 placeholder fallback.
+    @MainActor
+    private func refreshLatestPhoto() async {
+        let photo = try? await deps.mediaStorage.fetchLatestPhoto()
+        latestPhoto = photo
+        if let photo {
+            latestThumbnailData = try? await deps.mediaStorage.loadPhotoData(for: photo)
+        } else {
+            latestThumbnailData = nil
+        }
+    }
+
+    /// 본 메서드는 thumbnailButton tap에서만 호출. cache된 thumbnail Data를 재사용하지
+    /// 않고 actor에서 최신 Data를 다시 읽어와 race(파일 삭제/덮어쓰기)에 강건.
+    @MainActor
+    private func openLatestPhotoDetail() async {
+        guard let photo = latestPhoto else { return }
+        do {
+            let data = try await deps.mediaStorage.loadPhotoData(for: photo)
+            detailItem = PhotoDetailItem(photo: photo, data: data)
+        } catch {
+            // 파일 사라짐 등 — 사용자 시야에서 thumbnail이 곧 갱신되도록 refresh.
+            await refreshLatestPhoto()
+        }
+    }
+
     @MainActor
     private func requestMissingPermissions() async {
         if cameraPermission == .notDetermined {
@@ -281,6 +337,7 @@ struct CameraScreen: View {
             let payload = try result.get()
             _ = try await deps.mediaStorage.saveCapture(payload)
             await refreshPending()
+            await refreshLatestPhoto()
         } catch {
             captureError = String(describing: error)
         }
@@ -343,4 +400,12 @@ struct CameraScreen: View {
             }
         )
     }
+}
+
+/// `fullScreenCover(item:)`에 전달하는 Identifiable wrapper. `Photo`와 비동기로 읽은
+/// `Data`를 묶어 한 번에 detail view에 전달 — 화면 진입 시 추가 IO 없이 즉시 렌더 가능.
+struct PhotoDetailItem: Identifiable {
+    let photo: Photo
+    let data: Data
+    var id: UUID { photo.id }
 }

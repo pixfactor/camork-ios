@@ -15,6 +15,13 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "확인" } }
       }
     },
+    "button_save" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "저장" } }
+      }
+    },
     "camera_init_error_title" : {
       "extractionState" : "manual",
       "comment" : "CameraScreen.errorView 제목 — 카메라 라이프사이클 도중 재시도 실패.",
@@ -93,6 +100,46 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Location access required" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "위치 권한이 필요해요" } }
+      }
+    },
+    "memo_save_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "PhotoDetailView 메모 저장 실패 alert 제목.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모를 저장하지 못했어요" } }
+      }
+    },
+    "photo_detail_close_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "PhotoDetailView 닫기 버튼 VoiceOver 라벨.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "닫기" } }
+      }
+    },
+    "photo_detail_edit_memo_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "PhotoDetailView 메모 편집 버튼 VoiceOver 라벨.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모 편집" } }
+      }
+    },
+    "photo_detail_image_unavailable" : {
+      "extractionState" : "manual",
+      "comment" : "이미지 데이터가 손상되어 디코드 실패했을 때 fallback 카피.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Image not available" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이미지를 표시할 수 없어요" } }
+      }
+    },
+    "photo_detail_memo_title" : {
+      "extractionState" : "manual",
+      "comment" : "PhotoDetailView 메모 편집 sheet navigation 제목.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모" } }
       }
     },
     "button_delete" : {

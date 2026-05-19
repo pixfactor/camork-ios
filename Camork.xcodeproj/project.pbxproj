@@ -38,6 +38,7 @@
 		7568D9FC2A05ABA3DB652F1F /* MediaCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6165FFA504FB244DB02F113 /* MediaCapture.swift */; };
 		75EB773C45562339A9725378 /* CamorkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13B28107AE53591B28E00D /* CamorkApp.swift */; };
 		7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B888956B201EB0ED26CC34 /* PermissionsService.swift */; };
+		7AE50E4A6965593F64CFDFBB /* PhotoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
 		82E43053C6FA4681B8E1656D /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28976A486B5F969E3D7132BD /* CameraView.swift */; };
 		857F58097954C0F289DA7D3A /* FileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80A7C2E5BF1E243F855544 /* FileOps.swift */; };
@@ -129,6 +130,7 @@
 		EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystemTests.swift; sourceTree = "<group>"; };
 		F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCapturePayload.swift; sourceTree = "<group>"; };
 		F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeFileOps.swift; sourceTree = "<group>"; };
+		F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoDetailView.swift; sourceTree = "<group>"; };
 		F8F647C564FEFC7F0700A4B6 /* CameraScreenViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreenViewState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -174,6 +176,14 @@
 				4BD3E8CC262B2CCF547DB4C2 /* Localizable.xcstrings */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		41930C4998DF3E3394F0469C /* Gallery */ = {
+			isa = PBXGroup;
+			children = (
+				F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */,
+			);
+			path = Gallery;
 			sourceTree = "<group>";
 		};
 		46D202837274B3D714FA377E /* Storage */ = {
@@ -233,6 +243,7 @@
 				23982103FFF5527584024BC1 /* AppShell */,
 				5D022612BA631678EFC6D420 /* Camera */,
 				60091220D6B0C226BC4C933E /* DesignSystem */,
+				41930C4998DF3E3394F0469C /* Gallery */,
 				3745ED33CE9A1FD341909DC6 /* Resources */,
 				E570F09510C6DF05AF395AD8 /* Services */,
 				30B29EF515ED1BFDF9E4F2B4 /* Sessions */,
@@ -457,6 +468,7 @@
 				7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */,
 				45499F188C28B8E4CEE76947 /* Photo.swift in Sources */,
 				753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */,
+				7AE50E4A6965593F64CFDFBB /* PhotoDetailView.swift in Sources */,
 				66CB2DC0230556B6112B7DC7 /* PhotoMemoEditor.swift in Sources */,
 				826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */,
 				DAC864606CEE84270F9BF4AD /* Session.swift in Sources */,
