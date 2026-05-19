@@ -26,9 +26,11 @@
 		736638AEDA70D44F5E4E2A29 /* CamorkBundleToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */; };
 		753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */; };
 		75EB773C45562339A9725378 /* CamorkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13B28107AE53591B28E00D /* CamorkApp.swift */; };
+		7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B888956B201EB0ED26CC34 /* PermissionsService.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
 		857F58097954C0F289DA7D3A /* FileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80A7C2E5BF1E243F855544 /* FileOps.swift */; };
 		8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */; };
+		925CE1EE8BCAE6B0D42791C5 /* PermissionsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */; };
 		9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4060BBD50C4F4F506321101D /* MediaKind.swift */; };
 		A2574451B96BF30FC264A335 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E6B68E8E8F1C5D13005D96 /* Database.swift */; };
 		A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC19C01569B96793E8631B7 /* MediaStorage.swift */; };
@@ -58,6 +60,7 @@
 		018C78605008CB210A51B479 /* MediaStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageTests.swift; sourceTree = "<group>"; };
 		0793057E915500151F00536A /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystem.swift; sourceTree = "<group>"; };
+		14B888956B201EB0ED26CC34 /* PermissionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsService.swift; sourceTree = "<group>"; };
 		15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicy.swift; sourceTree = "<group>"; };
 		1D80A7C2E5BF1E243F855544 /* FileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOps.swift; sourceTree = "<group>"; };
 		29E6B68E8E8F1C5D13005D96 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
@@ -79,6 +82,7 @@
 		991350B9E5716E0F43BF7BEC /* Camork.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Camork.entitlements; sourceTree = "<group>"; };
 		9CC19C01569B96793E8631B7 /* MediaStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorage.swift; sourceTree = "<group>"; };
 		9E16FBB8537135AEAA25D510 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsServiceTests.swift; sourceTree = "<group>"; };
 		BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		BDDFC1D1B9B451D3F4DAA926 /* CamorkTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CamorkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5D86B7445F8235736D9E1DB /* Migrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migrations.swift; sourceTree = "<group>"; };
@@ -180,6 +184,7 @@
 				23982103FFF5527584024BC1 /* AppShell */,
 				60091220D6B0C226BC4C933E /* DesignSystem */,
 				3745ED33CE9A1FD341909DC6 /* Resources */,
+				E570F09510C6DF05AF395AD8 /* Services */,
 				30B29EF515ED1BFDF9E4F2B4 /* Sessions */,
 				46D202837274B3D714FA377E /* Storage */,
 				65DAC50BF9A6EA02861762C3 /* Views */,
@@ -205,6 +210,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		E570F09510C6DF05AF395AD8 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				14B888956B201EB0ED26CC34 /* PermissionsService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		EC8F7C5D938E5ADDA284844A /* CamorkTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -214,6 +227,7 @@
 				EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */,
 				018C78605008CB210A51B479 /* MediaStorageTests.swift */,
 				E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */,
+				A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */,
 				5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */,
 				8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */,
 			);
@@ -331,6 +345,7 @@
 				FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */,
 				D9A8DD8CE35568073272E4F1 /* MediaStorageTests.swift in Sources */,
 				2DEE4A050802F4473FB066A0 /* MigrationsTests.swift in Sources */,
+				925CE1EE8BCAE6B0D42791C5 /* PermissionsServiceTests.swift in Sources */,
 				B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */,
 				0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */,
 			);
@@ -357,6 +372,7 @@
 				A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */,
 				238BB0C43C9CB171DAEA083F /* MediaStorageTestHooks.swift in Sources */,
 				689B151B95C5A78F815A7ED2 /* Migrations.swift in Sources */,
+				7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */,
 				45499F188C28B8E4CEE76947 /* Photo.swift in Sources */,
 				753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */,
 				826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */,
