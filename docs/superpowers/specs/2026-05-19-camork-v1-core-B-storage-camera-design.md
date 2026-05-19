@@ -1,7 +1,8 @@
-# Camork v1 Core — Plan B: Storage + Camera 설계서
+# Camork v1 Core — Plan B: Storage + Camera 설계서 (v2)
 
 - **작성일:** 2026-05-19
-- **상태:** 초안 — spec review loop 대기
+- **개정 v2 (2026-05-19):** momus 1차 리뷰 (Critical 5 + Should-fix 9) 전부 반영. 부록 §A에 매핑 표.
+- **상태:** 초안 — 사용자 review 대기
 - **상속 컨텍스트:**
   - 공통 가이드: `/Users/jedel/Projects/CLAUDE.md`
   - HIG 시각: `.claude/references/apple-hig.md`
@@ -43,7 +44,11 @@ Camork의 v1 Core 핵심 동작 — **촬영 → 자동 세션 묶음 → 로컬
 
 ### 1.4 완료 기준
 
-- **Phase 1**: UI 없이 단위 테스트로만 검증. in-memory/temp DB, migration v1 통과, MediaStorage actor + SessionManager 자동 묶기 6 edge case 테스트 통과.
+- **Phase 1** (UI 없이 검증, momus C-5 반영):
+  - `xcodebuild test` SUCCEEDED — 신규 단위 테스트(MediaStorage / SessionManager / Migration / PermissionsService / MediaCapture payload / PhotoMemoEditor / LocationService) 모두 통과
+  - **Plan A의 기존 7건(Theme/Colors/CamorkButton) 회귀 안 깨짐** — 합계 N+7건 모두 통과
+  - 빌드 경고 0건
+  - 시뮬레이터에 보이는 변화 없음 (의도). 사용자가 "뭘 보여줘"라 물으면 답은 "xcodebuild test 결과 + DB schema 생성 코드 review + ADR 문서".
 - **Phase 2**: 시뮬레이터 build/run 성공 + 카메라 탭이 placeholder가 아닌 실제 뷰파인더로 활성화 + 실기기 manual checklist 초안 작성.
 - **Phase 3**: thumb 탭 → PhotoDetail 진입 + 메모 입력/저장/재로드 (시뮬레이터에서 검증 가능).
 - **Phase 4**: clean test 회귀 + 실기기 manual checklist 실행 결과 첨부 + Plan C 인계 항목 정리.
@@ -57,19 +62,29 @@ Camork의 v1 Core 핵심 동작 — **촬영 → 자동 세션 묶음 → 로컬
 
 **Phase 1.0 (필수 첫 task) — Storage + 동시성 단일 ADR**
 
+**선행 명령** (momus C-4 반영): `mkdir -p docs/superpowers/adrs` (디렉토리 없으면 생성).
+
 문서 경로: `docs/superpowers/adrs/2026-05-19-storage-and-concurrency.md`
 
-ADR 포함 사항 (결정 #3 7+5 가설을 정식화):
-1. GRDB `DatabaseWriter` 선택 (DatabaseQueue vs DatabasePool 비교 + 채택 이유)
-2. DB write vs 파일 IO 의 transaction/order 정책 (파일 먼저 → DB commit, 실패 시 orphan 처리)
-3. `actor MediaStorage` 책임 경계 (DB connection + 파일 IO + thumbnail 생성)
-4. `actor SessionManager` 책임 경계 (자동 묶기 + persist via MediaStorage)
-5. `@MainActor` 적용 범위 (View / ViewModel / UI state만, 순수 domain model + repository protocol 제외)
-6. AVFoundation callback → Sendable payload → `await actor.save(payload)` hop 규칙
-7. Cross-actor 통신은 `await` 직접 호출, Combine/AsyncStream은 UI 구독에만
-8. Reentrancy 정책 (await 전후 mutation 안 나누는 구조 우선, transaction/idempotency/snapshot으로 해결, Lock은 최후 수단)
-9. 의존성 주입 (Singleton 금지 + App root container를 Environment로 흘리기 허용)
-10. 테스트 전략 (in-memory DB로 actor 격리)
+ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
+
+1. **GRDB DatabaseWriter** 선택 (DatabaseQueue vs DatabasePool 비교 + 채택 이유). **GRDB 정확 버전 결정 + `Package.resolved` 고정** (momus S-9 — §12에서 이동).
+2. **파일 IO vs DB write transaction 정책** (momus C-2):
+   - **staging area 패턴** — 파일은 `Library/Application Support/Camork/Media/.staging/<UUID>.heic` 에 먼저 저장 → DB write 성공 시 `mv` 로 `Media/<UUID>.heic` 로 atomic 이동 → DB commit. 실패 시 staging file 삭제.
+   - **Orphan reaper 루틴** (Phase 1.3 신설 task) — 앱 시작 시 `Media/` 에 있지만 Photo row 없는 파일 청소. Thumbnail도 동일.
+   - App crash 시나리오: staging mv 후 DB commit 실패 → 다음 시작 시 reaper가 처리.
+3. `actor MediaStorage` 책임 경계 (DB connection + 파일 IO + thumbnail 생성 + reaper).
+4. `actor SessionManager` 책임 경계 (자동 묶기 + persist via MediaStorage).
+5. `@MainActor` 적용 범위 (View / ViewModel / UI state만, 순수 domain model + repository protocol 제외).
+6. **AVFoundation callback → Sendable payload → `await actor.save(payload)` hop 규칙** (momus C-3 보강):
+   - callback queue (nonisolated DispatchQueue) 에서 **`LocationService.latestKnown` 동기 snapshot 접근** (snapshot getter는 sync, non-Sendable 객체 미반환).
+   - callback 안에서 `PhotoCapturePayload` 조립 (Data + capturedAt + location snapshot + exif).
+   - `Task { [payload] in await mediaStorage.save(payload) }` 로 actor hop. 2단계 비동기 hop 없음.
+7. Cross-actor 통신은 `await` 직접 호출, Combine/AsyncStream은 UI 구독에만.
+8. Reentrancy 정책 (await 전후 mutation 안 나누는 구조 우선, transaction/idempotency/snapshot으로 해결, Lock은 최후 수단).
+9. 의존성 주입 (Singleton 금지 + App root container를 Environment로 흘리기 허용).
+10. 테스트 전략 (in-memory DB로 actor 격리).
+11. **`ExifData` 필수/옵션 필드** (momus S-9 — §12에서 이동): iso/shutter/aperture/focalLength/deviceModel/osVersion 모두 옵셔널로 시작, EXIF 추출 실패 시 nil.
 
 **Phase 1.1 — GRDB SPM + 기본 schema**
 
@@ -83,13 +98,17 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화):
 - `Camork/Storage/Photo.swift` — struct, GRDB 코덱
 - `Camork/Storage/LocationSnapshot.swift` — struct, embed columns로 표현
 
-**Phase 1.3 — `actor MediaStorage`**
+**Phase 1.3 — `actor MediaStorage` + Orphan reaper** (momus C-2)
 
-- 파일 저장 (`Library/Application Support/Camork/Media/<UUID>.heic`)
-- DB write (`Photo`, `Session`)
+- **Staging → mv → DB commit** 흐름 (ADR 항목 #2 참조):
+  - `Media/.staging/<UUID>.heic` 임시 저장
+  - DB write 성공 시 `Media/<UUID>.heic` 로 atomic mv
+  - DB commit 성공 시 끝, 실패 시 staging file 삭제
+- DB write (`Photo`, `Session`) — GRDB transaction 내
 - thumbnail 생성 + 캐시 (`Library/Caches/Camork/Thumbnails/<UUID>.jpg`)
-- `save(payload: PhotoCapturePayload) async throws -> Photo`
-- 단위 테스트: in-memory DB + temp dir로 격리
+- **Orphan reaper** — `MediaStorage.runReaper()` API. 앱 시작 시 호출. `Media/` 디렉토리 enumerate → DB에 row 없는 파일 삭제 + thumbnail orphan 삭제.
+- API: `save(payload: PhotoCapturePayload) async throws -> Photo`
+- 단위 테스트: in-memory DB + temp dir로 격리. Reaper도 단위 테스트 (orphan 파일 만든 후 reaper 호출 → 삭제 검증).
 
 **Phase 1.4 — `actor SessionManager`**
 
@@ -120,8 +139,11 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화):
 
 - `Camork/Camera/CameraView.swift` — `UIViewControllerRepresentable`로 AVCaptureSession preview layer 래핑
 - `Camork/Camera/CameraScreen.swift` — 메인 카메라 화면 (뷰파인더 + 셔터 + 카메라 전환 + 좌하단 thumb + 상단 "새 현장" 칩)
+- `Camork/Camera/Internal/CameraScreenViewState.swift` (momus S-8) — UI 분기 로직(permission state mapping, thumb visibility, chip pending state)을 순수 함수로 분리, 단위 테스트 대상
+- **`Camork/Camera/Internal/`** sub-directory: 비즈니스 로직과 wrapper 분리 (momus S-8). `Internal/` 안의 파일만 단위 테스트 직접 대상.
 - `RootTabView` 카메라 탭 placeholder → 실제 `CameraScreen` 교체
 - 권한 거부 시: `ContentUnavailableView` 변형으로 "설정 → Camork에서 카메라 권한 허용" + deeplink 버튼
+- **백그라운드 진입 시 `CameraSession.stopRunning()` hook** (momus S-7) — `ScenePhase` 변화 감지하여 호출. 가림막은 Plan E.
 - 시뮬레이터 build/run 검증
 
 ### Phase 3 — PhotoDetail + 메모
@@ -167,7 +189,7 @@ CREATE TABLE Photo (
   sessionId TEXT NOT NULL REFERENCES Session(id) ON DELETE CASCADE,
   fileName TEXT NOT NULL,               -- "<UUID>.heic" (relative)
   thumbnailFileName TEXT,               -- "<UUID>.jpg" (relative, 캐시)
-  kind TEXT NOT NULL,                   -- 'photo' | 'video' (v1 Core: 'photo'만)
+  kind TEXT NOT NULL CHECK (kind IN ('photo')),  -- v1 Core: 'photo'만 허용 (momus C-1)
   capturedAt INTEGER NOT NULL,
   -- LocationSnapshot (embed)
   lat REAL,
@@ -182,10 +204,15 @@ CREATE TABLE Photo (
 
 CREATE INDEX idx_Photo_sessionId ON Photo(sessionId);
 CREATE INDEX idx_Photo_capturedAt ON Photo(capturedAt DESC);
+CREATE INDEX idx_Photo_deletedAt ON Photo(deletedAt);   -- Plan C 휴지통 필터링용 (momus Plan C 인지)
 CREATE INDEX idx_Session_createdAt ON Session(createdAt DESC);
 ```
 
-**Folder 테이블은 v1 Core 미생성** — v1.1에서 `migration v2`로 `CREATE TABLE Folder + ALTER TABLE Session ADD COLUMN folderId`.
+**`kind` CHECK 제약 (momus C-1)**: v1 Core는 `'photo'`만 허용. v1.2에서 video 추가 시 migration v3로 table rebuild (`CREATE TABLE Photo_new ... CHECK (kind IN ('photo', 'video')); INSERT INTO Photo_new SELECT * FROM Photo; DROP Photo; ALTER RENAME`). SQLite는 `ALTER ... DROP CONSTRAINT` 미지원이라 rebuild 방식.
+
+**Folder 테이블은 v1 Core 미생성** — v1.1 migration v2에서 추가. SQLite의 외래키 추가는 ADD COLUMN으로 직접 못 함 → **table rebuild 패턴**(temp table → copy → swap) 사용. ADR에 한 줄 메모.
+
+**FTS5 검색 인덱스 (momus S-4)**: spec v2 §3에서 v1.1 검색(세션명·메모·위치명) 약속. Plan B는 일반 `note` 컬럼만, **v1.1에서 FTS5 virtual table 추가** (별도 migration). Plan B에서 미리 구축 X.
 
 ### 3.2 Swift 모델 가설
 
@@ -222,7 +249,7 @@ struct LocationSnapshot: Codable, Sendable, Equatable {
 
 enum MediaKind: String, Codable, Sendable {
     case photo
-    // case video // v1.2
+    // v1.2에서 case video 추가 + migration v3로 CHECK 제약 변경 (Plan B v1.2 spec에서 책임)
 }
 
 struct ExifData: Codable, Sendable {
@@ -266,16 +293,45 @@ struct PhotoCapturePayload: Sendable {
 
 ## 5. Session 자동 묶기 정책 (6 edge case, 단위 테스트 대상)
 
-### 5.1 자동 분리 규칙
+### 5.1 자동 분리 규칙 (단위 테스트 가능 pseudocode, momus S-1 보강)
 
 촬영이 발생하면 다음 순서로 판단:
 
-1. `pendingManualSessionStart == true` → **새 세션 생성**, 플래그 clear (manual flag 최우선)
-2. 직전 세션 없음 (첫 촬영) → 새 세션 생성
-3. 직전 세션의 마지막 사진 위치 + 현재 위치 모두 있음 + `horizontalAccuracy ≤ 30m`:
-   - 거리 ≥ 50m → 새 세션
-4. 직전 사진 `capturedAt`으로부터 30분 이상 경과 → 새 세션
-5. 외 모두 → 직전 세션에 이어쓰기
+```
+func decideSession(previous: Photo?, current: PhotoCandidate) -> Decision {
+  // (1) Manual flag 최우선
+  if pendingManualSessionStart {
+    return .newSession  // 플래그 clear는 호출부 책임
+  }
+
+  // (2) 첫 촬영
+  guard let previous = previous else {
+    return .newSession
+  }
+
+  // (3) 거리 규칙 — 양쪽 horizontalAccuracy ≤ 30m일 때만 적용
+  if let prevLoc = previous.location,
+     let currLoc = current.location,
+     prevLoc.horizontalAccuracy <= 30,
+     currLoc.horizontalAccuracy <= 30 {
+    let distance = haversineDistance(prevLoc, currLoc)
+    if distance >= 50 {
+      return .newSession
+    }
+  }
+  // accuracy nil 또는 > 30m면 거리 규칙 skip — 시간 규칙으로 fallback
+
+  // (4) 시간 규칙
+  let elapsed = current.capturedAt.timeIntervalSince(previous.capturedAt)
+  if elapsed >= 30 * 60 {
+    return .newSession
+  }
+
+  return .continueSession(previous.sessionId)
+}
+```
+
+**`horizontalAccuracy` nil 또는 둘 중 하나라도 > 30m**: 거리 규칙 skip (위치 권한 거부 case b와 동일 fallback).
 
 ### 5.2 6 Edge case 정책 (모두 테스트 가능)
 
@@ -355,13 +411,14 @@ actor SessionManager {
 
 ### 8.1 단위 테스트 (Swift Testing, in-memory DB)
 
-- **SessionManager**: 6 edge case (a~f), GPS accuracy 25/30/35m 경계, 시간 29/30/31min 경계.
-- **MediaStorage**: 파일 저장 + DB insert 트랜잭션, isExcludedFromBackup 플래그, 동시 쓰기 순서.
-- **Database/Migration**: migration v1 schema 정합, 마이그레이션 idempotent.
+- **SessionManager**: 6 edge case (a~f), GPS accuracy 25/30/35m 경계, 시간 29/30/31min 경계, `horizontalAccuracy == nil` case.
+- **MediaStorage**: staging → mv → DB commit 흐름, isExcludedFromBackup 플래그, 동시 쓰기 순서, `runReaper()` orphan 삭제 검증.
+- **Database/Migration** (momus S-2): GRDB `DatabaseMigrator`에 v1 등록 후 두 번 호출해도 `schemaVersion` 변화 없음, 빈 DB에서 schema 생성 후 fetch가 빈 결과 반환, CHECK 제약 위반 시 insert 실패.
 - **PermissionsService**: 권한 상태 매핑 (granted/denied/notDetermined/restricted), Info.plist 키 일치.
 - **MediaCapture**: PhotoCapturePayload 변환, EXIF 임베드, file naming UUID 형식.
+- **CameraScreenViewState** (momus S-5): permission state → UI variant 매핑(camera-active / permission-denied / camera-init-error), thumb visibility, chip pending state.
 - **PhotoMemoEditor**: 메모 update + reload, nil 처리.
-- **LocationService**: latest known location 노출, 권한 없을 때 nil.
+- **LocationService**: latest known location 노출, 권한 없을 때 nil, sync snapshot getter.
 
 ### 8.2 통합 테스트 (시뮬레이터)
 
@@ -413,9 +470,16 @@ Plan B 완료 보고서에 다음 결과 첨부 (Phase 4):
 - [ ] 첫 촬영 시 새 세션 생성 (DB 확인)
 - [ ] 같은 자리 연속 촬영 → 같은 세션에 누적
 - [ ] 30분 이상 무촬영 후 촬영 → 새 세션 분리
-- [ ] (가능하면) 다른 장소 이동 후 촬영 → 새 세션 분리
+- [ ] 다른 장소 이동 후 촬영 → 새 세션 분리 (실기기 또는 **Xcode Edit Scheme → Location Simulation**으로 시뮬레이터에서도 가능, momus S-6)
 - [ ] "새 현장" 칩 탭 → 다음 촬영이 새 세션 (앱 종료 전)
 - [ ] "새 현장" 칩 탭 후 촬영 없이 앱 종료 → 재시작 시 빈 세션 없음
+- [ ] "새 현장" 칩 탭 + 같은 자리 즉시 촬영 → 새 세션 분리 (case f 실기기 검증, momus S-6)
+
+### 10.3.1 추가 시나리오 (momus S-6)
+- [ ] **셔터 연타 (rapid fire)** — 5초 안에 10회 셔터 → 모든 사진 저장되고 DB count 일치 (actor backpressure 검증)
+- [ ] **촬영 중 권한 회수** — 설정에서 카메라 권한 OFF → 앱 복귀 → 권한 안내 화면으로 전환
+- [ ] **디스크 용량 부족 시 셔터** — 거의 가득 찬 시뮬레이터 또는 실기기에서 셔터 → 적절한 에러 토스트
+- [ ] **VoiceOver로 "새 현장" 칩 상태 announce** — pending true/false 상태가 라벨에 반영
 
 ### 10.4 PhotoDetail + 메모
 - [ ] thumb 탭 → 풀스크린 진입
@@ -458,14 +522,90 @@ Plan B 완료 보고서에 다음 결과 첨부 (Phase 4):
 
 ## 12. 오픈 이슈 (writing-plans 단계에서 결정)
 
-- GRDB 정확 버전 (latest stable vs LTS)
+momus S-9 반영 — Phase 1.0 ADR로 이동된 항목 제외, 정말 phase 끝나도 늦지 않은 것만:
+
 - HEIC 압축 품질 (default vs 사용자 설정)
 - thumbnail 크기 (정사각형 200pt? 또는 화면 비율?)
 - PhotoDetail의 zoom max scale (3x? 5x?)
 - "새 현장" 칩 햅틱 강도 (light / medium)
 - 메모 편집 sheet의 detents (medium만 / large만 / 둘 다?)
-- ExifData에 어떤 필드를 EXIF blob에 포함할지 (필수 vs 옵션)
 - DB write 실패 시 retry 정책 (즉시 1회 / 백오프?)
+
+**ADR로 이동:**
+- ~~GRDB 정확 버전~~ → Phase 1.0 ADR 항목 #1
+- ~~ExifData 필수/옵션 필드~~ → Phase 1.0 ADR 항목 #11
+
+## 13. Plan C/D/E 자산 결정 시점 표 (momus Plan C 인지)
+
+| 자산 | Plan B | Plan C | Plan D | Plan E |
+|---|---|---|---|---|
+| 갤러리 메인 layout | — | ✅ 결정 | — | — |
+| 세션 카드 디자인 | — | ✅ 결정 | — | — |
+| 폴더 schema (v1.1) | schema 메모만 | ✅ migration | — | — |
+| FTS5 검색 (v1.1) | — | ✅ migration | — | — |
+| 공유 준비 화면 | — | — | ✅ 결정 | — |
+| EXIF stripping 정책 | — | — | ✅ 결정 | — |
+| Face ID / AppLock | — | — | — | ✅ 결정 |
+| AppBackgroundShield 실구현 | placeholder만 (Plan A) | — | — | ✅ 결정 |
+| AccentColor 정확 hex | 임시값 | — | — | ✅ 디자이너 input |
+| App Icon 이미지 | 1024 슬롯만 (Plan A) | — | — | ✅ 출시 자산 |
+| Pretendard 폰트 채택 | 시스템 폰트만 | — | — | ✅ 결정 |
+| 동영상 (`MediaKind.video`) | photo만 (CHECK 제약) | — | — | — (v1.2) |
+| iCloud Drive 백업 | — | — | — | — (v2 Trust) |
+| Swift 6 전환 | — | ADR 후 결정 | — | — |
+
+## 14. MediaStorage stub API surface (Plan C 인계, momus Plan C 인지)
+
+Plan B에서 노출되는 인터페이스 (Plan C 갤러리가 의존):
+
+```swift
+extension MediaStorage {
+    // Plan B 구현
+    func save(payload: PhotoCapturePayload) async throws -> Photo
+    func updatePhotoNote(photoId: UUID, note: String?) async throws
+    func fetchPhoto(id: UUID) async throws -> Photo?
+    func runReaper() async throws  // 앱 시작 시
+
+    // Plan C에서 구현 (Plan B에서는 stub 또는 NotImplementedError)
+    func fetchSessions(filter: SessionFilter, sortedBy: SessionSort) async throws -> [Session]
+    func fetchPhotos(sessionId: UUID, includeDeleted: Bool) async throws -> [Photo]
+    func deletePhoto(id: UUID, permanent: Bool) async throws  // 휴지통 vs 영구
+    func updateSessionName(sessionId: UUID, name: String) async throws
+    func updateSessionNote(sessionId: UUID, note: String?) async throws
+}
+```
+
+Plan B에서는 `save`/`updatePhotoNote`/`fetchPhoto`/`runReaper`만 구현. 나머지는 protocol에 method 선언만 두고 Plan C에서 구현.
+
+---
+
+## 부록 A — momus 1차 리뷰 ↔ v2 반영 위치
+
+### Critical 5건
+
+| # | 지적 | 반영 위치 |
+|---|---|---|
+| C-1 | `kind` CHECK 제약 + MediaKind 주석 정리 | §3.1 `CHECK (kind IN ('photo'))` 추가 + §3.2 enum 주석 정리. v1.2 migration v3 방안 명시. |
+| C-2 | 파일 cleanup / orphan 정책 모순 | Phase 1.0 ADR 항목 #2 — staging → mv → DB commit 패턴. Phase 1.3에 Orphan reaper 신설. |
+| C-3 | LocationService 조회 시점 비명시 | Phase 1.0 ADR 항목 #6 — callback queue에서 sync snapshot 접근, 2단계 hop 없음 명시. |
+| C-4 | ADR 디렉토리 mkdir 누락 | Phase 1.0 선행 명령 `mkdir -p docs/superpowers/adrs` 추가. |
+| C-5 | Phase 1 완료 기준 working/testable 미흡 | §1.4 Phase 1 — xcodebuild test 통과 + Plan A 7건 회귀 + 빌드 경고 0 + 답변 명시. |
+
+### Should-fix 9건
+
+| # | 지적 | 반영 위치 |
+|---|---|---|
+| S-1 | §5.1 horizontalAccuracy gate 비대칭 | §5.1 단위 테스트 가능 pseudocode로 재작성. `nil`/`>30m` 명시. |
+| S-2 | migration idempotent 어설션 약함 | §8.1 — DatabaseMigrator 두 번 호출 시 schemaVersion 불변, CHECK 위반 시 insert 실패. |
+| S-3 | v1.1 Folder migration 패턴 메모 | §3.1 — SQLite table rebuild 패턴(temp table → copy → swap) 명시. |
+| S-4 | FTS5 v1.1 메모 | §3.1 — Plan B는 일반 컬럼, v1.1 FTS5 virtual table. |
+| S-5 | CameraScreen.viewState 순수 함수 | §8.1 + Phase 2c — `CameraScreenViewState` 단위 테스트 대상. |
+| S-6 | 실기기 manual 누락 시나리오 | §10.3 + §10.3.1 — Location Simulation 명시, case f 실기기 검증, 셔터 연타 / 권한 회수 / 디스크 부족 / VoiceOver 추가. |
+| S-7 | Phase 2c stopRunning hook 책임 | Phase 2c — ScenePhase 변화 감지 → `CameraSession.stopRunning()` hook task 명시. |
+| S-8 | Camera/Internal/ 비즈니스 로직 분리 | Phase 2c — `Camork/Camera/Internal/` sub-directory. 비즈니스 로직만 단위 테스트 대상. |
+| S-9 | §12 일부는 Phase 1.0 ADR로 | §12 정리 + Phase 1.0 ADR 항목 #1(GRDB 버전), #11(ExifData 필드) 이동. |
+
+### Plan C/D/E 인지 사항 → §13 표 + §14 stub API surface로 정리
 
 ---
 
