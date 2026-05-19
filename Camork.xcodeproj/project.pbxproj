@@ -36,11 +36,13 @@
 		75EB773C45562339A9725378 /* CamorkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13B28107AE53591B28E00D /* CamorkApp.swift */; };
 		7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B888956B201EB0ED26CC34 /* PermissionsService.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
+		82E43053C6FA4681B8E1656D /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28976A486B5F969E3D7132BD /* CameraView.swift */; };
 		857F58097954C0F289DA7D3A /* FileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80A7C2E5BF1E243F855544 /* FileOps.swift */; };
 		8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */; };
 		925CE1EE8BCAE6B0D42791C5 /* PermissionsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */; };
 		9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4060BBD50C4F4F506321101D /* MediaKind.swift */; };
 		A2574451B96BF30FC264A335 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E6B68E8E8F1C5D13005D96 /* Database.swift */; };
+		A553460CEEB3EBFB50B986EB /* CameraViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */; };
 		A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC19C01569B96793E8631B7 /* MediaStorage.swift */; };
 		AED2F21A3054B8DA752AA6EA /* StorageInitErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE1680BB543934E6AD0E068 /* StorageInitErrorView.swift */; };
 		AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */; };
@@ -76,8 +78,10 @@
 		14B888956B201EB0ED26CC34 /* PermissionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsService.swift; sourceTree = "<group>"; };
 		15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicy.swift; sourceTree = "<group>"; };
 		1D80A7C2E5BF1E243F855544 /* FileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOps.swift; sourceTree = "<group>"; };
+		28976A486B5F969E3D7132BD /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		29E6B68E8E8F1C5D13005D96 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryPlaceholderView.swift; sourceTree = "<group>"; };
+		2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewTests.swift; sourceTree = "<group>"; };
 		37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkButtonStyleTests.swift; sourceTree = "<group>"; };
 		3C05D0B6C6E4B6A157F9012C /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		4060BBD50C4F4F506321101D /* MediaKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaKind.swift; sourceTree = "<group>"; };
@@ -185,6 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				661C72790B8B0D9C11813E0A /* CameraSession.swift */,
+				28976A486B5F969E3D7132BD /* CameraView.swift */,
 				A6165FFA504FB244DB02F113 /* MediaCapture.swift */,
 				E361B9EB071C39F1DF2E23FA /* Internal */,
 			);
@@ -271,6 +276,7 @@
 			children = (
 				C8BB5CBC6E53DD577674197F /* CameraScreenViewStateTests.swift */,
 				011CB7727F2E126FACF16879 /* CameraSessionBuilderTests.swift */,
+				2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */,
 				37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */,
 				D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */,
 				787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */,
@@ -393,6 +399,7 @@
 			files = (
 				4B47B53DAC53EFE4D47661BB /* CameraScreenViewStateTests.swift in Sources */,
 				BC7092E9DF830E65D31BE56C /* CameraSessionBuilderTests.swift in Sources */,
+				A553460CEEB3EBFB50B986EB /* CameraViewTests.swift in Sources */,
 				AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */,
 				4751C8016E6E90472FACE3BA /* ColorsTests.swift in Sources */,
 				64A84F599216BA18D6D9DAA2 /* ExifBuilderTests.swift in Sources */,
@@ -416,6 +423,7 @@
 				D42D64BD27743B8197CF9C4A /* CameraScreenViewState.swift in Sources */,
 				417863673FE447DFE2848780 /* CameraSession.swift in Sources */,
 				52A3E8CB0CC86C07B88E4C19 /* CameraSessionBuilder.swift in Sources */,
+				82E43053C6FA4681B8E1656D /* CameraView.swift in Sources */,
 				75EB773C45562339A9725378 /* CamorkApp.swift in Sources */,
 				736638AEDA70D44F5E4E2A29 /* CamorkBundleToken.swift in Sources */,
 				09C750A7E15A94B6599FB1E3 /* CamorkButton.swift in Sources */,
