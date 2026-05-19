@@ -19,7 +19,13 @@ enum CameraSessionError: Error, Sendable, Equatable {
 ///
 /// `CameraConfiguration`을 consume해 beginConfiguration/commitConfiguration 트랜잭션
 /// 안에서 preset → wide-angle device → input → photo output 순서로 구성.
-final class CameraSession {
+///
+/// **Concurrency**: `@unchecked Sendable` — Phase 2c.4 CameraScreen이 off-main
+/// `cameraSessionQueue`에서 `start()`/`stop()`을 호출하기 위해 인스턴스를 캡쳐한다.
+/// AVCaptureSession은 Apple 문서에 따라 내부적으로 thread-safe하며 별도 외부 동기화
+/// 없이 다중 큐에서 안전하게 사용 가능. 본 클래스의 모든 stored property는 `let`이고
+/// 가변 상태는 AVFoundation이 관리하므로 unchecked 옵트인이 honest.
+final class CameraSession: @unchecked Sendable {
     let session: AVCaptureSession
     let photoOutput: AVCapturePhotoOutput
     let configuration: CameraConfiguration

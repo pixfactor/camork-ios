@@ -8,6 +8,93 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
       }
     },
+    "button_ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "확인" } }
+      }
+    },
+    "camera_init_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "CameraScreen.errorView 제목 — 카메라 라이프사이클 도중 재시도 실패.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera unavailable" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라를 사용할 수 없어요" } }
+      }
+    },
+    "camera_new_site_chip" : {
+      "extractionState" : "manual",
+      "comment" : "다음 촬영을 새 세션으로 묶도록 표시하는 chip.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New site" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "새 현장" } }
+      }
+    },
+    "camera_permission_denied_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Settings > Camork and allow Camera access to start capturing." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정 > Camork에서 카메라 권한을 허용해 주세요. 권한이 없으면 촬영을 시작할 수 없어요." } }
+      }
+    },
+    "camera_permission_denied_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera access required" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 권한이 필요해요" } }
+      }
+    },
+    "camera_permission_request_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Allow access" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "권한 허용하기" } }
+      }
+    },
+    "camera_permission_request_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camork needs camera and location access to log site visits with accurate metadata." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "정확한 메타데이터로 현장을 기록하려면 카메라와 위치 권한이 필요해요." } }
+      }
+    },
+    "camera_permission_request_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Get ready to capture" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영을 준비해요" } }
+      }
+    },
+    "camera_shutter_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "Shutter 버튼 VoiceOver 라벨.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Capture" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영" } }
+      }
+    },
+    "capture_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't capture" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영에 실패했어요" } }
+      }
+    },
+    "location_permission_denied_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Settings > Camork and allow Location while using the app to record where each photo was taken." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정 > Camork에서 위치 권한을 \"앱 사용 중\"으로 허용해 주세요. 위치는 사진에 함께 저장돼요." } }
+      }
+    },
+    "location_permission_denied_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Location access required" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "위치 권한이 필요해요" } }
+      }
+    },
     "button_delete" : {
       "extractionState" : "manual",
       "localizations" : {
