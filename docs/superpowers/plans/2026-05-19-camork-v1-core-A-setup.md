@@ -654,22 +654,29 @@ import UIKit
 
 @Suite("Semantic colors")
 struct ColorsTests {
-    @Test("AccentColor는 라이트/다크에서 다른 RGB를 가진다")
+    @Test("AccentColor는 라이트/다크에서 다른 RGBA를 가진다")
     func accentDiffersBetweenAppearances() {
-        // Asset Catalog의 AccentColor를 명시 bundle로 lookup + trait 분해 비교 (v3 S4)
-        // bundle을 명시하지 않으면 테스트 호스트 환경에 따라 lookup 실패 가능.
-        let bundle = Bundle(for: BundleToken.self)
-        let light = UIColor(named: "AccentColor", in: bundle, compatibleWith:
-            UITraitCollection(userInterfaceStyle: .light))
-        let dark = UIColor(named: "AccentColor", in: bundle, compatibleWith:
-            UITraitCollection(userInterfaceStyle: .dark))
-        #expect(light != nil, "AccentColor가 앱 번들에 등록돼 있어야 함")
-        #expect(dark != nil)
-        #expect(light != dark, "라이트/다크 변형이 동일하면 다크모드 전환이 무의미")
-    }
+        // host app에 호스팅된 unit test이므로 Bundle.main = Camork app bundle.
+        // AccentColor는 app target의 Asset Catalog에 있다.
+        // (이전 v3에서 Bundle(for: BundleToken.self)로 작성했으나 BundleToken이 test target에
+        //  속해 test bundle을 잡는 버그가 있어 실행 직전 errata로 Bundle.main + RGBA 비교로 정정)
+        guard let asset = UIColor(named: "AccentColor", in: .main, compatibleWith: nil) else {
+            Issue.record("AccentColor가 host app 번들에 등록돼 있어야 함")
+            return
+        }
 
-    /// 번들 lookup의 명시 키. test target 안의 어떤 클래스든 OK — Bundle(for:)이 그 클래스가 속한 번들을 반환.
-    private final class BundleToken {}
+        // UIColor object 비교(==)는 내부 representation에 의존해 약함 → 명시적 RGBA 컴포넌트 비교.
+        let light = asset.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        let dark = asset.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
+
+        var lr: CGFloat = 0, lg: CGFloat = 0, lb: CGFloat = 0, la: CGFloat = 0
+        var dr: CGFloat = 0, dg: CGFloat = 0, db: CGFloat = 0, da: CGFloat = 0
+        light.getRed(&lr, green: &lg, blue: &lb, alpha: &la)
+        dark.getRed(&dr, green: &dg, blue: &db, alpha: &da)
+
+        let sameRGB = (lr == dr) && (lg == dg) && (lb == db)
+        #expect(!sameRGB, "라이트/다크 RGB가 동일하면 다크 변형 자체가 무의미")
+    }
 
     @Test("Camork 시멘틱 컬러는 인스턴스화 가능")
     func semanticColorsInstantiate() {
@@ -1389,4 +1396,4 @@ xcodebuild clean -scheme Camork
 | **S1** Task 3 빌드 실패가 정상 단계 — 혼란 | Task 3 Step 2 — 빌드 명령 제거, Task 4에서 통합 빌드 검증 |
 | **S2** placeholder 영문 카피 "Implementing in Plan X" | Task 9 — `Coming soon` / `준비 중`으로 처음부터 중립, comment에 출시 전 교체 가이드 |
 | **S3** `sed` plan 본문 치환 → 기록 오염 | Task 0 Step 2 — `CAMORK_SIM` 환경변수 방식만 남김, plan 문서 자체 치환 금지 |
-| **S4** `UIColor(named:)` bundle lookup 견고화 | Task 6 — `Bundle(for: BundleToken.self)` 명시, named/in/compatibleWith API 사용 |
+| **S4** `UIColor(named:)` bundle lookup 견고화 | Task 6 — **errata 정정**: `Bundle(for: BundleToken.self)`는 test bundle을 잡아 실패 → `Bundle.main`(host app) 사용 + `resolvedColor` + RGBA 컴포넌트 비교로 보강 |
