@@ -16,23 +16,29 @@ build/
 
 # Swift Package Manager
 .build/
-Packages/
+.swiftpm/
+Package.resolved
 
-# XcodeGen artifact (재생성 가능 — 필요시 추적 가능)
+# XcodeGen 산출물 (project.yml이 진실의 원천 — 재생성 가능)
 # Camork.xcodeproj/
 
-# Node (agent-office)
-agent-office/node_modules/
-agent-office/build/
-agent-office/dist/
-
-# OMC/Claude/Sisyphus state
+# OMC / Claude / Superpowers state
 .omc/
 .claude/
 .sisyphus/
 .team-os/
+.superpowers/
+
+# Environment
+.env
+.env.local
+*.pem
+*.p12
 
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Logs
+*.log
