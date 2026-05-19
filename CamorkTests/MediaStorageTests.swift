@@ -278,6 +278,135 @@ struct MediaStorageTests {
         #expect(photos[0].id == p1.id)
     }
 
+    // MARK: - Gallery preview (Phase 1.2, Plan C)
+
+    @Test("fetchSessionPreview: 5장 photo → totalCount 5 + previewPhotos cap 4 (capturedAt DESC)")
+    func sessionPreview4Cap() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        var saved: [Photo] = []
+        for i in 0..<5 {
+            let p = try await storage.saveCapture(
+                makePayload(at: Date(timeIntervalSince1970: Double(i * 10)), location: loc)
+            )
+            saved.append(p)
+        }
+
+        let preview = try await storage.fetchSessionPreview(sessionId: saved[0].sessionId)
+        #expect(preview.totalPhotoCount == 5)
+        #expect(preview.previewPhotos.count == 4)
+        // capturedAt DESC: 가장 최근 저장한 것이 첫 번째
+        #expect(preview.previewPhotos[0].id == saved[4].id)
+        #expect(preview.previewPhotos[3].id == saved[1].id)
+    }
+
+    @Test("fetchSessionPreview: 2장 photo → totalCount 2 + previewPhotos.count 2")
+    func sessionPreviewLessThanFour() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 0), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 10), location: loc))
+
+        let preview = try await storage.fetchSessionPreview(sessionId: p1.sessionId)
+        #expect(preview.totalPhotoCount == 2)
+        #expect(preview.previewPhotos.count == 2)
+        #expect(preview.previewPhotos[0].id == p2.id)
+        #expect(preview.previewPhotos[1].id == p1.id)
+    }
+
+    @Test("fetchSessionsWithPreview: 세션은 createdAt DESC + 각 preview는 capturedAt DESC, deletedAt 양쪽 제외")
+    func sessionsWithPreviewOrdering() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+
+        // 세션 A (createdAt 1000) — photo 3개, 그중 1개 deleted
+        await storage.markPendingNewSession()
+        let a1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+        let a2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_010)))
+        let a3 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_020)))
+        // 세션 B (createdAt 2000) — photo 2개
+        await storage.markPendingNewSession()
+        let b1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 2_000)))
+        let b2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 2_010)))
+        // 세션 C (createdAt 3000) — deleted
+        await storage.markPendingNewSession()
+        let c1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 3_000)))
+
+        // a2 photo deleted, C session deleted
+        try await db.write { db in
+            try db.execute(sql: "UPDATE Photo SET deletedAt = ? WHERE id = ?", arguments: [Int64(9_999), a2.id.uuidString])
+            try db.execute(sql: "UPDATE Session SET deletedAt = ? WHERE id = ?", arguments: [Int64(9_999), c1.sessionId.uuidString])
+        }
+
+        let result = try await storage.fetchSessionsWithPreview()
+        // C 제외 → A + B만, B가 최근 (createdAt DESC)
+        #expect(result.count == 2)
+        #expect(result[0].session.id == b1.sessionId)
+        #expect(result[1].session.id == a1.sessionId)
+
+        // B preview: 2장, capturedAt DESC
+        #expect(result[0].preview.totalPhotoCount == 2)
+        #expect(result[0].preview.previewPhotos.map { $0.id } == [b2.id, b1.id])
+
+        // A preview: a2 deleted 제외, 2장 (a1, a3), totalCount 2
+        #expect(result[1].preview.totalPhotoCount == 2)
+        #expect(result[1].preview.previewPhotos.map { $0.id } == [a3.id, a1.id])
+    }
+
+    @Test("fetchSessionsWithPreview: per-session N+1 회피 — SELECT 호출 카운트 세션 수 무관 (10 세션 × 5 photo)")
+    func sessionsWithPreviewNoNPlus1() async throws {
+        let counter = SelectCounter()
+        let dir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        var config = Configuration()
+        config.prepareDatabase { db in
+            try db.execute(sql: "PRAGMA journal_mode = WAL")
+            try db.execute(sql: "PRAGMA foreign_keys = ON")
+            db.trace { event in
+                if case .statement(let stmt) = event,
+                   stmt.sql.uppercased().contains("SELECT") {
+                    counter.increment()
+                }
+            }
+        }
+        let db = try DatabaseQueue(configuration: config)
+        try Migrations.makeMigrator().migrate(db)
+        let fs = try MediaFileSystem(root: dir)
+        let storage = MediaStorage(db: db, fs: fs)
+
+        // 10 sessions × 5 photos (markPendingNewSession 으로 강제 분리)
+        for i in 0..<10 {
+            await storage.markPendingNewSession()
+            for j in 0..<5 {
+                _ = try await storage.saveCapture(
+                    makePayload(at: Date(timeIntervalSince1970: Double(i * 1_000 + j)))
+                )
+            }
+        }
+
+        // Seed 단계의 SELECT는 모두 무시. 측정은 reset 직후 단 한 번의 호출에 대해서만.
+        counter.reset()
+        _ = try await storage.fetchSessionsWithPreview()
+        // invariant: 세션 수에 비례하지 않는 상수 SELECT 호출 (1 SQL window function
+        // 또는 2 batched SQL — spec §3.2 양쪽 허용). 10 세션 입력에 비례한 호출은 회귀.
+        let measured = counter.value
+        #expect((1...2).contains(measured), "expected 1 or 2 SELECT statements (constant w.r.t. session count), got \(measured)")
+    }
+
+    @Test("fetchSessionsWithPreview: 세션은 살아있지만 모든 photo가 deleted → previewPhotos []")
+    func sessionsWithPreviewAllPhotosDeleted() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+        let p = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+        try await db.write { db in
+            try db.execute(sql: "UPDATE Photo SET deletedAt = ? WHERE id = ?", arguments: [Int64(9_999), p.id.uuidString])
+        }
+
+        let result = try await storage.fetchSessionsWithPreview()
+        #expect(result.count == 1)
+        #expect(result[0].session.id == p.sessionId)
+        #expect(result[0].preview.totalPhotoCount == 0)
+        #expect(result[0].preview.previewPhotos.isEmpty)
+    }
+
     // MARK: - Latest photo + raw data load (Phase 3.2)
 
     @Test("fetchLatestPhoto: 가장 최근 capturedAt의 Photo 반환")
@@ -444,4 +573,26 @@ private func makePayload(
 private func tempDir() -> URL {
     URL(fileURLWithPath: NSTemporaryDirectory())
         .appendingPathComponent(UUID().uuidString, isDirectory: true)
+}
+
+/// GRDB trace closure에서 SELECT 호출 카운트 측정. lock-protected `_count`로
+/// trace queue ↔ 테스트 측정 thread-safe.
+private final class SelectCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _count = 0
+
+    func increment() {
+        lock.lock(); defer { lock.unlock() }
+        _count += 1
+    }
+
+    func reset() {
+        lock.lock(); defer { lock.unlock() }
+        _count = 0
+    }
+
+    var value: Int {
+        lock.lock(); defer { lock.unlock() }
+        return _count
+    }
 }

@@ -6,6 +6,23 @@ enum SessionSort: Sendable, Equatable {
     case createdAtDesc
 }
 
+/// 세션 카드의 4-photo preview + +N 배지 표시용 (Plan C Phase 1.2).
+/// `previewPhotos`는 capturedAt 내림차순으로 최대 4개. `totalPhotoCount`는 deletedAt
+/// 제외 전체 카운트 — +N 배지가 (total - previewPhotos.count)를 표시.
+struct SessionPreview: Sendable {
+    let sessionId: UUID
+    let totalPhotoCount: Int
+    let previewPhotos: [Photo]
+}
+
+/// 갤러리 첫 화면용 — 세션 + preview를 한 번에 fetch한 결과 (Plan C Phase 1.2).
+/// 본 struct는 per-session N+1을 회피하기 위한 결과 packaging — 호출자는 list
+/// 형태로 받아 갤러리 카드를 렌더링.
+struct SessionWithPreview: Sendable {
+    let session: Session
+    let preview: SessionPreview
+}
+
 /// 단일 capture-save writer (ADR #2). 모든 capture-save 흐름이 본 actor를 통해 직렬화된다.
 ///
 /// ## saveCapture 5-step sequence (ADR #2 + v1.2 C6)
@@ -179,6 +196,92 @@ actor MediaStorage {
                 .filter(Column("deletedAt") == nil)
                 .order(Column("capturedAt").asc)
                 .fetchAll(db)
+        }
+    }
+
+    /// 단일 세션의 4-photo preview + totalCount (Plan C Phase 1.2). UI는
+    /// `fetchSessionsWithPreview`를 우선 사용 (per-session N+1 회피). 본 API는 단일 세션
+    /// 디테일 진입처럼 한 세션만 필요한 경우.
+    func fetchSessionPreview(sessionId: UUID) async throws -> SessionPreview {
+        try await db.read { db in
+            let total = try Int.fetchOne(
+                db,
+                sql: "SELECT COUNT(*) FROM Photo WHERE sessionId = ? AND deletedAt IS NULL",
+                arguments: [sessionId.uuidString]
+            ) ?? 0
+            let previews = try Photo
+                .filter(Column("sessionId") == sessionId.uuidString)
+                .filter(Column("deletedAt") == nil)
+                .order(Column("capturedAt").desc)
+                .limit(4)
+                .fetchAll(db)
+            return SessionPreview(
+                sessionId: sessionId,
+                totalPhotoCount: total,
+                previewPhotos: previews
+            )
+        }
+    }
+
+    /// 갤러리 첫 화면용 — 모든 세션 + 각 세션의 preview를 **per-session N+1 없이**
+    /// 한 번에 fetch (Plan C Phase 1.2). 구현은 2 batched SQL:
+    /// 1. 세션 목록 (sortedBy 적용, deletedAt IS NULL).
+    /// 2. 모든 세션의 photo를 window function (ROW_NUMBER + COUNT)으로 한 번에 가져와
+    ///    rn ≤ 4만 남김. 세션 수에 비례한 SQL 호출 없음.
+    func fetchSessionsWithPreview(
+        sortedBy: SessionSort = .createdAtDesc
+    ) async throws -> [SessionWithPreview] {
+        try await db.read { db in
+            let ordering: SQLOrdering = {
+                switch sortedBy {
+                case .createdAtDesc: return Column("createdAt").desc
+                }
+            }()
+            let sessions = try Session
+                .filter(Column("deletedAt") == nil)
+                .order(ordering)
+                .fetchAll(db)
+            guard !sessions.isEmpty else { return [] }
+
+            let sessionIds = sessions.map { $0.id.uuidString }
+            let placeholders = sessionIds.map { _ in "?" }.joined(separator: ",")
+            let sql = """
+                SELECT Photo.*, ranked.totalCount FROM (
+                    SELECT
+                        Photo.*,
+                        ROW_NUMBER() OVER (PARTITION BY sessionId ORDER BY capturedAt DESC) AS rn,
+                        COUNT(*) OVER (PARTITION BY sessionId) AS totalCount
+                    FROM Photo
+                    WHERE deletedAt IS NULL AND sessionId IN (\(placeholders))
+                ) AS ranked
+                JOIN Photo ON Photo.id = ranked.id
+                WHERE ranked.rn <= 4
+                ORDER BY ranked.sessionId, ranked.capturedAt DESC
+                """
+            let rows = try Row.fetchAll(db, sql: sql, arguments: StatementArguments(sessionIds))
+
+            var photosBySession: [UUID: [Photo]] = [:]
+            var totalBySession: [UUID: Int] = [:]
+            for row in rows {
+                let photo = try Photo(row: row)
+                photosBySession[photo.sessionId, default: []].append(photo)
+                if totalBySession[photo.sessionId] == nil {
+                    totalBySession[photo.sessionId] = row["totalCount"] ?? 0
+                }
+            }
+
+            return sessions.map { session in
+                let previews = photosBySession[session.id] ?? []
+                let total = totalBySession[session.id] ?? 0
+                return SessionWithPreview(
+                    session: session,
+                    preview: SessionPreview(
+                        sessionId: session.id,
+                        totalPhotoCount: total,
+                        previewPhotos: previews
+                    )
+                )
+            }
         }
     }
 
