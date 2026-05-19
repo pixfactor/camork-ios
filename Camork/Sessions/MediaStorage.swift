@@ -160,9 +160,16 @@ actor MediaStorage {
         }
     }
 
+    /// Plan C Phase 1.4: `deletedAt IS NULL` 강제. soft-delete된 photo는 nil 반환 —
+    /// caller(예: PhotoMemoEditor)에게 deletedAt 검사 책임을 분산하지 않음. Plan E
+    /// Trash viewer가 deleted item을 노출해야 할 때 별도 API
+    /// (예: `fetchPhotoIncludingDeleted(id:)`) 도입.
     func fetchPhoto(id: UUID) async throws -> Photo? {
         try await db.read { db in
-            try Photo.fetchOne(db, key: id.uuidString)
+            try Photo
+                .filter(Column("id") == id.uuidString)
+                .filter(Column("deletedAt") == nil)
+                .fetchOne(db)
         }
     }
 

@@ -407,6 +407,29 @@ struct MediaStorageTests {
         #expect(result[0].preview.previewPhotos.isEmpty)
     }
 
+    // MARK: - fetchPhoto deletedAt strict filter (Phase 1.4, Plan C)
+
+    @Test("fetchPhoto(id:): deletedAt non-null photo는 nil 반환 (caller에 검사 책임 분산 금지)")
+    func fetchPhotoFiltersDeleted() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload())
+
+        // 살아있을 때 fetch — 정상 반환
+        let alive = try await storage.fetchPhoto(id: photo.id)
+        #expect(alive?.id == photo.id)
+
+        // 휴지통 처리 (deletedAt 설정)
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = ? WHERE id = ?",
+                arguments: [Int64(9_999), photo.id.uuidString]
+            )
+        }
+        // deletedAt 설정 후 → nil 반환 (caller에게 deletedAt 검사 책임 분산 안 함)
+        let deleted = try await storage.fetchPhoto(id: photo.id)
+        #expect(deleted == nil)
+    }
+
     // MARK: - Latest photo + raw data load (Phase 3.2)
 
     @Test("fetchLatestPhoto: 가장 최근 capturedAt의 Photo 반환")

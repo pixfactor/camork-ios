@@ -49,6 +49,32 @@ struct PhotoMemoEditorTests {
             try await editor.update(photoId: UUID(), note: "doesn't matter")
         }
     }
+
+    @Test("deletedAt 설정된 photo → PhotoMemoEditor.Error.notFound (fetchPhoto의 deletedAt 필터 경유)")
+    func deletedPhotoMapsToNotFound() async throws {
+        // PhotoMemoEditor가 MediaStorage.fetchPhoto를 호출하므로 fetchPhoto의 deletedAt 필터
+        // 강화(Phase 1.4)가 editor에도 자연스럽게 전달되는지 확인. db에 직접 접근해서
+        // deletedAt을 set해야 하므로 makeStorage() 헬퍼 대신 인라인으로 db까지 보관.
+        let dir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let db = try DatabaseQueue(configuration: CamorkDatabase.makeConfiguration())
+        try Migrations.makeMigrator().migrate(db)
+        let fs = try MediaFileSystem(root: dir)
+        let storage = MediaStorage(db: db, fs: fs)
+        let editor = PhotoMemoEditor(mediaStorage: storage)
+        let photo = try await storage.saveCapture(makePayload())
+
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = ? WHERE id = ?",
+                arguments: [Int64(9_999), photo.id.uuidString]
+            )
+        }
+
+        await #expect(throws: PhotoMemoEditor.Error.notFound) {
+            try await editor.update(photoId: photo.id, note: "should fail")
+        }
+    }
 }
 
 private func makePayload() -> PhotoCapturePayload {
