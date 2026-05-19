@@ -20,11 +20,21 @@ enum CameraSessionError: Error, Sendable, Equatable {
 /// `CameraConfiguration`을 consume해 beginConfiguration/commitConfiguration 트랜잭션
 /// 안에서 preset → wide-angle device → input → photo output 순서로 구성.
 ///
-/// **Concurrency**: `@unchecked Sendable` — Phase 2c.4 CameraScreen이 off-main
-/// `cameraSessionQueue`에서 `start()`/`stop()`을 호출하기 위해 인스턴스를 캡쳐한다.
-/// AVCaptureSession은 Apple 문서에 따라 내부적으로 thread-safe하며 별도 외부 동기화
-/// 없이 다중 큐에서 안전하게 사용 가능. 본 클래스의 모든 stored property는 `let`이고
-/// 가변 상태는 AVFoundation이 관리하므로 unchecked 옵트인이 honest.
+/// **Concurrency contract** (`@unchecked Sendable`):
+/// - 모든 configuration은 `init` 한 번에 완료 — 이후 본 클래스는 reconfigure하지 않음.
+/// - stored property (`session`, `photoOutput`, `configuration`)는 전부 `let` — 본
+///   클래스가 캡쳐 후 노출하는 외부 reference도 변경되지 않음.
+/// - Phase 2c.4 CameraScreen이 **단일 private serial queue**(`cameraSessionQueue`)에서
+///   `start()`/`stop()`만 호출. 다른 호출자/큐 진입점 없음.
+/// - `@unchecked Sendable` 옵트인의 유일한 목적은 위의 off-main lifecycle boundary로
+///   owner reference를 안전하게 넘기는 것 — AVCaptureSession이 모든 큐에서 외부
+///   동기화 없이 사용 가능하다는 일반 주장이 **아님**.
+///
+/// **Directive** (앞으로의 변경에서 지킬 것):
+/// - 본 클래스에 가변 stored property를 추가하거나 여러 큐에서 reconfigure (`beginConfiguration`
+///   /`addInput`/`addOutput` 등) 호출이 필요해지면, 위 contract가 깨진다.
+///   그 시점에는 `@unchecked Sendable`을 떼고 serial queue ownership을 본 클래스 내부
+///   로 이전하거나, actor wrapping을 재검토해야 한다.
 final class CameraSession: @unchecked Sendable {
     let session: AVCaptureSession
     let photoOutput: AVCapturePhotoOutput

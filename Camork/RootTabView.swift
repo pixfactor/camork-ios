@@ -6,9 +6,12 @@ import SwiftUI
 /// 카메라 탭은 `CameraScreen` (Phase 2c.4). 갤러리/설정은 placeholder를 유지 — 갤러리는
 /// Plan C, 설정은 Plan E.
 ///
-/// #Preview 제거: `CameraScreen`은 `@EnvironmentObject DependencyContainer`를 요구
-/// 하므로 preview 환경에서 deps stub 없이 렌더하면 런타임 크래시. 화면별 preview는
-/// `CameraScreen`/`GalleryPlaceholderView`/`SettingsPlaceholderView` 파일에서 개별 제공.
+/// #Preview 제거: `CameraScreen`이 `@EnvironmentObject DependencyContainer`를 요구
+/// 하지만 preview에서 안전하게 주입할 가벼운 deps stub / test seam이 아직 없다 (실제
+/// `DependencyContainer.init()`은 GRDB/MediaFileSystem/CameraSession 등 실제 리소스를
+/// 잡으므로 preview 환경에서 부적합). 본 RootTabView preview는 stub이 도입될 때까지
+/// 보류. `GalleryPlaceholderView` / `SettingsPlaceholderView`는 deps 의존이 없어 각자의
+/// 파일에 자체 #Preview를 유지.
 struct RootTabView: View {
     var body: some View {
         TabView {
