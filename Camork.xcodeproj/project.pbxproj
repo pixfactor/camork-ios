@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		09C750A7E15A94B6599FB1E3 /* CamorkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6964EA516629442CFF13685 /* CamorkButton.swift */; };
+		0D2E1D87394C839B6218EE15 /* FakeFileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */; };
 		0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */; };
 		1EA7A05186D76B980FB76848 /* MediaFileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */; };
+		238BB0C43C9CB171DAEA083F /* MediaStorageTestHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57A1F580AB460488E3FEF55 /* MediaStorageTestHooks.swift */; };
 		256B247318CA41F0E5F3833D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C05D0B6C6E4B6A157F9012C /* Colors.swift */; };
 		2DEE4A050802F4473FB066A0 /* MigrationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */; };
 		3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */; };
@@ -29,12 +31,14 @@
 		8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */; };
 		9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4060BBD50C4F4F506321101D /* MediaKind.swift */; };
 		A2574451B96BF30FC264A335 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E6B68E8E8F1C5D13005D96 /* Database.swift */; };
+		A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC19C01569B96793E8631B7 /* MediaStorage.swift */; };
 		AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */; };
 		B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E16FBB8537135AEAA25D510 /* Assets.xcassets */; };
 		B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */; };
 		BD254E1236CDC71DA1B02956 /* CamorkCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */; };
 		C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */; };
 		D10176543AB36929C85D6372 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4BD3E8CC262B2CCF547DB4C2 /* Localizable.xcstrings */; };
+		D9A8DD8CE35568073272E4F1 /* MediaStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 018C78605008CB210A51B479 /* MediaStorageTests.swift */; };
 		DAC864606CEE84270F9BF4AD /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D586B2ABCEDC23AB14D4EA /* Session.swift */; };
 		EE76E668847A5474E7CD8E28 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D9B7771CD3044CEC2329E0CE /* GRDB */; };
 		FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */; };
@@ -51,6 +55,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		018C78605008CB210A51B479 /* MediaStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageTests.swift; sourceTree = "<group>"; };
 		0793057E915500151F00536A /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystem.swift; sourceTree = "<group>"; };
 		15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicy.swift; sourceTree = "<group>"; };
@@ -72,11 +77,13 @@
 		896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlaceholderView.swift; sourceTree = "<group>"; };
 		8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeTests.swift; sourceTree = "<group>"; };
 		991350B9E5716E0F43BF7BEC /* Camork.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Camork.entitlements; sourceTree = "<group>"; };
+		9CC19C01569B96793E8631B7 /* MediaStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorage.swift; sourceTree = "<group>"; };
 		9E16FBB8537135AEAA25D510 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		BDDFC1D1B9B451D3F4DAA926 /* CamorkTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CamorkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5D86B7445F8235736D9E1DB /* Migrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migrations.swift; sourceTree = "<group>"; };
 		D174F2FDA24F471B4AE62E98 /* AppBackgroundShield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBackgroundShield.swift; sourceTree = "<group>"; };
+		D57A1F580AB460488E3FEF55 /* MediaStorageTestHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageTestHooks.swift; sourceTree = "<group>"; };
 		D6964EA516629442CFF13685 /* CamorkButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkButton.swift; sourceTree = "<group>"; };
 		D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorsTests.swift; sourceTree = "<group>"; };
 		DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPlaceholderView.swift; sourceTree = "<group>"; };
@@ -84,6 +91,7 @@
 		E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationsTests.swift; sourceTree = "<group>"; };
 		EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystemTests.swift; sourceTree = "<group>"; };
 		F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCapturePayload.swift; sourceTree = "<group>"; };
+		F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeFileOps.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +118,8 @@
 		30B29EF515ED1BFDF9E4F2B4 /* Sessions */ = {
 			isa = PBXGroup;
 			children = (
+				9CC19C01569B96793E8631B7 /* MediaStorage.swift */,
+				D57A1F580AB460488E3FEF55 /* MediaStorageTestHooks.swift */,
 				F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */,
 				15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */,
 			);
@@ -200,7 +210,9 @@
 			children = (
 				37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */,
 				D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */,
+				F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */,
 				EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */,
+				018C78605008CB210A51B479 /* MediaStorageTests.swift */,
 				E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */,
 				5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */,
 				8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */,
@@ -315,7 +327,9 @@
 			files = (
 				AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */,
 				4751C8016E6E90472FACE3BA /* ColorsTests.swift in Sources */,
+				0D2E1D87394C839B6218EE15 /* FakeFileOps.swift in Sources */,
 				FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */,
+				D9A8DD8CE35568073272E4F1 /* MediaStorageTests.swift in Sources */,
 				2DEE4A050802F4473FB066A0 /* MigrationsTests.swift in Sources */,
 				B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */,
 				0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */,
@@ -340,6 +354,8 @@
 				8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */,
 				1EA7A05186D76B980FB76848 /* MediaFileSystem.swift in Sources */,
 				9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */,
+				A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */,
+				238BB0C43C9CB171DAEA083F /* MediaStorageTestHooks.swift in Sources */,
 				689B151B95C5A78F815A7ED2 /* Migrations.swift in Sources */,
 				45499F188C28B8E4CEE76947 /* Photo.swift in Sources */,
 				753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */,
