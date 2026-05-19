@@ -169,21 +169,34 @@ xcodebuild -scheme Camork \
 
 ## 6. Plan C 인계 (spec §11)
 
-### 6.1 결정 필요 (Plan C 진입 시점)
+### 6.1 Plan C 확정 범위 (master spec §4.3/§4.4 정렬, 2026-05-19 결정)
 
-1. 갤러리 메인 layout — 세션 카드 리스트 정렬, 시간 필터, 검색바
-2. 세션 카드 디자인 — 프리뷰 그리드/콜라주, 메타 위치
-3. 시간 필터 칩 — 전체/7일/이번 달 외 추가
-4. 지도 토글 — Plan C vs Plan D
-5. 세션 진입 후 UI — 그리드 vs 시간순 리스트
-6. 세션 이름 편집 — 인라인 vs sheet
+**Plan C 포함 (v1 Core):**
+- 갤러리 탭 — 세션 카드 리스트 (시간순 역방향)
+- 세션 카드 — 4장 preview + +N 배지 (master §4.3 그대로), 세션명·시간·위치명·사진 수, 우측 공유/더보기
+- 세션 진입 — **정사각형 photo 그리드** + 세션명 편집 + 세션 메모 편집 (sheet)
+- `PhotoDetailView` 재사용 (Plan B 산출 unchanged)
+- **Thumbnail cache pipeline** — on-demand 영속 캐시 (`Library/Caches/Camork/Thumbnails/` 또는 `Photo.thumbnailFileName`), 가시/근접 항목만, in-flight coalesce, 동시성 bounded, off-main 디코딩. list/grid에서 raw HEIC 디코딩 금지
+- **Share v1 — ShareComposer-lite** — `tmp/Camork/Share/<UUID>/` 임시 사본 + `UIActivityViewController` + 위치 토글 OFF → EXIF location strip + cleanup. 풀스펙(사전 텍스트 편집 미리보기 등)은 Plan D
+- Query-level trash 필터 — 모든 fetch에서 `deletedAt IS NULL` 강제
+
+**Plan C 제외 (master spec §4.3 "v1 Core에서 없는 것" 그대로):**
+- 검색바 → v1.1
+- 시간 필터 칩 → v1.1
+- 지도 토글 → v1.1
+- 폴더 / "+" 생성 → v1.1
+- FTS5 검색 → v1.1
+- Camork 측 채널 ranking / preselect / custom channel UX → v2 Trust 이후 (iOS share sheet를 통한 KakaoTalk/Telegram 등 설치 앱 공유는 Plan C lite에서도 자연스럽게 동작)
+
+**Plan E 이후:**
+- Trash viewer UI (복원/영구 삭제) — Settings 일괄 도입 시점. Plan C는 delete UI 자체를 노출하지 않음 (viewer 없으면 stranded items 위험).
 
 ### 6.2 Plan B에서 박아둔 인프라
 
-- `actor MediaStorage`에 `fetchSessions(filter:)`, `fetchPhotos(sessionId:)` API 미존재 — Plan C에서 추가.
-- 휴지통 (`deletedAt`) 컬럼은 v1 schema에 이미 존재 — Plan C에서 UI 노출.
-- `PhotoDetailView`는 Plan C 갤러리 진입점에서 재사용 가능 (init 시그너처 unchanged).
-- `PhotoMemoEditor`는 갤러리/디테일 어느 진입점에서도 동일 사용.
+- `actor MediaStorage`에 `fetchSessions`, `fetchPhotos`, `loadThumbnailData`, `updateSessionName`, `updateSessionNote` 등 갤러리 의존 메서드는 Plan C에서 신규 추가 (Plan B에서는 stub 없이 부재)
+- `Photo.thumbnailFileName` + `deletedAt` 컬럼은 v1 schema에 이미 존재 — Plan C에서 활용
+- `PhotoDetailView`는 Plan C 갤러리 진입점에서 재사용 (init 시그너처 unchanged)
+- `PhotoMemoEditor`는 갤러리/디테일 어느 진입점에서도 동일 사용
 
 ### 6.3 미해결 (출시 전)
 
