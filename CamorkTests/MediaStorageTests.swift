@@ -12,7 +12,7 @@ struct MediaStorageTests {
         let dir = tempDir()
         let db = try DatabaseQueue(configuration: CamorkDatabase.makeConfiguration())
         try Migrations.makeMigrator().migrate(db)
-        let fs = try MediaFileSystem(root: dir)
+        let fs = try MediaFileSystem(root: dir, cachesRoot: tempDir())
         let storage = MediaStorage(db: db, fs: fs)
         return (storage, db, dir)
     }
@@ -41,7 +41,7 @@ struct MediaStorageTests {
         #expect(counts.0 == 1)
         #expect(counts.1 == 1)
 
-        let onDisk = try MediaFileSystem(root: dir)
+        let onDisk = try MediaFileSystem(root: dir, cachesRoot: tempDir())
         #expect(try onDisk.finalExists(fileName: photo.fileName))
     }
 
@@ -124,7 +124,7 @@ struct MediaStorageTests {
         let (storage, _, dir) = try await makeStorageReal()
         let legit = try await storage.saveCapture(makePayload())
 
-        let onDisk = try MediaFileSystem(root: dir)
+        let onDisk = try MediaFileSystem(root: dir, cachesRoot: tempDir())
         let orphans = ["orphan-a.heic", "orphan-b.heic", "orphan-c.heic"]
         for name in orphans {
             try onDisk.writeStaging(fileName: name, data: Data([1]))
@@ -146,7 +146,7 @@ struct MediaStorageTests {
 
         // 진짜 saveCapture가 mv까지 끝낸 직후 crash한 상태 재현 — UUID-named heic 파일만
         // 남기고 DB row는 없음 (ADR #3 4번째 bucket).
-        let onDisk = try MediaFileSystem(root: dir)
+        let onDisk = try MediaFileSystem(root: dir, cachesRoot: tempDir())
         let orphanFile = "\(UUID().uuidString).heic"
         try onDisk.writeStaging(fileName: orphanFile, data: Data([42]))
         try onDisk.moveStagingToFinal(fileName: orphanFile)
@@ -370,7 +370,7 @@ struct MediaStorageTests {
         }
         let db = try DatabaseQueue(configuration: config)
         try Migrations.makeMigrator().migrate(db)
-        let fs = try MediaFileSystem(root: dir)
+        let fs = try MediaFileSystem(root: dir, cachesRoot: tempDir())
         let storage = MediaStorage(db: db, fs: fs)
 
         // 10 sessions × 5 photos (markPendingNewSession 으로 강제 분리)

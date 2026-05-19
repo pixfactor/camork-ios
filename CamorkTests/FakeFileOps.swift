@@ -25,6 +25,7 @@ final class FakeFileOps: FileOps, @unchecked Sendable {
     private let lock = NSLock()
     private var stagingContents: [String: Data] = [:]
     private var finalContents: [String: Data] = [:]
+    private var thumbContents: [String: Data] = [:]
     private var _stagingCleanupCount = 0
     private var _finalRemoveCount = 0
 
@@ -93,5 +94,25 @@ final class FakeFileOps: FileOps, @unchecked Sendable {
             throw FakeFileOpsError.fileNotFound(fileName: fileName)
         }
         return data
+    }
+
+    // MARK: - Thumbnail cache (Plan C Phase 2.1)
+
+    func writeThumb(fileName: String, data: Data) throws {
+        lock.lock(); defer { lock.unlock() }
+        thumbContents[fileName] = data
+    }
+
+    func readThumb(fileName: String) throws -> Data {
+        lock.lock(); defer { lock.unlock() }
+        guard let data = thumbContents[fileName] else {
+            throw FakeFileOpsError.fileNotFound(fileName: fileName)
+        }
+        return data
+    }
+
+    func removeThumb(fileName: String) throws {
+        lock.lock(); defer { lock.unlock() }
+        thumbContents.removeValue(forKey: fileName)
     }
 }

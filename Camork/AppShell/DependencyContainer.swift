@@ -6,12 +6,17 @@ import SwiftUI
 /// 1회 생성한 뒤 RootTabView에 `.environmentObject(_:)`로 주입.
 ///
 /// 초기화 흐름:
-/// 1. `Library/Application Support/Camork/` 루트 1회 계산 — DB와 MediaFileSystem이 공유.
-/// 2. `CamorkDatabase.open()` — Metadata/camork.sqlite 열기 + migration v1.
-/// 3. `MediaFileSystem(root: appRoot)` — Camork/Media + .staging + Thumbnails 부트스트랩.
-/// 4. `MediaStorage(db:fs:)` — 단일 capture-save writer actor.
-/// 5. `LocationService()`, `PermissionsService()`.
-/// 6. `CameraSession(configuration: builder.makeConfiguration())` — 시뮬레이터에 카메라가
+/// 1. `Library/Application Support/Camork/` 루트 1회 계산 — media + DB metadata 영속.
+/// 2. `Library/Caches/Camork/` 루트 1회 계산 — thumbnail 캐시 영속 (Plan C Phase 2.1).
+///    iOS 자동 backup 제외 + 공간 부족 시 시스템이 자동 정리 (재생성 가능 자원).
+/// 3. `CamorkDatabase.open()` — Metadata/camork.sqlite 열기 + migration v1.
+/// 4. `MediaFileSystem(root: appRoot, cachesRoot: cachesRoot)` — Application Support
+///    하위(Media/, .staging/, Thumbnails legacy) + Caches 하위(Thumbnails) 양쪽
+///    부트스트랩. legacy Thumbnails는 Plan B 잔재 — Plan C 이후 사용처 없음
+///    (cruft 정리는 후속 phase에서).
+/// 5. `MediaStorage(db:fs:)` — 단일 capture-save writer actor.
+/// 6. `LocationService()`, `PermissionsService()`.
+/// 7. `CameraSession(configuration: builder.makeConfiguration())` — 시뮬레이터에 카메라가
 ///    없으면 `.noDevice`로 throw하여 본 init도 throw. `CamorkApp.Bootstrap.failed`로
 ///    분기되어 `StorageInitErrorView`가 표시된다 (Phase 2c.1 임시 처리, 추후 카메라 선택적
 ///    개선 검토).
@@ -24,8 +29,9 @@ final class DependencyContainer: ObservableObject {
 
     init() throws {
         let appRoot = try Self.appRoot()
+        let cachesRoot = try Self.cachesRoot()
         let db = try CamorkDatabase.open()
-        let fs = try MediaFileSystem(root: appRoot)
+        let fs = try MediaFileSystem(root: appRoot, cachesRoot: cachesRoot)
         self.mediaStorage = MediaStorage(db: db, fs: fs)
         self.locationService = LocationService()
         self.permissionsService = PermissionsService()
@@ -34,8 +40,10 @@ final class DependencyContainer: ObservableObject {
         self.cameraSession = try CameraSession(configuration: cameraConfig)
     }
 
-    /// `Library/Application Support/Camork/` — DB(Metadata/), MediaFileSystem(Media/,
-    /// .staging/, Thumbnails/)가 공유하는 루트. 한 번만 계산되어 두 컴포넌트에 일관 적용.
+    /// `Library/Application Support/Camork/` — DB metadata와 primary media storage의 루트.
+    /// DB(Metadata/camork.sqlite) + MediaFileSystem(Media/, Media/.staging/, 그리고 Plan B
+    /// 잔재인 legacy Thumbnails/)를 보유. 실제 thumbnail cache는 본 루트가 아닌
+    /// 아래 `cachesRoot()` (Library/Caches/Camork/) 아래에 저장 — Plan C Phase 2.1.
     private static func appRoot() throws -> URL {
         let appSupport = try FileManager.default.url(
             for: .applicationSupportDirectory,
@@ -44,5 +52,18 @@ final class DependencyContainer: ObservableObject {
             create: true
         )
         return appSupport.appendingPathComponent("Camork", isDirectory: true)
+    }
+
+    /// `Library/Caches/Camork/` — thumbnail 캐시 루트 (Plan C Phase 2.1). iOS가 자동
+    /// backup 제외하므로 `isExcludedFromBackup` flag 불필요. 공간 부족 시 iOS가
+    /// 자동 정리 — 재생성 가능 자원.
+    private static func cachesRoot() throws -> URL {
+        let caches = try FileManager.default.url(
+            for: .cachesDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        return caches.appendingPathComponent("Camork", isDirectory: true)
     }
 }

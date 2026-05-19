@@ -18,4 +18,13 @@ protocol FileOps: Sendable {
     /// `Media/<fileName>`을 메모리로 읽어들임. 파일이 없으면 throw — silent empty
     /// Data 반환 금지 (호출자가 unavailable 분기를 명시 처리).
     func readFinal(fileName: String) throws -> Data
+
+    // MARK: - Thumbnail cache (Plan C Phase 2.1)
+    //
+    // 별도 cachesRoot (`Library/Caches/Camork/Thumbnails/`) 아래에 저장. iOS가
+    // backup에서 자동 제외하지만 Data Protection은 디렉토리 + write 양쪽에 명시 적용.
+
+    func writeThumb(fileName: String, data: Data) throws
+    func readThumb(fileName: String) throws -> Data
+    func removeThumb(fileName: String) throws
 }

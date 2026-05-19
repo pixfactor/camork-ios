@@ -9,9 +9,11 @@ struct PhotoMemoEditorTests {
     func makeStorage() async throws -> MediaStorage {
         let dir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cachesDir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let db = try DatabaseQueue(configuration: CamorkDatabase.makeConfiguration())
         try Migrations.makeMigrator().migrate(db)
-        let fs = try MediaFileSystem(root: dir)
+        let fs = try MediaFileSystem(root: dir, cachesRoot: cachesDir)
         return MediaStorage(db: db, fs: fs)
     }
 
@@ -57,9 +59,11 @@ struct PhotoMemoEditorTests {
         // deletedAt을 set해야 하므로 makeStorage() 헬퍼 대신 인라인으로 db까지 보관.
         let dir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cachesDir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let db = try DatabaseQueue(configuration: CamorkDatabase.makeConfiguration())
         try Migrations.makeMigrator().migrate(db)
-        let fs = try MediaFileSystem(root: dir)
+        let fs = try MediaFileSystem(root: dir, cachesRoot: cachesDir)
         let storage = MediaStorage(db: db, fs: fs)
         let editor = PhotoMemoEditor(mediaStorage: storage)
         let photo = try await storage.saveCapture(makePayload())

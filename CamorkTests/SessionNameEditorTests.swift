@@ -9,9 +9,11 @@ struct SessionNameEditorTests {
     func makeStorage() async throws -> (MediaStorage, DatabaseQueue) {
         let dir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cachesDir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let db = try DatabaseQueue(configuration: CamorkDatabase.makeConfiguration())
         try Migrations.makeMigrator().migrate(db)
-        let fs = try MediaFileSystem(root: dir)
+        let fs = try MediaFileSystem(root: dir, cachesRoot: cachesDir)
         return (MediaStorage(db: db, fs: fs), db)
     }
 
