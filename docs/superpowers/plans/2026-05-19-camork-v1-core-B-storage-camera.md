@@ -1,11 +1,17 @@
-# Camork v1 Core — Plan B: Storage + Camera Implementation Plan (v1.1)
+# Camork v1 Core — Plan B: Storage + Camera Implementation Plan (v1.3)
 
 > **For agentic workers:**
 > **Default mode for Plan B: `superpowers:executing-plans` (Inline).** Plan A는 Inline으로 성공했고, 본 세션은 사용자 terminal review 중심으로 진행됨.
 > `superpowers:subagent-driven-development`는 **사용자 명시 승인** 또는 **분명히 독립적인 slice** (예: GRDB 의존 없는 pure helper 단위 테스트만) 전용 옵션. 기본 흐름에서는 단일 세션 Inline 실행 + Lore commit + 사용자 확인 사이클.
 > Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **v1.1 개정 (2026-05-19):** ai-slop-cleaner workflow로 8 Critical + 1 Should-fix 정정 — GRDB 버전 (C1), 실행 모드 기본값 (C2), 중복 Sessions/ block (C3), Phase 2/3 task 확장 (C4), 결정적 race/failure 테스트 + FileOps protocol (C5), self closure 제거 (C6), GRDB DatabaseMigrator API (C7), Date <-> Int64 codec 명시 (C8), XcodeGen product 명시 (S1). 부록 §A에 매핑 표.
+> **개정 이력 (2026-05-19):**
+> - **v1.0**: 초안 (spec v3.3 기반).
+> - **v1.1**: ai-slop-cleaner workflow 1st pass — 8 Critical + 1 Should-fix (GRDB 버전 / 실행 모드 / 중복 Sessions / Phase 2~3 expansion / FileOps protocol / self closure 제거 / DatabaseMigrator API / Date codec / XcodeGen product). 부록 §A.
+> - **v1.2**: 데이터 무결성 + 에러 경로 — 9 Critical + 2 Should-fix (Int64 codec 명시 / UUID validate throw / appliedMigrations Array / `try MediaFileSystem` / FileOps naming / Data Protection class / Bootstrap enum / MediaCapture 단일 owner / `if case` 패턴 / FK PRAGMA + CASCADE / testHooks ordering only). 부록 §C.
+> - **v1.3 (이 문서)**: 본문 일관성 + finalize — 8 Critical + 3 Should-fix (title/revision/Appendix A 갱신 / DB attribute 순서 + WAL/SHM / MediaFileSystem 단일 canonical / Task 1.6 makeMigrator / Migration test 공통 config / CameraScreen MainActor do/catch / MediaCapture @Sendable boundary / File Structure 표현 정정 / FileOps 이전 이름 / StorageInitErrorView 명시 / rg 검증). 부록 §D.
+>
+> 모든 부록은 historical record로 보존. 본문 모든 코드/설명은 v1.3 단일 권위.
 
 **Goal:** Spec v3.3의 v1 Core 핵심 루프(촬영 → 자동 세션 묶음 → 로컬 저장 → 직전 사진 확인 → 메모 편집)를 구현. Storage 인프라(GRDB + 단일 writer actor) + Camera(AVFoundation thin wrapper + UI) + PhotoDetail(메모 편집)을 닫는다.
 
@@ -73,7 +79,7 @@ Camork/
 │  ├─ MediaKind.swift                — enum (photo only, CHECK 제약과 일치)
 │  └─ ExifData.swift                 — struct, JSON blob 직렬화
 ├─ Sessions/                         [신규 — Phase 1.5, 1.6, 3.1]
-│  ├─ PhotoCapturePayload.swift      — Sendable struct (callback → actor hop)
+│  ├─ PhotoCapturePayload.swift      — Sendable struct (AVFoundation callback → CameraScreen payload result → MediaStorage saveCapture, v1.2 C8 + v1.3 C7/C8)
 │  ├─ SessionAssignmentPolicy.swift  — pure helper, decideSession
 │  ├─ MediaStorage.swift             — actor (단일 writer + saveCapture + Orphan reaper)
 │  ├─ MediaStorageTestHooks.swift    [test-only seam, #if DEBUG] — afterManualFlagSnapshot / beforeDBCommit hooks for deterministic race tests
@@ -93,7 +99,8 @@ Camork/
 ├─ Gallery/                          [신규 — Phase 3 (Plan C에서 확장)]
 │  └─ PhotoDetailView.swift          — 단일 사진 풀스크린 + 메모 sheet
 └─ AppShell/
-   └─ DependencyContainer.swift      [신규 — Phase 2c] App root container (Environment)
+   ├─ DependencyContainer.swift      [신규 — Phase 2c.1] App root container (Environment)
+   └─ StorageInitErrorView.swift     [신규 — Phase 2c.1, v1.3 S2] Bootstrap.failed 분기 UI + retry
 
 CamorkTests/                         [신규 — 각 phase에서 누적]
 ├─ MigrationsTests.swift             — Phase 1.1
@@ -382,39 +389,57 @@ Expected: 컴파일 실패 (`Migrations`, `Database` 미정의).
 - [ ] **Step 3: Database.swift + Migrations.swift 작성**
 
 ```swift
-// Camork/Storage/Database.swift
+// Camork/Storage/Database.swift  (v1.3 C2: attribute 순서 + WAL/SHM 사이드카)
 import Foundation
 import GRDB
 
 enum CamorkDatabase {
+    /// 테스트와 production이 공유하는 단일 Configuration 소스 (v1.3 C5).
+    static func makeConfiguration() -> Configuration {
+        var config = Configuration()
+        config.prepareDatabase { db in
+            try db.execute(sql: "PRAGMA journal_mode = WAL")
+            try db.execute(sql: "PRAGMA foreign_keys = ON")   // S1 (v1.2): CASCADE 보장
+        }
+        return config
+    }
+
     static func open() throws -> DatabaseQueue {
         let appSupport = try FileManager.default.url(
             for: .applicationSupportDirectory,
             in: .userDomainMask, appropriateFor: nil, create: true
         )
-        let metaDir = appSupport.appendingPathComponent("Camork/Metadata", isDirectory: true)
+        var metaDir = appSupport.appendingPathComponent("Camork/Metadata", isDirectory: true)
         try FileManager.default.createDirectory(at: metaDir, withIntermediateDirectories: true)
 
-        var url = metaDir.appendingPathComponent("camork.sqlite")
-        var values = URLResourceValues()
-        values.isExcludedFromBackup = true
-        try url.setResourceValues(values)
-
-        var config = Configuration()
-        config.prepareDatabase { db in
-            try db.execute(sql: "PRAGMA journal_mode = WAL")
-            try db.execute(sql: "PRAGMA foreign_keys = ON")   // S1 (v1.2): CASCADE 작동 보장
-        }
-
-        let queue = try DatabaseQueue(path: url.path, configuration: config)
-
-        // C6 (v1.2): Data Protection — 부팅 후 첫 잠금 해제까지 디스크 암호화 유지
+        // v1.3 C2: 디렉토리에 backup exclusion + Data Protection 먼저 적용 (파일 생성 전).
+        var dirValues = URLResourceValues()
+        dirValues.isExcludedFromBackup = true
+        try metaDir.setResourceValues(dirValues)
         try FileManager.default.setAttributes(
             [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-            ofItemAtPath: url.path
+            ofItemAtPath: metaDir.path
         )
 
+        let dbURL = metaDir.appendingPathComponent("camork.sqlite")
+        let queue = try DatabaseQueue(path: dbURL.path, configuration: makeConfiguration())
         try Migrations.makeMigrator().migrate(queue)
+
+        // v1.3 C2: open + migrate 후 .sqlite + WAL/SHM 사이드카에 backup exclusion + Data Protection.
+        let sidecars = ["camork.sqlite", "camork.sqlite-wal", "camork.sqlite-shm"]
+        for name in sidecars {
+            var url = metaDir.appendingPathComponent(name)
+            if FileManager.default.fileExists(atPath: url.path) {
+                var values = URLResourceValues()
+                values.isExcludedFromBackup = true
+                try url.setResourceValues(values)
+                try FileManager.default.setAttributes(
+                    [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                    ofItemAtPath: url.path
+                )
+            }
+        }
+
         return queue
     }
 }
@@ -692,23 +717,36 @@ struct MediaFileSystem: FileOps {
         try Self.bootstrap(root: root)   // C5: 에러 swallow 금지
     }
 
+    /// v1.3 C3: 단일 canonical bootstrap (Media + .staging + Thumbnails + Data Protection).
     static func bootstrap(root: URL) throws {
         for sub in ["Media", "Media/.staging", "Thumbnails"] {
-            let dir = root.appendingPathComponent(sub, isDirectory: true)
+            var dir = root.appendingPathComponent(sub, isDirectory: true)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             var values = URLResourceValues()
             values.isExcludedFromBackup = true
-            var mutableDir = dir
-            try mutableDir.setResourceValues(values)
-            // C6 (v1.2): media 디렉토리도 Data Protection 적용
+            try dir.setResourceValues(values)
+            // C6 (v1.2) + C3 (v1.3): media 디렉토리에 Data Protection 적용
             try FileManager.default.setAttributes(
                 [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
                 ofItemAtPath: dir.path
             )
         }
     }
-    // ... 나머지 FileOps 구현 (writeStaging은 .completeFileProtection 옵션으로 파일별 protection 적용)
+
+    /// v1.3 C3: writeStaging은 atomic write + 명시적 protection attribute (FileProtectionType.completeUntilFirstUserAuthentication).
+    func writeStaging(fileName: String, data: Data) throws {
+        let url = root.appendingPathComponent("Media/.staging/\(fileName)")
+        try data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+    }
+
+    func moveStagingToFinal(fileName: String) throws { /* FileManager.moveItem ... */ }
+    func removeStaging(fileName: String) throws { /* ... */ }
+    func removeFinal(fileName: String) throws { /* ... */ }
+    func stagingExists(fileName: String) throws -> Bool { /* ... */ }
+    func finalExists(fileName: String) throws -> Bool { /* ... */ }
+    func enumerateFinal() throws -> [String] { /* ... */ }
 }
+```
 ```
 
 - [ ] **Step 1: 실패 테스트**
@@ -754,7 +792,7 @@ private func tempDir() -> URL {
 - [ ] **Step 2~5**: 실패 확인 → 구현 → 통과 → 커밋 (Lore)
 
 ```swift
-// Camork/Storage/MediaFileSystem.swift  (C5: init throws, FileOps 채택)
+// Camork/Storage/MediaFileSystem.swift  (v1.1 C5 + v1.2 C6 + v1.3 C3 통합 canonical)
 import Foundation
 
 struct MediaFileSystem: FileOps {
@@ -762,7 +800,7 @@ struct MediaFileSystem: FileOps {
 
     init(root: URL) throws {
         self.root = root
-        try Self.bootstrap(root: root)   // C5: 에러 swallow 금지
+        try Self.bootstrap(root: root)   // v1.1 C5: 에러 swallow 금지
     }
 
     static func bootstrap(root: URL) throws {
@@ -775,9 +813,10 @@ struct MediaFileSystem: FileOps {
         }
     }
 
+    // v1.3 C3 — atomic + 명시적 protection (위 canonical sample 참조)
     func writeStaging(fileName: String, data: Data) throws {
         let url = root.appendingPathComponent("Media/.staging/\(fileName)")
-        try data.write(to: url, options: .atomic)
+        try data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     }
 
     func moveStagingToFinal(fileName: String) throws {
@@ -950,8 +989,9 @@ struct MediaStorageTests {
     func makeStorage() async throws -> (MediaStorage, DatabaseQueue, URL) {
         let dir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString)
-        let db = try DatabaseQueue()
-        try Migrations.register(on: db)
+        // v1.3 C4 + C5: production과 동일 makeConfiguration 사용, makeMigrator로 migrate
+        let db = try DatabaseQueue(configuration: CamorkDatabase.makeConfiguration())
+        try Migrations.makeMigrator().migrate(db)
         let fs = try MediaFileSystem(root: dir)
         let storage = MediaStorage(db: db, fs: fs)
         return (storage, db, dir)
@@ -1275,12 +1315,51 @@ struct LocationServiceTests {
 **Files:**
 - Create: `Camork/Camera/MediaCapture.swift`
 
-- [ ] **Step 1**: AVCapturePhotoCaptureDelegate. `photoOutput(_:didFinishProcessingPhoto:error:)` callback에서:
+- [ ] **Step 1** (v1.2 C8 + v1.3 C7): AVCapturePhotoCaptureDelegate. `photoOutput(_:didFinishProcessingPhoto:error:)` callback에서:
   1. `Data` 추출 (HEIC)
   2. `ExifBuilder.build(from: photo)` → ExifData
   3. `locationService.latestKnown()` 동기 호출 (callback queue에서)
   4. `PhotoCapturePayload` 조립
-  5. **C8 (v1.2)**: detached `Task { }`로 saveCapture 호출하지 않음. payload를 `onPayloadReady: (Result<PhotoCapturePayload, Error>) -> Void` callback (또는 AsyncStream)로 CameraScreen에 전달. CameraScreen이 `do { try await mediaStorage.saveCapture(payload) } catch { ... }`로 inFlight/에러 처리. save는 단일 owner (CameraScreen → MediaStorage), UI duplicate 경로 없음.
+  5. **`@Sendable onPayloadReady: @Sendable (Result<PhotoCapturePayload, Error>) -> Void`** callback으로 CameraScreen에 전달.
+
+```swift
+final class MediaCapture: NSObject, AVCapturePhotoCaptureDelegate, @unchecked Sendable {
+    private let onPayloadReady: @Sendable (Result<PhotoCapturePayload, Error>) -> Void
+    private let locationService: LocationService
+
+    init(
+        onPayloadReady: @escaping @Sendable (Result<PhotoCapturePayload, Error>) -> Void,
+        locationService: LocationService
+    ) {
+        self.onPayloadReady = onPayloadReady
+        self.locationService = locationService
+    }
+
+    func photoOutput(_ output: AVCapturePhotoOutput,
+                     didFinishProcessingPhoto photo: AVCapturePhoto,
+                     error: Error?) {
+        // 이 함수는 AVFoundation의 callback queue (nonisolated)에서 호출됨.
+        // SwiftUI state 직접 변경 금지 — Sendable payload만 전달.
+        if let error { onPayloadReady(.failure(error)); return }
+        do {
+            let data = try photo.fileDataRepresentation() ?? { throw CaptureError.noImageData }()
+            let exif = ExifBuilder.build(from: photo)
+            let snapshot = locationService.latestKnown()   // sync getter
+            let payload = PhotoCapturePayload(
+                imageData: data,
+                capturedAt: Date(),
+                location: snapshot,
+                exif: exif
+            )
+            onPayloadReady(.success(payload))
+        } catch {
+            onPayloadReady(.failure(error))
+        }
+    }
+}
+```
+
+**v1.3 C7**: callback은 `@Sendable` 명시. CameraScreen은 callback 안에서 SwiftUI state 변경 금지 — payload를 받아 MainActor `task`/handler 에서 처리.
 
 - [ ] **Step 2**: 빌드 검증. 실제 capture 검증은 실기기 manual.
 - [ ] **Step 3**: Lore commit (capture delegate + Sendable payload hop, AVCapturePhoto 직접 hop 금지 명시).
@@ -1430,7 +1509,38 @@ enum CameraScreenViewState: Equatable {
 }
 ```
 
-- [ ] **Step 3**: 셔터 탭 → `isInFlight = true` → MediaCapture trigger → `Task { await mediaStorage.saveCapture(...) }` → `isInFlight = false`.
+- [ ] **Step 3** (v1.3 C6): 셔터 탭 → MediaCapture trigger → MediaCapture `onPayloadReady` callback (AVFoundation queue, `@Sendable`)에서 CameraScreen으로 result 전달 → CameraScreen은 MainActor에서:
+
+```swift
+.task(id: capturedResultId) {
+    guard case .success(let payload) = capturedResult else { return }
+    isInFlight = true
+    defer { isInFlight = false }
+    do {
+        _ = try await mediaStorage.saveCapture(payload)
+        // refresh latest thumb
+    } catch {
+        captureError = error   // UI에 에러 표시 (alert / toast)
+    }
+}
+```
+
+또는 동등하게:
+
+```swift
+@MainActor private func handleCaptureResult(_ result: Result<PhotoCapturePayload, Error>) async {
+    isInFlight = true
+    defer { isInFlight = false }
+    do {
+        let payload = try result.get()
+        _ = try await mediaStorage.saveCapture(payload)
+    } catch {
+        captureError = error
+    }
+}
+```
+
+**핵심**: detached `Task { ... }`로 hop 금지. inFlight clear는 `defer`로 보장. 에러는 do/catch로 captureError state에 반영.
 
 - [ ] **Step 4**: "새 현장" 칩 — disabled when isInFlight, otherwise `await mediaStorage.markPendingNewSession()`.
 
@@ -1609,6 +1719,6 @@ xcodebuild -scheme Camork \
 | **C4** | Phase 2/3 skeletal | Phase 2a/2b/2c (10 task) + Phase 3.1/3.2 (8 task) — 각 task에 files/실패 테스트/구현/검증/Lore commit step. |
 | **C5** | race/failure 테스트 비결정적 | `MediaStorageTestHooks` (`#if DEBUG`) + `FileOps` protocol + `MediaFileSystem.init throws` (try? 제거). |
 | **C6** | closure에 `self.policy` 등 캡쳐 | DB helpers를 free functions (`fetchLatestPhoto`/`resolveSessionId`/`insertPhoto`). closure capture는 `[manualFlag, policy, photoId, fileName]`만, self 미참조. |
-| **C7** | `db.schemaVersion()` API misuse | `Migrations.makeMigrator()` 노출 → test는 `DatabaseMigrator.appliedIdentifiers(_:)` 사용. |
-| **C8** | Date ↔ Int64 codec 미정 | Task 1.3 — 각 모델에 `Columns` enum + `init(row:)`/`encode(to:)`로 `Date.timeIntervalSince1970` 명시 매핑. |
+| **C7** | `db.schemaVersion()` API misuse | `Migrations.makeMigrator()` 노출 → test는 `DatabaseMigrator.appliedMigrations(_:) -> [String]` 사용 (v1.2 부록 §C에서 추가 정합). |
+| **C8** | Date ↔ Int64 codec 미정 | Task 1.3 — 각 모델에 `Columns` enum + `init(row:)`/`encode(to:)`. v1.1은 `timeIntervalSince1970` 명시만, v1.2 부록 §C에서 `Int64` 명시 read/write로 보강. |
 | **S1** | XcodeGen package product | Task 1.1 — `url: ...git`, `product: GRDB` 명시. |
