@@ -23,7 +23,7 @@ Camork의 v1 Core 핵심 동작 — **촬영 → 자동 세션 묶음 → 로컬
 
 ### 1.2 포함 (Plan B 산출 범위)
 
-- **Storage 인프라**: GRDB.swift SPM 의존성, schema v1 migration, `actor MediaStorage`, `actor SessionManager`, 모델(`Photo`, `Session`), `LocationSnapshot`
+- **Storage 인프라**: GRDB.swift SPM 의존성, schema v1 migration, `actor MediaStorage` (단일 writer), `struct SessionAssignmentPolicy` (pure helper), 모델(`Photo`, `Session`), `LocationSnapshot`
 - **카메라**: `PermissionsService` (카메라/위치 권한 흐름 — 마이크는 v1.2에서 추가), `CameraSession` (AVCaptureSession thin wrapper), `MediaCapture` (AVCapturePhotoOutput → Sendable payload), 카메라 탭 UI
 - **카메라 UI**: 뷰파인더, 셔터, 카메라 전환, 좌하단 직전 사진 thumb, 상단 "새 현장" 칩, 권한 거부 안내
 - **PhotoDetail**: thumb 탭 시 단일 사진 풀스크린, 사진별 메모 편집(GRDB 저장)
@@ -47,7 +47,7 @@ Camork의 v1 Core 핵심 동작 — **촬영 → 자동 세션 묶음 → 로컬
 ### 1.4 완료 기준
 
 - **Phase 1** (UI 없이 검증, momus C-5 반영):
-  - `xcodebuild test` SUCCEEDED — 신규 단위 테스트(MediaStorage / SessionManager / Migration / PermissionsService / MediaCapture payload / PhotoMemoEditor / LocationService) 모두 통과
+  - `xcodebuild test` SUCCEEDED — 신규 단위 테스트(MediaStorage / SessionAssignmentPolicy / Migration / PermissionsService / MediaCapture payload / PhotoMemoEditor / LocationService) 모두 통과
   - **Plan A의 기존 7건(Theme/Colors/CamorkButton) 회귀 안 깨짐** — 합계 N+7건 모두 통과
   - 빌드 경고 0건
   - 시뮬레이터에 보이는 변화 없음 (의도). 사용자가 "뭘 보여줘"라 물으면 답은 "xcodebuild test 결과 + DB schema 생성 코드 review + ADR 문서".
@@ -76,40 +76,41 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
 
 1. **GRDB DatabaseWriter** 선택 (DatabaseQueue vs DatabasePool 비교 + 채택 이유). **GRDB 정확 버전 결정 + `Package.resolved` 고정** (momus S-9 — §12에서 이동).
 
-2. **단일 capture-save path** (v3 Critical 1 — split-brain 방지):
-   - **단일 actor `MediaStorage`**가 모든 capture-save 흐름 소유. SessionManager actor는 **제거**.
-   - **`struct SessionAssignmentPolicy` (pure helper)** — 세션 결정 로직만 담음. `decideSession(previous: Photo?, current: PhotoCapturePayload, manualFlag: Bool) -> Decision`. 단위 테스트 직진.
+2. **단일 capture-save path** (v3 Critical 1 — split-brain 방지, v3.1 sequence 명시):
+   - **단일 actor `MediaStorage`**가 모든 capture-save 흐름 소유. `SessionManager` actor는 **제거**.
+   - **`struct SessionAssignmentPolicy` (pure helper)** — `decideSession(previous: Photo?, current: PhotoCapturePayload, manualFlag: Bool) -> Decision`. actor / DB / instance state 의존 없음. 단위 테스트 직진.
    - 공개 API는 하나: `MediaStorage.saveCapture(payload: PhotoCapturePayload) async throws -> Photo`
-   - 내부 흐름 (단일 GRDB transaction 내, serial):
-     1. previous photo/session summary fetch
-     2. `SessionAssignmentPolicy.decideSession(...)` 호출
-     3. (newSession이면) Session row insert + UUID 획득
-     4. Photo row insert (sessionId 포함)
-     5. file finalize (staging → mv)
-     6. transaction commit
-     7. `pendingManualSessionStart` flag clear (성공 시에만)
-   - `pendingManualSessionStart` 플래그는 `MediaStorage` actor 내부 in-memory state (별도 actor 없음).
+   - **공식 sequence (v3.1 — 본문 모든 곳이 이 순서 준수)**:
+     1. **allocate photo id/path** (UUID + relative fileName 결정 — 메모리 상)
+     2. **write staging file** — `Media/.staging/<UUID>.heic` 작성 (GRDB transaction 밖, DB-lock 영향 최소화)
+     3. **atomic mv to final** — `Media/.staging/<UUID>.heic` → `Media/<UUID>.heic`
+     4. **GRDB transaction 시작** — previous photo fetch → `policy.decideSession(...)` → (newSession이면) Session insert + UUID 획득 → Photo insert (sessionId 포함) → commit
+     5. **commit 성공 후에만** `pendingManualSessionStart = false` clear
+   - **DB 트랜잭션 실패 시 (step 4)**: best-effort `Media/<UUID>.heic` 삭제 → 실패해도 OK, Orphan reaper가 정리.
+   - **mv 실패 시 (step 3)**: staging file 삭제 후 abort.
+   - **staging write 실패 시 (step 2)**: 즉시 abort, 잔존물 없음.
+   - **file IO는 GRDB transaction 밖** — DB-lock 영향 최소화. ADR이 이 정책을 명시 채택.
+   - `pendingManualSessionStart` 플래그는 `MediaStorage` actor 내부 in-memory state (별도 actor 없음). clear는 step 5에서만 (commit 실패 시 flag 유지).
 
-3. **파일 IO vs DB write transaction 정책 + Failure matrix** (momus C-2 + 사용자 Critical 4):
-   - **흐름**: `Media/.staging/<UUID>.heic` 저장 → GRDB transaction 안에서 Photo/Session row insert → row insert 성공 후 staging → Media/ atomic mv → transaction commit
-   - **Failure matrix**:
+3. **Failure matrix** (v3.1 — sequence 5단계와 일관):
 
 | 실패 시점 | 잔존물 | Cleanup 주체 |
 |---|---|---|
-| staging write fail | 없음 (또는 부분 staging file) | staging cleanup (즉시) |
-| row insert fail | staging file | staging cleanup (즉시) |
-| mv fail | staging file | staging cleanup (즉시), transaction rollback |
-| commit fail (mv 후) | `Media/<UUID>.heic` final orphan | **Orphan reaper** (다음 앱 시작 시) |
-| crash after mv before commit | `Media/<UUID>.heic` final orphan | **Orphan reaper** (다음 앱 시작 시) |
+| staging write fail (step 2) | 없음 (또는 부분 staging file) | 즉시 staging cleanup |
+| mv fail (step 3) | `Media/.staging/<UUID>.heic` | 즉시 staging cleanup, abort |
+| GRDB transaction fail / commit fail (step 4) | `Media/<UUID>.heic` final orphan | best-effort 즉시 final 삭제 → 실패 시 **Orphan reaper** (다음 앱 시작 시) |
+| crash after mv before commit (step 3-4 사이) | `Media/<UUID>.heic` final orphan | **Orphan reaper** (다음 앱 시작 시) |
+| flag clear 실패 시나리오 없음 | flag는 actor in-memory, 프로세스 생존 동안만 | n/a |
 
-   - **즉시 staging cleanup**: `MediaStorage` 트랜잭션 closure 내 `defer { try? fs.removeStaging(uuid) }`
+   - **즉시 staging cleanup**: `defer { try? fs.removeStaging(uuid) }` 또는 명시적 cleanup.
+   - **best-effort final 삭제**: GRDB transaction catch 절에서 `try? fs.removeFinal(uuid)` 시도. 실패 시 reaper에 위임.
    - **Orphan reaper**: 앱 시작 시 `MediaStorage.runReaper()` — `Media/` enumerate → DB에 row 없는 파일 삭제. Thumbnail 캐시도 동일.
 
 4. `actor MediaStorage` 책임 경계 (DB connection + 파일 IO + thumbnail 생성 + reaper + capture orchestration + manual flag). 단일 writer actor.
 
 5. `@MainActor` 적용 범위 (View / ViewModel / UI state만, 순수 domain model + repository protocol 제외).
 
-6. **AVFoundation callback → Sendable payload → `await actor.save(payload)` hop 규칙** (momus C-3 보강):
+6. **AVFoundation callback → Sendable payload → `await mediaStorage.saveCapture(payload)` hop 규칙** (momus C-3 보강):
    - callback queue (nonisolated DispatchQueue) 에서 **`LocationService.latestKnown` 동기 snapshot 접근** (snapshot getter는 sync, non-Sendable 객체 미반환).
    - callback 안에서 `PhotoCapturePayload` 조립 (Data + capturedAt + location snapshot + exif).
    - `Task { [payload] in await mediaStorage.saveCapture(payload) }` 로 actor hop. 2단계 비동기 hop 없음.
@@ -148,23 +149,24 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
 - `enum Decision { case newSession; case continueSession(sessionId: UUID) }`
 - actor / DB 의존성 없음. 단위 테스트 직진 — 6 edge case + GPS accuracy 25/30/35m 경계 + 시간 29/30/31min 경계 + `horizontalAccuracy nil` case.
 
-**Phase 1.4 — `actor MediaStorage` (단일 writer) + Orphan reaper** (v3 Critical 1 + momus C-2)
+**Phase 1.4 — `actor MediaStorage` (단일 writer) + Orphan reaper** (v3.1 sequence 일관)
 
-- **단일 capture-save path**: `func saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo`
-  1. previous photo summary fetch (DB query)
-  2. `SessionAssignmentPolicy.decideSession(...)` 호출 (pure)
-  3. (newSession) Session row insert → UUID 획득 / (continueSession) 기존 sessionId 사용
-  4. file staging (`Media/.staging/<UUID>.heic`)
-  5. Photo row insert (sessionId 포함)
-  6. staging → `Media/<UUID>.heic` atomic mv
-  7. GRDB transaction commit
-  8. `pendingManualSessionStart` flag clear (성공 시에만)
-- `markPendingNewSession()` async — actor 내부 플래그 set (idempotent)
-- `runReaper() async throws` — 앱 시작 시 호출. `Media/` enumerate → orphan 삭제. Thumbnail도 동일.
-- `updatePhotoNote(photoId:note:)` async — PhotoDetail에서 호출
-- `fetchPhoto(id:)` async — PhotoDetail 로드용
+- **공식 sequence (ADR 항목 #2와 동일)**:
+  1. allocate photo id/path (UUID + relative fileName)
+  2. write staging file (`Media/.staging/<UUID>.heic`, GRDB transaction 밖)
+  3. atomic mv → `Media/<UUID>.heic`
+  4. GRDB transaction: previous fetch → `policy.decideSession(...)` → (newSession) Session insert → Photo insert (sessionId 포함) → commit
+  5. commit 성공 후 `pendingManualSessionStart = false`
+
+- **공개 API**:
+  - `saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo`
+  - `markPendingNewSession() async` — actor 내부 플래그 set (idempotent)
+  - `runReaper() async throws` — 앱 시작 시 호출. `Media/` enumerate → orphan 삭제. Thumbnail도 동일.
+  - `updatePhotoNote(photoId:note:)` async — PhotoDetail에서 호출
+  - `fetchPhoto(id:)` async — PhotoDetail 로드용
+  - `isPendingNewSession() async -> Bool` — UI dot indicator용
 - thumbnail 생성 + 캐시 (`Library/Caches/Camork/Thumbnails/<UUID>.jpg`)
-- 단위 테스트: in-memory DB + temp dir로 격리. 6 edge case 통합 검증 (policy + actor + DB), Failure matrix 5 cases (staging fail / row fail / mv fail / commit fail / crash 시뮬), Reaper 검증.
+- 단위 테스트: in-memory DB + temp dir로 격리. 6 edge case 통합 검증 (policy + actor + DB), Failure matrix 4 cases (staging fail / mv fail / commit fail / crash 시뮬), Reaper 검증, `pendingManualSessionStart` clear는 commit 성공 후에만 발생.
 
 ### Phase 2 — Camera 캡처 + UI
 
@@ -179,7 +181,7 @@ ADR 포함 사항 (결정 #3 7+5 가설을 정식화 + momus 보강):
 
 - `Camork/Camera/MediaCapture.swift` — `AVCapturePhotoCaptureDelegate`, callback에서 **`AVCapturePhoto`를 actor로 hop하지 않음**
 - callback queue에서 `Data` + metadata만 뽑아 `PhotoCapturePayload` (Sendable struct) 만들기
-- `Task { await mediaStorage.save(payload) }` 로 hop
+- `Task { [payload] in await mediaStorage.saveCapture(payload) }` 로 hop
 - `Camork/Services/LocationService.swift` — CoreLocation latest known location 노출 (best-effort, 권한 없으면 nil)
 - 통합 테스트: payload 생성 + actor 전달 mock (실제 캡처는 실기기)
 
@@ -343,43 +345,54 @@ struct PhotoCapturePayload: Sendable {
 
 ## 5. Session 자동 묶기 정책 (6 edge case, 단위 테스트 대상)
 
-### 5.1 자동 분리 규칙 (단위 테스트 가능 pseudocode, momus S-1 보강)
-
-촬영이 발생하면 다음 순서로 판단:
+### 5.1 자동 분리 규칙 (pure pseudocode — actor/DB/instance state 의존 없음, v3.1)
 
 ```
-func decideSession(previous: Photo?, current: PhotoCandidate) -> Decision {
-  // (1) Manual flag 최우선
-  if pendingManualSessionStart {
-    return .newSession  // 플래그 clear는 호출부 책임
+struct SessionAssignmentPolicy {
+  enum Decision: Equatable {
+    case newSession
+    case continueSession(sessionId: UUID)
   }
 
-  // (2) 첫 촬영
-  guard let previous = previous else {
-    return .newSession
-  }
+  func decideSession(
+    previous: Photo?,
+    current: PhotoCapturePayload,
+    manualFlag: Bool
+  ) -> Decision {
+    // (1) Manual flag 최우선 — caller가 actor state에서 읽어 인자로 전달
+    if manualFlag {
+      return .newSession  // 플래그 clear는 호출부(actor)의 책임
+    }
 
-  // (3) 거리 규칙 — 양쪽 horizontalAccuracy ≤ 30m일 때만 적용
-  if let prevLoc = previous.location,
-     let currLoc = current.location,
-     prevLoc.horizontalAccuracy <= 30,
-     currLoc.horizontalAccuracy <= 30 {
-    let distance = haversineDistance(prevLoc, currLoc)
-    if distance >= 50 {
+    // (2) 첫 촬영
+    guard let previous = previous else {
       return .newSession
     }
-  }
-  // accuracy nil 또는 > 30m면 거리 규칙 skip — 시간 규칙으로 fallback
 
-  // (4) 시간 규칙
-  let elapsed = current.capturedAt.timeIntervalSince(previous.capturedAt)
-  if elapsed >= 30 * 60 {
-    return .newSession
-  }
+    // (3) 거리 규칙 — 양쪽 horizontalAccuracy ≤ 30m일 때만 적용
+    if let prevLoc = previous.location,
+       let currLoc = current.location,
+       prevLoc.horizontalAccuracy <= 30,
+       currLoc.horizontalAccuracy <= 30 {
+      let distance = haversineDistance(prevLoc, currLoc)
+      if distance >= 50 {
+        return .newSession
+      }
+    }
+    // accuracy nil 또는 > 30m면 거리 규칙 skip — 시간 규칙으로 fallback
 
-  return .continueSession(previous.sessionId)
+    // (4) 시간 규칙
+    let elapsed = current.capturedAt.timeIntervalSince(previous.capturedAt)
+    if elapsed >= 30 * 60 {
+      return .newSession
+    }
+
+    return .continueSession(sessionId: previous.sessionId)
+  }
 }
 ```
+
+**중요 (v3.1 정정)**: pseudocode body는 `pendingManualSessionStart`를 직접 읽지 않는다. signature의 `manualFlag` 인자만 사용. 이렇게 해야 `SessionAssignmentPolicy`가 actor/DB 의존 없는 pure struct로 단위 테스트 직진 가능.
 
 **`horizontalAccuracy` nil 또는 둘 중 하나라도 > 30m**: 거리 규칙 skip (위치 권한 거부 case b와 동일 fallback).
 
@@ -413,7 +426,7 @@ struct SessionAssignmentPolicy {
     }
 }
 
-// 단일 writer actor
+// 단일 writer actor (v3.1 — file IO를 GRDB transaction 밖에 두어 DB-lock 영향 최소화)
 actor MediaStorage {
     private var pendingManualSessionStart: Bool = false
     private let db: DatabaseWriter
@@ -424,23 +437,57 @@ actor MediaStorage {
         pendingManualSessionStart = true   // idempotent
     }
 
+    func isPendingNewSession() -> Bool {
+        pendingManualSessionStart
+    }
+
     func saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo {
-        try await db.write { db in
-            let previous = try fetchLatestPhoto(db: db)
-            let decision = policy.decideSession(
-                previous: previous,
-                current: payload,
-                manualFlag: pendingManualSessionStart
-            )
-            let sessionId = try resolveSessionId(decision: decision, payload: payload, db: db)
-            let photo = try insertPhoto(payload: payload, sessionId: sessionId, db: db)
-            try fs.finalize(uuid: photo.id, stagingData: payload.imageData)
-            return photo
+        // Step 1: id/path allocate (메모리 상)
+        let photoId = UUID()
+        let fileName = "\(photoId.uuidString).heic"
+
+        // Step 2: staging write (GRDB transaction 밖)
+        try fs.writeStaging(fileName: fileName, data: payload.imageData)
+
+        do {
+            // Step 3: atomic mv → final
+            try fs.moveStagingToFinal(fileName: fileName)
+        } catch {
+            try? fs.removeStaging(fileName: fileName)
+            throw error
         }
-        // pendingManualSessionStart clear (commit 성공 후)
+
+        // Step 4: DB transaction
+        let photo: Photo
+        do {
+            photo = try await db.write { db in
+                let previous = try fetchLatestPhoto(db: db)
+                let manualFlag = self.pendingManualSessionStart  // actor isolation
+                let decision = policy.decideSession(
+                    previous: previous,
+                    current: payload,
+                    manualFlag: manualFlag
+                )
+                let sessionId = try resolveSessionId(decision: decision, payload: payload, db: db)
+                return try insertPhoto(
+                    id: photoId, fileName: fileName,
+                    payload: payload, sessionId: sessionId, db: db
+                )
+            }
+        } catch {
+            // commit/transaction 실패 → best-effort final 삭제, 실패 시 reaper에 위임
+            try? fs.removeFinal(fileName: fileName)
+            throw error
+        }
+
+        // Step 5: commit 성공 후에만 flag clear
+        pendingManualSessionStart = false
+        return photo
     }
 }
 ```
+
+**중요 (v3.1 정정)**: 파일 staging/mv는 GRDB transaction **밖**에서 수행. transaction commit 성공 후에만 `pendingManualSessionStart` clear. 실패 시 final 삭제 best-effort, 실패해도 reaper가 cover.
 
 `SessionAssignmentPolicy`는 actor 의존 없이 단위 테스트 가능. 6 edge case 모두.
 
@@ -478,10 +525,10 @@ actor MediaStorage {
 
 ### 7.3 새 현장 칩 UX
 
-- 탭 시: `await sessionManager.markPendingNewSession()` (idempotent).
+- 탭 시: `await mediaStorage.markPendingNewSession()` (idempotent).
 - 시각 피드백: 칩이 잠시 강조 색 (오렌지 액센트) 으로 깜빡임, 햅틱 light tap.
 - 화면 다른 변화 없음 (다음 촬영 시 새 세션 생성됨).
-- 칩 상태 유지: `@State` 또는 actor에서 `isPendingNewSession()` async getter — UI에 작은 dot indicator 표시 가능.
+- 칩 상태 유지: `@State` 또는 actor의 `isPendingNewSession()` async getter — UI에 작은 dot indicator 표시 가능.
 
 ---
 
@@ -654,7 +701,14 @@ actor MediaStorage {
     func runReaper() async throws                                            // 앱 시작 시
 
     // Plan B test-only — PhotoDetail/통합 테스트용
+    // 격리 규칙 (v3.1): production code path에 노출되지 않음. 다음 중 하나로 박음:
+    //   - #if DEBUG 가드로 컴파일 단위 격리
+    //   - 또는 test target 안의 extension으로 분리 (테스트 헬퍼 어댑터)
+    //   - 또는 internal init을 통해 test harness만 인스턴스 주입
+    // 어느 방식이든 Plan C public surface는 이 메서드에 의존하지 않음.
+    #if DEBUG
     func injectSeededCapture(payload: PhotoCapturePayload) async throws -> Photo  // simulator 검증용
+    #endif
 
     // Plan C에서 구현 (Plan B에서는 stub 또는 not-implemented)
     func fetchSessions(filter: SessionFilter, sortedBy: SessionSort) async throws -> [Session]
