@@ -1,6 +1,11 @@
-# Camork v1 Core — Plan B: Storage + Camera Implementation Plan
+# Camork v1 Core — Plan B: Storage + Camera Implementation Plan (v1.1)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:**
+> **Default mode for Plan B: `superpowers:executing-plans` (Inline).** Plan A는 Inline으로 성공했고, 본 세션은 사용자 terminal review 중심으로 진행됨.
+> `superpowers:subagent-driven-development`는 **사용자 명시 승인** 또는 **분명히 독립적인 slice** (예: GRDB 의존 없는 pure helper 단위 테스트만) 전용 옵션. 기본 흐름에서는 단일 세션 Inline 실행 + Lore commit + 사용자 확인 사이클.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
+
+> **v1.1 개정 (2026-05-19):** ai-slop-cleaner workflow로 8 Critical + 1 Should-fix 정정 — GRDB 버전 (C1), 실행 모드 기본값 (C2), 중복 Sessions/ block (C3), Phase 2/3 task 확장 (C4), 결정적 race/failure 테스트 + FileOps protocol (C5), self closure 제거 (C6), GRDB DatabaseMigrator API (C7), Date <-> Int64 codec 명시 (C8), XcodeGen product 명시 (S1). 부록 §A에 매핑 표.
 
 **Goal:** Spec v3.3의 v1 Core 핵심 루프(촬영 → 자동 세션 묶음 → 로컬 저장 → 직전 사진 확인 → 메모 편집)를 구현. Storage 인프라(GRDB + 단일 writer actor) + Camera(AVFoundation thin wrapper + UI) + PhotoDetail(메모 편집)을 닫는다.
 
@@ -59,17 +64,20 @@ export CAMORK_SIM="iPhone 17 Pro"   # 또는 가용한 다른 iPhone 모델
 Camork/
 ├─ Storage/                          [신규 — Plan B Phase 1]
 │  ├─ Database.swift                 — GRDB DatabaseWriter open + path 정책
-│  ├─ Migrations.swift               — migration v1 (Photo, Session)
-│  ├─ MediaFileSystem.swift          — staging/.staging/final/thumbnail 디렉토리 관리
-│  ├─ Photo.swift                    — struct + GRDB codec
-│  ├─ Session.swift                  — struct + GRDB codec
+│  ├─ Migrations.swift               — migration v1 (Photo, Session) + makeMigrator() 노출
+│  ├─ MediaFileSystem.swift          — staging/.staging/final/thumbnail (init throws, FileOps protocol 구현)
+│  ├─ FileOps.swift                  — protocol (writeStaging / mv / removeFinal 등) for test seams
+│  ├─ Photo.swift                    — struct + GRDB codec (Date ↔ Int64 explicit DatabaseValueConvertible)
+│  ├─ Session.swift                  — struct + GRDB codec (동일)
 │  ├─ LocationSnapshot.swift         — struct, embed columns
 │  ├─ MediaKind.swift                — enum (photo only, CHECK 제약과 일치)
 │  └─ ExifData.swift                 — struct, JSON blob 직렬화
-├─ Sessions/                         [신규 — Phase 1.3, 1.4]
+├─ Sessions/                         [신규 — Phase 1.5, 1.6, 3.1]
 │  ├─ PhotoCapturePayload.swift      — Sendable struct (callback → actor hop)
 │  ├─ SessionAssignmentPolicy.swift  — pure helper, decideSession
-│  └─ MediaStorage.swift             — actor (단일 writer + saveCapture + Orphan reaper)
+│  ├─ MediaStorage.swift             — actor (단일 writer + saveCapture + Orphan reaper)
+│  ├─ MediaStorageTestHooks.swift    [test-only seam, #if DEBUG] — afterManualFlagSnapshot / beforeDBCommit hooks for deterministic race tests
+│  └─ PhotoMemoEditor.swift          — 메모 update 로직 (Phase 3.1, MediaStorage 위임)
 ├─ Services/                         [신규 — Phase 2a, 2b]
 │  ├─ PermissionsService.swift       — 카메라/위치 권한 매핑 (마이크 제외)
 │  └─ LocationService.swift          — CLLocationManager, latest known snapshot
@@ -79,13 +87,11 @@ Camork/
 │  ├─ CameraView.swift               — UIViewControllerRepresentable (preview layer)
 │  ├─ CameraScreen.swift             — 메인 카메라 화면 (@MainActor SwiftUI View)
 │  └─ Internal/                      — 비즈니스 로직 (단위 테스트 대상)
-│     ├─ CameraScreenViewState.swift — permission state → UI variant + chip pending
+│     ├─ CameraScreenViewState.swift — permission state → UI variant + chip pending + in-flight ignore
 │     ├─ CameraSessionBuilder.swift  — AVCaptureSession configuration 빌더 (pure)
 │     └─ ExifBuilder.swift           — AVCapturePhoto → ExifData
 ├─ Gallery/                          [신규 — Phase 3 (Plan C에서 확장)]
 │  └─ PhotoDetailView.swift          — 단일 사진 풀스크린 + 메모 sheet
-├─ Sessions/                         [Phase 3 추가]
-│  └─ PhotoMemoEditor.swift          — 메모 update 로직 (테스트 대상)
 └─ AppShell/
    └─ DependencyContainer.swift      [신규 — Phase 2c] App root container (Environment)
 
@@ -212,19 +218,22 @@ EOF
 **Files:**
 - Modify: `project.yml` (packages section 추가)
 
-- [ ] **Step 1: project.yml에 GRDB SPM 추가**
+- [ ] **Step 1: project.yml에 GRDB SPM 추가** (C1 + S1)
+
+**버전 결정**: 공식 GitHub Releases 페이지에서 확인된 최신 stable은 **v7.10.0 (2026-02-15 release)**. exactVersion으로 pin. 만약 7.10.0 빌드 실패하면 **새 dependency 결정으로 기록** (silent downgrade 금지).
 
 ```yaml
 packages:
   GRDB:
-    url: https://github.com/groue/GRDB.swift
-    exactVersion: "7.7.0"   # 작업 시점 latest stable 확인 후 고정
+    url: https://github.com/groue/GRDB.swift.git   # 공식 .git suffix
+    exactVersion: "7.10.0"
 
 targets:
   Camork:
     # ... 기존 설정 ...
     dependencies:
       - package: GRDB
+        product: GRDB   # XcodeGen이 product를 명시적으로 link
 ```
 
 - [ ] **Step 2: xcodegen + 빌드 검증**
@@ -250,31 +259,35 @@ git add project.yml Camork.xcodeproj/
 git add Camork.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved 2>/dev/null || true
 
 git commit -F- <<'EOF'
-add GRDB.swift SPM dependency with pinned exactVersion
+add GRDB.swift v7.10.0 SPM dependency pinned via exactVersion
 
-Plan B Phase 1.1 — GRDB는 메타데이터 DB 전용. exactVersion으로 Package.resolved
-고정해 dependency drift 방지.
+Plan B Phase 1.1 — GRDB.swift v7.10.0 (2026-02-15 release, 공식 GitHub Releases
+페이지 검증)을 exactVersion으로 pin. metadata DB 전용 (미디어는 파일 시스템).
+product: GRDB 명시.
 
-Constraint: exactVersion 고정 (ADR 결정 #1), GRDB는 metadata only (미디어는 파일 시스템)
+Constraint: exactVersion 고정 (ADR 결정 #1), 공식 .git URL + product 명시, GRDB는 metadata only
 Rejected: "from:" 범위 의존성 — minor 변화로 빌드 깨질 가능성
+Rejected: silent downgrade — 빌드 실패 시 새 dependency 결정으로 기록해야 함
 Confidence: high
 Scope-risk: narrow
-Directive: 후속 task에서 GRDB import + DatabaseWriter 사용
-Tested: xcodebuild build SUCCEEDED, GRDB import 가능
+Directive: 후속 task에서 GRDB import + DatabaseWriter 사용. 빌드 실패 시 immediate halt + 사용자 알림.
+Tested: xcodebuild build SUCCEEDED, GRDB import 가능, Package.resolved에 7.10.0 고정 확인
 Not-tested: 실제 GRDB API 동작 — Task 1.2 Database.swift 작성 시 검증
 EOF
 ```
 
 ---
 
-### Task 1.2 — Migrations + Database 골격
+### Task 1.2 — Migrations + Database 골격 (C7 GRDB API 정정)
 
 **Files:**
 - Create: `Camork/Storage/Database.swift`
 - Create: `Camork/Storage/Migrations.swift`
 - Test: `CamorkTests/MigrationsTests.swift`
 
-- [ ] **Step 1: 실패 테스트** (Migration idempotent + schema 생성)
+**C7 정정**: 마이그레이션 검증은 GRDB의 비공식 `schemaVersion()` 대신 **공식 `DatabaseMigrator.appliedMigrations(_:)` API** 사용. `Migrations.makeMigrator() -> DatabaseMigrator`를 노출해 test가 직접 호출.
+
+- [ ] **Step 1: 실패 테스트** (Migration idempotent + schema 생성, C7 정정 API)
 
 ```swift
 // CamorkTests/MigrationsTests.swift
@@ -284,22 +297,25 @@ import GRDB
 
 @Suite("Migrations")
 struct MigrationsTests {
-    @Test("migration v1을 두 번 호출해도 schemaVersion 변화 없음")
+    @Test("migration v1 두 번 호출해도 appliedMigrations 동일")
     func idempotent() throws {
         let db = try DatabaseQueue()
-        try Migrations.register(on: db)
-        let firstVersion = try db.read { try $0.schemaVersion() }
+        let migrator = Migrations.makeMigrator()
 
-        try Migrations.register(on: db)
-        let secondVersion = try db.read { try $0.schemaVersion() }
+        try migrator.migrate(db)
+        let first = try db.read { try migrator.appliedIdentifiers($0) }
 
-        #expect(firstVersion == secondVersion)
+        try migrator.migrate(db)
+        let second = try db.read { try migrator.appliedIdentifiers($0) }
+
+        #expect(first == second)
+        #expect(first.contains("v1"))
     }
 
     @Test("v1 schema 생성 후 Session/Photo 테이블 존재")
     func schemaCreated() throws {
         let db = try DatabaseQueue()
-        try Migrations.register(on: db)
+        try Migrations.makeMigrator().migrate(db)
 
         try db.read { row in
             let sessions = try Row.fetchAll(row, sql: "SELECT name FROM sqlite_master WHERE type='table'")
@@ -312,7 +328,7 @@ struct MigrationsTests {
     @Test("Photo.kind에 'video' insert 시 CHECK 제약으로 실패")
     func checkConstraint() throws {
         let db = try DatabaseQueue()
-        try Migrations.register(on: db)
+        try Migrations.makeMigrator().migrate(db)
 
         #expect(throws: DatabaseError.self) {
             try db.write { row in
@@ -366,7 +382,7 @@ enum CamorkDatabase {
         }
 
         let queue = try DatabaseQueue(path: url.path, configuration: config)
-        try Migrations.register(on: queue)
+        try Migrations.makeMigrator().migrate(queue)
         return queue
     }
 }
@@ -377,7 +393,8 @@ enum CamorkDatabase {
 import GRDB
 
 enum Migrations {
-    static func register(on writer: any DatabaseWriter) throws {
+    /// 공식 GRDB API 노출 — test가 `appliedIdentifiers(_:)`로 검증 가능 (C7)
+    static func makeMigrator() -> DatabaseMigrator {
         var migrator = DatabaseMigrator()
 
         migrator.registerMigration("v1") { db in
@@ -416,7 +433,7 @@ enum Migrations {
                 """)
         }
 
-        try migrator.migrate(writer)
+        return migrator
     }
 }
 ```
@@ -458,7 +475,7 @@ EOF
 
 ---
 
-### Task 1.3 — 모델 (Photo, Session, LocationSnapshot, MediaKind, ExifData)
+### Task 1.3 — 모델 (Photo, Session, LocationSnapshot, MediaKind, ExifData) + Date codec (C8)
 
 **Files:**
 - Create: `Camork/Storage/Photo.swift`
@@ -467,11 +484,83 @@ EOF
 - Create: `Camork/Storage/MediaKind.swift`
 - Create: `Camork/Storage/ExifData.swift`
 
-- [ ] **Step 1: 5개 파일 작성**
+**C8 정정**: schema의 `createdAt INTEGER NOT NULL`, `capturedAt INTEGER NOT NULL`, `deletedAt INTEGER`은 **Unix epoch seconds (Int64)**. GRDB가 silently `Date.timeIntervalSinceReferenceDate` 또는 ISO 8601 string으로 매핑하지 않도록, **`DatabaseValueConvertible` 명시 매핑**을 모델에 둠.
 
-(spec v3.3 §3.2 Swift 모델 참조. 각 struct에 `FetchableRecord, PersistableRecord, Codable, Sendable` 채택. LocationSnapshot은 embed columns로 풀어 GRDB column 매핑.)
+- [ ] **Step 1: 5개 파일 작성** (C8 Date codec explicit)
 
-각 파일은 단일 책임 (각 30~60 lines).
+각 모델에 명시적 `DatabaseValueConvertible` 매핑:
+
+```swift
+// Camork/Storage/Photo.swift (예시)
+import GRDB
+import Foundation
+
+struct Photo: Identifiable, Codable, Sendable, FetchableRecord, PersistableRecord {
+    let id: UUID
+    let sessionId: UUID
+    let fileName: String
+    let thumbnailFileName: String?
+    let kind: MediaKind
+    let capturedAt: Date
+    let location: LocationSnapshot?
+    let exif: ExifData?
+    var note: String?
+    var deletedAt: Date?
+
+    // C8: Date ↔ Int64 (Unix epoch seconds) 명시 매핑
+    enum Columns: String, ColumnExpression {
+        case id, sessionId, fileName, thumbnailFileName, kind
+        case capturedAt, lat, lon, horizontalAccuracy, placeName
+        case exifJson, note, deletedAt
+    }
+
+    init(row: Row) throws {
+        id = try UUID.fromDatabaseValue(row[Columns.id]) ?? UUID()
+        sessionId = try UUID.fromDatabaseValue(row[Columns.sessionId]) ?? UUID()
+        fileName = row[Columns.fileName]
+        thumbnailFileName = row[Columns.thumbnailFileName]
+        kind = MediaKind(rawValue: row[Columns.kind]) ?? .photo
+        capturedAt = Date(timeIntervalSince1970: row[Columns.capturedAt])   // C8: Int64 → Date
+        // LocationSnapshot embed
+        if let lat: Double = row[Columns.lat], let lon: Double = row[Columns.lon] {
+            location = LocationSnapshot(
+                latitude: lat, longitude: lon,
+                horizontalAccuracy: row[Columns.horizontalAccuracy] ?? -1,
+                placeName: row[Columns.placeName]
+            )
+        } else { location = nil }
+        if let json: String = row[Columns.exifJson] {
+            exif = try JSONDecoder().decode(ExifData.self, from: Data(json.utf8))
+        } else { exif = nil }
+        note = row[Columns.note]
+        if let d: TimeInterval = row[Columns.deletedAt] {
+            deletedAt = Date(timeIntervalSince1970: d)
+        } else { deletedAt = nil }
+    }
+
+    func encode(to container: inout PersistenceContainer) throws {
+        container[Columns.id] = id.uuidString
+        container[Columns.sessionId] = sessionId.uuidString
+        container[Columns.fileName] = fileName
+        container[Columns.thumbnailFileName] = thumbnailFileName
+        container[Columns.kind] = kind.rawValue
+        container[Columns.capturedAt] = capturedAt.timeIntervalSince1970   // C8: Date → Int64
+        container[Columns.lat] = location?.latitude
+        container[Columns.lon] = location?.longitude
+        container[Columns.horizontalAccuracy] = location?.horizontalAccuracy
+        container[Columns.placeName] = location?.placeName
+        if let exif {
+            container[Columns.exifJson] = String(data: try JSONEncoder().encode(exif), encoding: .utf8)
+        }
+        container[Columns.note] = note
+        container[Columns.deletedAt] = deletedAt?.timeIntervalSince1970
+    }
+}
+```
+
+Session 모델도 동일 패턴 (createdAt/endedAt/deletedAt 모두 Int64 매핑). 단위 테스트로 round-trip 검증 (Task 1.3 끝 step에 추가).
+
+각 파일은 단일 책임 (각 50~100 lines).
 
 - [ ] **Step 2: 빌드 검증**
 
@@ -509,11 +598,46 @@ EOF
 
 ---
 
-### Task 1.4 — MediaFileSystem (staging/final/thumbnail 디렉토리 관리)
+### Task 1.4 — FileOps protocol + MediaFileSystem (C5 정정)
 
 **Files:**
-- Create: `Camork/Storage/MediaFileSystem.swift`
+- Create: `Camork/Storage/FileOps.swift`           — protocol (test seam)
+- Create: `Camork/Storage/MediaFileSystem.swift`   — concrete impl, init throws (C5)
 - Test: `CamorkTests/MediaFileSystemTests.swift`
+
+**C5 정정**: 
+- `MediaFileSystem.init`은 `try?`로 bootstrap error를 swallow하지 않음 → **`init(root:) throws`**.
+- Failure matrix 테스트를 위한 **`protocol FileOps`** 도입 — production은 `MediaFileSystem`, test는 `FakeFileOps`로 staging write/mv/final-delete 실패를 강제할 수 있게.
+
+```swift
+// Camork/Storage/FileOps.swift
+import Foundation
+
+protocol FileOps: Sendable {
+    func writeStaging(fileName: String, data: Data) throws
+    func moveStagingToFinal(fileName: String) throws
+    func removeStaging(fileName: String) throws
+    func removeFinal(fileName: String) throws
+    func stagingExists(fileName: String) throws -> Bool
+    func finalExists(fileName: String) throws -> Bool
+    func enumerateFinal() throws -> [String]
+}
+```
+
+```swift
+// Camork/Storage/MediaFileSystem.swift (C5 — init throws)
+struct MediaFileSystem: FileOps {
+    let root: URL  // 보통 Application Support/Camork
+
+    init(root: URL) throws {
+        self.root = root
+        try Self.bootstrap(root: root)   // C5: 에러 swallow 금지
+    }
+
+    static func bootstrap(root: URL) throws { /* 기존 로직 */ }
+    // ... 나머지 FileOps 구현
+}
+```
 
 - [ ] **Step 1: 실패 테스트**
 
@@ -558,15 +682,15 @@ private func tempDir() -> URL {
 - [ ] **Step 2~5**: 실패 확인 → 구현 → 통과 → 커밋 (Lore)
 
 ```swift
-// Camork/Storage/MediaFileSystem.swift
+// Camork/Storage/MediaFileSystem.swift  (C5: init throws, FileOps 채택)
 import Foundation
 
-struct MediaFileSystem: Sendable {
+struct MediaFileSystem: FileOps {
     let root: URL  // 보통 Application Support/Camork
 
-    init(root: URL) {
+    init(root: URL) throws {
         self.root = root
-        try? Self.bootstrap(root: root)
+        try Self.bootstrap(root: root)   // C5: 에러 swallow 금지
     }
 
     static func bootstrap(root: URL) throws {
@@ -703,11 +827,46 @@ Lore commit.
 
 ---
 
-### Task 1.6 — MediaStorage actor (saveCapture + Orphan reaper + 단위 테스트)
+### Task 1.6 — MediaStorage actor (saveCapture + Orphan reaper + 결정적 race/failure 테스트, C5+C6)
 
 **Files:**
 - Create: `Camork/Sessions/MediaStorage.swift`
+- Create: `Camork/Sessions/MediaStorageTestHooks.swift`   [`#if DEBUG` only, C5]
 - Test: `CamorkTests/MediaStorageTests.swift`
+
+**C5 정정 (deterministic test hooks)**: `Task { saveCapture }` + `markPendingNewSession()` 만으로는 happens-before 순서를 보장 못함. `MediaStorageTestHooks` (test-only) 도입:
+
+```swift
+// Camork/Sessions/MediaStorageTestHooks.swift
+#if DEBUG
+struct MediaStorageTestHooks: Sendable {
+    var afterManualFlagSnapshot: (@Sendable () async -> Void)?  // gate for race tests
+    var beforeDBCommit: (@Sendable () async -> Void)?          // failure injection / ordering
+    var forceFinalRemoveFailure: Bool = false                  // cleanup branch test
+}
+#endif
+```
+
+MediaStorage init에 `#if DEBUG` parameter:
+```swift
+actor MediaStorage {
+    private var pendingManualSessionStart = false
+    private let db: any DatabaseWriter
+    private let fs: any FileOps   // C5: protocol으로 test 가능
+    private let policy: SessionAssignmentPolicy
+
+    #if DEBUG
+    var testHooks: MediaStorageTestHooks = .init()
+    #endif
+
+    init(db: any DatabaseWriter, fs: any FileOps, policy: SessionAssignmentPolicy = .init()) {
+        self.db = db; self.fs = fs; self.policy = policy
+    }
+    // ...
+}
+```
+
+**C6 정정 (closure에 self 캡쳐 금지)**: GRDB write closure 안에서 `self.policy`/`self.resolveSessionId` 직접 접근 금지. snapshot + free function으로 분리.
 
 (가장 큰 task. spec v3.3 §5.3 sample code 그대로 구현. 단계별 step.)
 
@@ -747,16 +906,35 @@ struct MediaStorageTests {
     @Test("Orphan reaper — Media/에 있지만 DB row 없는 파일 삭제")
     func reaperOrphan() async throws { /* ... */ }
 
-    @Test("Race-style: captured manualFlag == false, in-flight 중 markPending — commit 후 new flag 유지")
+    @Test("Race: captured manualFlag == false, beforeDBCommit hook에서 markPending — commit 후 new flag 유지 (C5 결정적)")
     func raceManualFlagSetDuringInFlight() async throws {
-        let (storage, db, _) = try await makeStorage()
-        // 1st save: manualFlag == false
-        let saveTask = Task { try await storage.saveCapture(makePayload()) }
-        // in-flight 중 새 mark
-        await storage.markPendingNewSession()
-        _ = try await saveTask.value
-        // 1st save commit 후에도 flag 유지되어야 함
+        let (storage, _, _) = try await makeStorage()
+
+        // C5: deterministic gate — beforeDBCommit hook에서 mark 호출
+        await storage.installTestHook(beforeDBCommit: { [storage] in
+            await storage.markPendingNewSession()
+        })
+
+        let photo = try await storage.saveCapture(makePayload())
+        #expect(photo.sessionId != nil)
+        // beforeDBCommit hook에서 set된 flag는 1st save가 wipe하지 않아야 함
         #expect(await storage.isPendingNewSession() == true)
+    }
+
+    @Test("Failure matrix: mv 실패 (FakeFileOps) → staging cleanup + abort")
+    func failureMvDeterministic() async throws {
+        let fakeFs = FakeFileOps(failOn: .moveStagingToFinal)
+        let storage = makeStorage(fs: fakeFs)
+        await #expect(throws: FakeFileOpsError.self) {
+            _ = try await storage.saveCapture(makePayload())
+        }
+        #expect(fakeFs.stagingCleanupCalled)
+    }
+
+    @Test("Failure matrix: DB transaction fail → final 파일 best-effort 삭제")
+    func failureDBTransaction() async throws {
+        // DB closure 안에서 강제 throw로 transaction abort 시뮬
+        // ...
     }
 
     @Test("Race-style: captured manualFlag == true 두 번 connsecutive saveCapture — 첫 save는 new session, 두 번째 save는 manualFlag 사용 안 함 (consumed flag 깨끗)")
@@ -769,15 +947,67 @@ struct MediaStorageTests {
 
 - [ ] **Step 2~5**: 실패 → MediaStorage 구현 (spec v3.3 §5.3 sample code 채택) → 통과 → 커밋
 
-핵심 구현:
+핵심 구현 (C6 — closure에 self 캡쳐 금지):
+
 ```swift
+// Camork/Sessions/MediaStorage.swift
+
+// C6: DB helpers는 free functions / static — closure에서 self 의존성 제거
+private func fetchLatestPhoto(db: Database) throws -> Photo? {
+    try Photo
+        .order(Column("capturedAt").desc)
+        .filter(Column("deletedAt") == nil)
+        .fetchOne(db)
+}
+
+private func resolveSessionId(
+    decision: SessionAssignmentPolicy.Decision,
+    payload: PhotoCapturePayload,
+    db: Database
+) throws -> UUID {
+    switch decision {
+    case .continueSession(let id):
+        return id
+    case .newSession:
+        let session = Session(
+            id: UUID(),
+            name: defaultSessionName(at: payload.capturedAt, placeName: payload.location?.placeName),
+            createdAt: payload.capturedAt,
+            firstLocation: payload.location
+        )
+        try session.insert(db)
+        return session.id
+    }
+}
+
+private func insertPhoto(
+    id: UUID,
+    fileName: String,
+    payload: PhotoCapturePayload,
+    sessionId: UUID,
+    db: Database
+) throws -> Photo {
+    let photo = Photo(
+        id: id, sessionId: sessionId, fileName: fileName,
+        thumbnailFileName: nil, kind: .photo,
+        capturedAt: payload.capturedAt,
+        location: payload.location, exif: payload.exif
+    )
+    try photo.insert(db)
+    return photo
+}
+
 actor MediaStorage {
     private var pendingManualSessionStart: Bool = false
     private let db: any DatabaseWriter
-    private let fs: MediaFileSystem
+    private let fs: any FileOps   // C5 protocol
     private let policy: SessionAssignmentPolicy
 
-    init(db: any DatabaseWriter, fs: MediaFileSystem, policy: SessionAssignmentPolicy = .init()) {
+    #if DEBUG
+    var testHooks: MediaStorageTestHooks = .init()
+    #endif
+
+    init(db: any DatabaseWriter, fs: any FileOps, policy: SessionAssignmentPolicy = .init()) {
         self.db = db; self.fs = fs; self.policy = policy
     }
 
@@ -785,12 +1015,21 @@ actor MediaStorage {
     func isPendingNewSession() -> Bool { pendingManualSessionStart }
 
     func saveCapture(_ payload: PhotoCapturePayload) async throws -> Photo {
-        let manualFlag = pendingManualSessionStart  // snapshot (Step 0)
+        // Step 0: manualFlag snapshot (actor isolation, await 전)
+        let manualFlag = pendingManualSessionStart
 
+        #if DEBUG
+        if let hook = testHooks.afterManualFlagSnapshot { await hook() }
+        #endif
+
+        // Step 1: allocate id/path
         let photoId = UUID()
         let fileName = "\(photoId.uuidString).heic"
 
+        // Step 2: staging write (GRDB transaction 밖)
         try fs.writeStaging(fileName: fileName, data: payload.imageData)
+
+        // Step 3: atomic mv → final
         do {
             try fs.moveStagingToFinal(fileName: fileName)
         } catch {
@@ -798,96 +1037,363 @@ actor MediaStorage {
             throw error
         }
 
+        #if DEBUG
+        if let hook = testHooks.beforeDBCommit { await hook() }
+        #endif
+
+        // Step 4: GRDB transaction — C6: self 캡쳐 X, snapshot + free functions
+        let policy = self.policy   // C6: snapshot before await
         let photo: Photo
         do {
-            photo = try await db.write { [manualFlag] db in
-                let previous = try Photo
-                    .order(Column("capturedAt").desc)
-                    .filter(Column("deletedAt") == nil)
-                    .fetchOne(db)
-                let decision = self.policy.decideSession(
+            photo = try await db.write { [manualFlag, policy, photoId, fileName] db in
+                let previous = try fetchLatestPhoto(db: db)
+                let decision = policy.decideSession(
                     previous: previous,
                     current: payload,
                     manualFlag: manualFlag
                 )
-                let sessionId = try self.resolveSessionId(decision: decision, payload: payload, db: db)
-                let photo = Photo(
-                    id: photoId, sessionId: sessionId, fileName: fileName,
-                    kind: .photo, capturedAt: payload.capturedAt,
-                    location: payload.location, exif: payload.exif
+                let sessionId = try resolveSessionId(decision: decision, payload: payload, db: db)
+                return try insertPhoto(
+                    id: photoId, fileName: fileName,
+                    payload: payload, sessionId: sessionId, db: db
                 )
-                try photo.insert(db)
-                return photo
             }
         } catch {
+            // Failure matrix: GRDB transaction fail — best-effort final 삭제, reaper로 cover
             try? fs.removeFinal(fileName: fileName)
             throw error
         }
 
+        // Step 5: consumed flag만 clear (in-flight markPending wipe 방지)
         if manualFlag {
             pendingManualSessionStart = false
         }
         return photo
     }
 
-    func runReaper() async throws { /* ... */ }
+    func runReaper() async throws { /* DB enumerate + fs.enumerateFinal 비교 */ }
     func fetchPhoto(id: UUID) async throws -> Photo? { /* ... */ }
     func updatePhotoNote(photoId: UUID, note: String?) async throws { /* ... */ }
 }
 ```
 
+**핵심 C6 변경**: GRDB closure는 `[manualFlag, policy, photoId, fileName]` capture만 사용. `self` 미참조. DB helpers는 free functions (`fetchLatestPhoto`, `resolveSessionId`, `insertPhoto`).
+
 Lore commit. **Phase 1 완료** — `xcodebuild test`로 Plan A 7건 + Phase 1 신규 ~30건 통과 검증.
 
 ---
 
-## Phase 2 — Camera 캡처 + UI
+## Phase 2 — Camera 캡처 + UI (v1.1 — task-level expansion, C4)
 
-### Phase 2a — PermissionsService + CameraSessionBuilder + 단위 테스트
+### Task 2a.1 — PermissionsService + 단위 테스트
 
-(Tasks 2a.1 ~ 2a.3)
+**Files:**
+- Create: `Camork/Services/PermissionsService.swift`
+- Test: `CamorkTests/PermissionsServiceTests.swift`
 
-- PermissionsService: 카메라/위치 권한 매핑 (마이크 제외). enum `PermissionState { granted, denied, notDetermined, restricted }`.
-- CameraSessionBuilder: AVCaptureSession configuration (preset, AVCapturePhotoOutput, device input). pure builder, 결과는 configuration struct.
-- 단위 테스트: 권한 상태 매핑, configuration 빌더 출력.
+- [ ] **Step 1: 실패 테스트**
 
-(상세 TDD step은 Plan A 패턴 답습.)
+```swift
+@Suite("PermissionsService")
+struct PermissionsServiceTests {
+    @Test("AVAuthorizationStatus → PermissionState 매핑 — granted")
+    func cameraGranted() {
+        let state = PermissionsService.map(camera: .authorized)
+        #expect(state == .granted)
+    }
+    @Test("notDetermined / denied / restricted 매핑")
+    func cameraOthers() { /* 3 cases */ }
+    @Test("CLAuthorizationStatus → location 매핑")
+    func locationMapping() { /* 4 cases */ }
+}
+```
 
-### Phase 2b — MediaCapture + LocationService
+- [ ] **Step 2~5**: 실패 → PermissionsService 구현 (카메라/위치만, 마이크 X) → 통과 → Lore commit
 
-(Tasks 2b.1 ~ 2b.2)
+```swift
+enum PermissionState: Sendable { case granted, denied, notDetermined, restricted }
 
-- LocationService: CLLocationManager wrapper. `latestKnown()` 동기 snapshot getter. CLLocationManagerDelegate로 latest 갱신.
-- MediaCapture: AVCapturePhotoCaptureDelegate. callback queue에서 `Data` + ExifBuilder.build(photo) + LocationService.latestKnown() → `PhotoCapturePayload` 조립. `Task { [payload] in await mediaStorage.saveCapture(payload) }` hop.
+struct PermissionsService: Sendable {
+    static func map(camera status: AVAuthorizationStatus) -> PermissionState {
+        switch status {
+        case .authorized: .granted
+        case .denied: .denied
+        case .notDetermined: .notDetermined
+        case .restricted: .restricted
+        @unknown default: .denied
+        }
+    }
+    static func map(location status: CLAuthorizationStatus) -> PermissionState { /* ... */ }
 
-### Phase 2c — Camera UI + CameraScreenViewState + DependencyContainer + ScenePhase hook
+    func cameraState() -> PermissionState { /* live query */ }
+    func locationState() -> PermissionState { /* live query */ }
 
-(Tasks 2c.1 ~ 2c.5)
+    func requestCamera() async -> PermissionState { /* ... */ }
+    func requestLocation() async -> PermissionState { /* ... */ }
+}
+```
 
-- DependencyContainer: App root container. `MediaStorage`, `LocationService`, `PermissionsService` 보유. Environment로 전파.
-- CameraScreenViewState: 순수 함수 `viewState(permission:isPending:isSaving:) -> ViewState`. 단위 테스트로 모든 분기 검증.
-- CameraScreen: SwiftUI View, Environment에서 dependencies 받음.
-- **chip in-flight ignore 테스트** (사용자 메모): CameraScreenViewState 단위 테스트에 "saveCapture in-flight 동안 chip은 disabled 상태" 검증 추가.
-- RootTabView의 placeholder를 실제 CameraScreen으로 교체.
-- ScenePhase 감지 → `CameraSession.stopRunning()` hook.
+### Task 2a.2 — CameraSessionBuilder + ExifBuilder + 단위 테스트
 
-**Phase 2 완료**: 시뮬레이터 build/run + 권한 UI + (test-only) `injectSeededCapture`로 DB insert 검증. 실제 카메라 capture는 실기기 manual.
+**Files:**
+- Create: `Camork/Camera/Internal/CameraSessionBuilder.swift`
+- Create: `Camork/Camera/Internal/ExifBuilder.swift`
+- Test: `CamorkTests/CameraSessionBuilderTests.swift`
+- Test: `CamorkTests/ExifBuilderTests.swift`
+
+- [ ] **Step 1: 실패 테스트**
+
+```swift
+@Suite("CameraSessionBuilder")
+struct CameraSessionBuilderTests {
+    @Test("default config: photo preset + AVCapturePhotoOutput + back camera input descriptor")
+    func defaultConfig() {
+        let config = CameraSessionBuilder.makeConfiguration(facing: .back)
+        #expect(config.sessionPreset == .photo)
+        #expect(config.outputs.contains(.photo))
+        #expect(config.deviceFacing == .back)
+    }
+    @Test("front camera 전환")
+    func frontFacing() { /* ... */ }
+}
+
+@Suite("ExifBuilder")
+struct ExifBuilderTests {
+    @Test("AVCapturePhoto의 metadata에서 ISO/shutterSpeed/aperture 추출")
+    func extractsExifFields() { /* mock AVCapturePhoto metadata dict */ }
+    @Test("metadata 누락 시 옵셔널 nil 유지")
+    func missingFields() { /* ... */ }
+}
+```
+
+- [ ] **Step 2~5**: 실패 → 구현 (pure builder, no AVCaptureSession 직접 생성) → 통과 → commit
+
+### Task 2a.3 — CameraSession (AVFoundation thin wrapper)
+
+**Files:**
+- Create: `Camork/Camera/CameraSession.swift`
+
+- [ ] **Step 1**: AVCaptureSession 인스턴스 owner. CameraSessionBuilder의 configuration을 받아 시작/정지. 단위 테스트 없음 (실기기 manual). 빌드 검증만.
+- [ ] **Step 2**: Lore commit.
+
+### Task 2b.1 — LocationService
+
+**Files:**
+- Create: `Camork/Services/LocationService.swift`
+- Test: `CamorkTests/LocationServiceTests.swift`
+
+- [ ] **Step 1: 실패 테스트**
+
+```swift
+@Suite("LocationService")
+struct LocationServiceTests {
+    @Test("권한 거부 상태에서 latestKnown은 nil")
+    func deniedReturnsNil() { /* ... */ }
+    @Test("CLLocationManager가 location 전달 시 latestKnown snapshot 갱신")
+    func snapshotUpdate() { /* mock delegate callback */ }
+    @Test("horizontalAccuracy 음수 시 invalid로 nil 반환")
+    func invalidAccuracy() { /* ... */ }
+}
+```
+
+- [ ] **Step 2~5**: CLLocationManagerDelegate 구현, sync snapshot getter (`func latestKnown() -> LocationSnapshot?`)
+
+### Task 2b.2 — MediaCapture (delegate + Sendable payload + actor hop)
+
+**Files:**
+- Create: `Camork/Camera/MediaCapture.swift`
+
+- [ ] **Step 1**: AVCapturePhotoCaptureDelegate. `photoOutput(_:didFinishProcessingPhoto:error:)` callback에서:
+  1. `Data` 추출 (HEIC)
+  2. `ExifBuilder.build(from: photo)` → ExifData
+  3. `locationService.latestKnown()` 동기 호출 (callback queue에서)
+  4. `PhotoCapturePayload` 조립
+  5. `Task { [payload] in try await mediaStorage.saveCapture(payload) }` hop
+
+- [ ] **Step 2**: 빌드 검증. 실제 capture 검증은 실기기 manual.
+- [ ] **Step 3**: Lore commit (capture delegate + Sendable payload hop, AVCapturePhoto 직접 hop 금지 명시).
+
+### Task 2c.1 — DependencyContainer
+
+**Files:**
+- Create: `Camork/AppShell/DependencyContainer.swift`
+
+- [ ] **Step 1**: App root container. `MediaStorage`, `LocationService`, `PermissionsService`, `CameraSession` 보유. Singleton 금지 — App root에서 1회 생성 후 Environment로 전파.
+
+```swift
+@MainActor
+final class DependencyContainer: ObservableObject {
+    let mediaStorage: MediaStorage
+    let locationService: LocationService
+    let permissionsService: PermissionsService
+
+    init() throws {
+        let db = try CamorkDatabase.open()
+        let fs = try MediaFileSystem(root: /* app support */)
+        self.mediaStorage = MediaStorage(db: db, fs: fs)
+        self.locationService = LocationService()
+        self.permissionsService = PermissionsService()
+    }
+}
+
+// CamorkApp.swift에서:
+// @StateObject private var deps = try! DependencyContainer()
+// RootTabView().environmentObject(deps)
+```
+
+- [ ] **Step 2**: CamorkApp.swift 업데이트 + RootTabView.swift environmentObject.
+- [ ] **Step 3**: Lore commit.
+
+### Task 2c.2 — CameraScreenViewState + 단위 테스트 (UI 분기 + chip in-flight)
+
+**Files:**
+- Create: `Camork/Camera/Internal/CameraScreenViewState.swift`
+- Test: `CamorkTests/CameraScreenViewStateTests.swift`
+
+- [ ] **Step 1: 실패 테스트**
+
+```swift
+@Suite("CameraScreenViewState")
+struct CameraScreenViewStateTests {
+    @Test("camera granted + pending false + not saving → cameraActive(.chipIdle)")
+    func cameraActiveIdle() {
+        let v = CameraScreenViewState.compute(
+            camera: .granted, location: .granted,
+            isPending: false, isInFlight: false
+        )
+        #expect(v == .cameraActive(chip: .idle))
+    }
+    @Test("camera denied → permissionDenied(.camera)")
+    func cameraDenied() { /* ... */ }
+    @Test("isPending true + in-flight false → cameraActive(.chipPending)")
+    func chipPending() { /* ... */ }
+    @Test("isInFlight true → cameraActive(.chipDisabled) regardless of isPending")
+    func chipDisabledDuringSave() {
+        // UI-level test (사용자 review 메모): in-flight 동안 chip ignored
+        let v1 = CameraScreenViewState.compute(camera: .granted, location: .granted, isPending: false, isInFlight: true)
+        let v2 = CameraScreenViewState.compute(camera: .granted, location: .granted, isPending: true, isInFlight: true)
+        #expect(v1 == .cameraActive(chip: .disabled))
+        #expect(v2 == .cameraActive(chip: .disabled))
+    }
+    @Test("camera notDetermined → requestPrompt")
+    func requestPrompt() { /* ... */ }
+}
+```
+
+- [ ] **Step 2~5**: 구현 + Lore commit
+
+```swift
+enum CameraScreenViewState: Equatable {
+    case cameraActive(chip: ChipState)
+    case permissionDenied(target: PermissionTarget)
+    case requestPrompt
+    case cameraInitError(reason: String)
+
+    enum ChipState: Equatable { case idle, pending, disabled }
+    enum PermissionTarget: Equatable { case camera, location }
+
+    static func compute(
+        camera: PermissionState, location: PermissionState,
+        isPending: Bool, isInFlight: Bool
+    ) -> CameraScreenViewState {
+        // 분기 로직 (pure)
+    }
+}
+```
+
+### Task 2c.3 — CameraView (UIViewControllerRepresentable)
+
+**Files:**
+- Create: `Camork/Camera/CameraView.swift`
+
+- [ ] **Step 1**: AVCaptureVideoPreviewLayer를 UIView로 래핑. SwiftUI binding은 CameraSession actor의 isRunning만 (minimal).
+- [ ] **Step 2**: 빌드 검증 + Lore commit.
+
+### Task 2c.4 — CameraScreen + ScenePhase hook
+
+**Files:**
+- Create: `Camork/Camera/CameraScreen.swift`
+- Modify: `Camork/RootTabView.swift` — placeholder → 실제 CameraScreen
+
+- [ ] **Step 1**: CameraScreen SwiftUI View. Environment에서 DependencyContainer 받음. `@State`로 `isInFlight: Bool` 관리. CameraScreenViewState.compute 결과로 layout 분기.
+
+- [ ] **Step 2: ScenePhase hook**
+```swift
+@Environment(\.scenePhase) var scenePhase
+
+.onChange(of: scenePhase) { _, phase in
+    if phase == .background { Task { await cameraSession.stopRunning() } }
+    if phase == .active && viewState == .cameraActive { Task { await cameraSession.startRunning() } }
+}
+```
+
+- [ ] **Step 3**: 셔터 탭 → `isInFlight = true` → MediaCapture trigger → `Task { await mediaStorage.saveCapture(...) }` → `isInFlight = false`.
+
+- [ ] **Step 4**: "새 현장" 칩 — disabled when isInFlight, otherwise `await mediaStorage.markPendingNewSession()`.
+
+- [ ] **Step 5**: 좌하단 thumb — 직전 사진 (mediaStorage.fetchLatest()). 탭 시 PhotoDetail 진입 (Phase 3).
+
+- [ ] **Step 6**: Preview Dark/Light/AX5 + 권한 거부 variant.
+
+- [ ] **Step 7**: 빌드 + 시뮬레이터 검증 (cameraInitError UI 보임) + Lore commit.
+
+### Task 2c.5 — RootTabView 카메라 탭 placeholder 교체 + 빌드 검증
+
+**Files:**
+- Modify: `Camork/RootTabView.swift`
+
+- [ ] **Step 1**: `CameraPlaceholderView()` → `CameraScreen()`.
+- [ ] **Step 2**: 시뮬레이터 build/run + 시각 검증 (다크/라이트/AX5).
+- [ ] **Step 3**: Lore commit + Phase 2 완료.
+
+**Phase 2 완료 기준**: 시뮬레이터 build/run + 권한 UI + (`#if DEBUG`) seeded capture로 DB insert/PhotoDetail 진입 검증. 실제 카메라 capture는 실기기 manual (Phase 4).
 
 ---
 
-## Phase 3 — PhotoDetail + 메모
+## Phase 3 — PhotoDetail + 메모 (v1.1 — task-level expansion, C4)
 
 ### Task 3.1 — PhotoMemoEditor + 단위 테스트
 
-- PhotoMemoEditor: `updateNote(photoId:note:)` 메서드 (MediaStorage 위임). nil 처리.
-- 단위 테스트: 메모 update + reload + nil 정책.
+**Files:**
+- Create: `Camork/Sessions/PhotoMemoEditor.swift`   (C3: 단일 Sessions/ block)
+- Test: `CamorkTests/PhotoMemoEditorTests.swift`
 
-### Task 3.2 — PhotoDetailView
+- [ ] **Step 1: 실패 테스트**
 
-- `Camork/Gallery/PhotoDetailView.swift` — fullScreenCover, ZoomableScrollView, 메모 sheet (TextEditor).
-- CameraScreen의 thumb 탭 → PhotoDetailView 진입.
-- Preview Dark/Light/AX5.
+```swift
+@Suite("PhotoMemoEditor")
+struct PhotoMemoEditorTests {
+    @Test("note update 후 fetchPhoto에서 동일 값")
+    func updateAndReload() async throws { /* ... */ }
+    @Test("note = nil로 설정")
+    func clearToNil() async throws { /* ... */ }
+    @Test("photoId not found → throws PhotoMemoEditor.Error.notFound")
+    func notFound() async throws { /* ... */ }
+}
+```
 
-**Phase 3 완료**: 시뮬레이터에서 seeded capture → thumb → PhotoDetail → 메모 편집 → 저장 → 재진입 검증.
+- [ ] **Step 2~5**: 구현 (MediaStorage.updatePhotoNote 위임) + Lore commit
+
+### Task 3.2 — PhotoDetailView (full-screen + 메모 sheet)
+
+**Files:**
+- Create: `Camork/Gallery/PhotoDetailView.swift`
+
+- [ ] **Step 1**: SwiftUI View. fullScreenCover로 thumb 탭 시 진입. `@State var note: String`, `@State var showMemoSheet: Bool`.
+
+- [ ] **Step 2**: Zoomable image (ScrollView + UIScrollView wrapper or native magnification).
+
+- [ ] **Step 3**: 하단 메타 (시간/지역/사진수).
+
+- [ ] **Step 4**: 메모 편집 sheet — TextEditor + 닫기 시 PhotoMemoEditor.update.
+
+- [ ] **Step 5**: Preview Dark/Light/AX5 (seeded photo로).
+
+- [ ] **Step 6**: CameraScreen의 thumb 탭 → PhotoDetailView 진입 (sheet binding).
+
+- [ ] **Step 7**: 빌드 + 시뮬레이터 (seeded capture 후 thumb 탭 → 풀스크린 → 메모 입력 → 재진입 검증) + Lore commit.
+
+**Phase 3 완료 기준**: 시뮬레이터에서 seeded capture → thumb → PhotoDetail → 메모 편집 → 저장 → 재진입 시 메모 유지.
 
 ---
 
@@ -980,9 +1486,26 @@ xcodebuild -scheme Camork \
 
 ## In-flight manualFlag 테스트 두 갈래 (사용자 메모 — Phase 1.6 + Phase 2c)
 
-**Actor/storage 단위 테스트** (Phase 1.6 MediaStorageTests):
-- captured manualFlag == false 시점에 saveCapture 호출 → 진행 중 `markPendingNewSession()` 발생 → commit 후 새 flag가 wipe 안 되는지 검증 (race-style 테스트).
+**Actor/storage 단위 테스트** (Phase 1.6 MediaStorageTests, C5 deterministic):
+- captured manualFlag == false 시점에 saveCapture 호출 → `beforeDBCommit` hook에서 `markPendingNewSession()` 발생 → commit 후 새 flag가 wipe 안 되는지 검증.
+- `MediaStorageTestHooks` (`#if DEBUG`)로 deterministic gate 제공.
 
 **UI/view-state 단위 테스트** (Phase 2c CameraScreenViewStateTests):
-- saveCapture in-flight 동안 "새 현장" chip은 disabled / 탭 ignored 상태인지 검증 — captured manualFlag == true 시 두 번째 queued intent가 들어오지 않음을 UI 차원에서 보장.
+- `isInFlight: true` 시 chip은 `.disabled` 상태 — `isPending` 값과 무관하게.
 - 두 갈래가 분리되어 있어야 boolean flag 모델의 의도와 UX 약속이 모두 명시 검증됨.
+
+---
+
+## 부록 A — v1.1 정정 매핑 (ai-slop-cleaner workflow)
+
+| # | 사용자 지적 | 반영 위치 |
+|---|---|---|
+| **C1** | GRDB 7.7.0 stale | Task 1.1 — v7.10.0 (공식 GitHub Releases 2026-02-15 검증) exactVersion pin. silent downgrade 금지. |
+| **C2** | subagent-driven REQUIRED 표기 | 헤더 — `executing-plans` (Inline) 기본, subagent-driven은 명시 승인/독립 slice 전용 옵션. |
+| **C3** | duplicate Sessions/ block | File Structure — `PhotoMemoEditor.swift`를 `Sessions/` 단일 block으로 병합. |
+| **C4** | Phase 2/3 skeletal | Phase 2a/2b/2c (10 task) + Phase 3.1/3.2 (8 task) — 각 task에 files/실패 테스트/구현/검증/Lore commit step. |
+| **C5** | race/failure 테스트 비결정적 | `MediaStorageTestHooks` (`#if DEBUG`) + `FileOps` protocol + `MediaFileSystem.init throws` (try? 제거). |
+| **C6** | closure에 `self.policy` 등 캡쳐 | DB helpers를 free functions (`fetchLatestPhoto`/`resolveSessionId`/`insertPhoto`). closure capture는 `[manualFlag, policy, photoId, fileName]`만, self 미참조. |
+| **C7** | `db.schemaVersion()` API misuse | `Migrations.makeMigrator()` 노출 → test는 `DatabaseMigrator.appliedIdentifiers(_:)` 사용. |
+| **C8** | Date ↔ Int64 codec 미정 | Task 1.3 — 각 모델에 `Columns` enum + `init(row:)`/`encode(to:)`로 `Date.timeIntervalSince1970` 명시 매핑. |
+| **S1** | XcodeGen package product | Task 1.1 — `url: ...git`, `product: GRDB` 명시. |
