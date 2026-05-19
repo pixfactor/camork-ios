@@ -16,11 +16,13 @@
 		42EEF308903DC1C6B8F66B92 /* CameraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */; };
 		45499F188C28B8E4CEE76947 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */; };
 		4751C8016E6E90472FACE3BA /* ColorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */; };
+		5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */; };
 		689B151B95C5A78F815A7ED2 /* Migrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D86B7445F8235736D9E1DB /* Migrations.swift */; };
 		6BA14EDA68E3D44BF32D733C /* AppBackgroundShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = D174F2FDA24F471B4AE62E98 /* AppBackgroundShield.swift */; };
 		6F87E648BDFF6D4EFEDC2E92 /* ExifData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84249623116F71C2B7E2F8D1 /* ExifData.swift */; };
 		7350EA82727FFDA235B1269F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F466C97AE444836B684994 /* Theme.swift */; };
 		736638AEDA70D44F5E4E2A29 /* CamorkBundleToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */; };
+		753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */; };
 		75EB773C45562339A9725378 /* CamorkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13B28107AE53591B28E00D /* CamorkApp.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
 		857F58097954C0F289DA7D3A /* FileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80A7C2E5BF1E243F855544 /* FileOps.swift */; };
@@ -29,6 +31,7 @@
 		A2574451B96BF30FC264A335 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E6B68E8E8F1C5D13005D96 /* Database.swift */; };
 		AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */; };
 		B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E16FBB8537135AEAA25D510 /* Assets.xcassets */; };
+		B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */; };
 		BD254E1236CDC71DA1B02956 /* CamorkCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */; };
 		C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */; };
 		D10176543AB36929C85D6372 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4BD3E8CC262B2CCF547DB4C2 /* Localizable.xcstrings */; };
@@ -50,6 +53,7 @@
 /* Begin PBXFileReference section */
 		0793057E915500151F00536A /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystem.swift; sourceTree = "<group>"; };
+		15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicy.swift; sourceTree = "<group>"; };
 		1D80A7C2E5BF1E243F855544 /* FileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOps.swift; sourceTree = "<group>"; };
 		29E6B68E8E8F1C5D13005D96 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryPlaceholderView.swift; sourceTree = "<group>"; };
@@ -60,6 +64,7 @@
 		4BD3E8CC262B2CCF547DB4C2 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		4EF68029697FFE4F2C27ABD8 /* Camork.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Camork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkCard.swift; sourceTree = "<group>"; };
+		5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicyTests.swift; sourceTree = "<group>"; };
 		6C13B28107AE53591B28E00D /* CamorkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkApp.swift; sourceTree = "<group>"; };
 		6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSnapshot.swift; sourceTree = "<group>"; };
 		84249623116F71C2B7E2F8D1 /* ExifData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifData.swift; sourceTree = "<group>"; };
@@ -78,6 +83,7 @@
 		E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkBundleToken.swift; sourceTree = "<group>"; };
 		E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationsTests.swift; sourceTree = "<group>"; };
 		EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystemTests.swift; sourceTree = "<group>"; };
+		F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCapturePayload.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +105,15 @@
 				E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */,
 			);
 			path = AppShell;
+			sourceTree = "<group>";
+		};
+		30B29EF515ED1BFDF9E4F2B4 /* Sessions */ = {
+			isa = PBXGroup;
+			children = (
+				F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */,
+				15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */,
+			);
+			path = Sessions;
 			sourceTree = "<group>";
 		};
 		3745ED33CE9A1FD341909DC6 /* Resources */ = {
@@ -155,6 +170,7 @@
 				23982103FFF5527584024BC1 /* AppShell */,
 				60091220D6B0C226BC4C933E /* DesignSystem */,
 				3745ED33CE9A1FD341909DC6 /* Resources */,
+				30B29EF515ED1BFDF9E4F2B4 /* Sessions */,
 				46D202837274B3D714FA377E /* Storage */,
 				65DAC50BF9A6EA02861762C3 /* Views */,
 			);
@@ -186,6 +202,7 @@
 				D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */,
 				EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */,
 				E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */,
+				5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */,
 				8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */,
 			);
 			path = CamorkTests;
@@ -300,6 +317,7 @@
 				4751C8016E6E90472FACE3BA /* ColorsTests.swift in Sources */,
 				FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */,
 				2DEE4A050802F4473FB066A0 /* MigrationsTests.swift in Sources */,
+				B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */,
 				0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -324,8 +342,10 @@
 				9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */,
 				689B151B95C5A78F815A7ED2 /* Migrations.swift in Sources */,
 				45499F188C28B8E4CEE76947 /* Photo.swift in Sources */,
+				753FE5FE09FE3376C7DAD493 /* PhotoCapturePayload.swift in Sources */,
 				826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */,
 				DAC864606CEE84270F9BF4AD /* Session.swift in Sources */,
+				5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */,
 				C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */,
 				7350EA82727FFDA235B1269F /* Theme.swift in Sources */,
 			);
