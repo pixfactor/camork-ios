@@ -87,6 +87,30 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
       }
+    },
+    "storage_init_error_description" : {
+      "extractionState" : "manual",
+      "comment" : "DependencyContainer bootstrap failure body (StorageInitErrorView).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Storage or camera initialization failed. Please try again in a moment." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "저장소 또는 카메라 초기화 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요." } }
+      }
+    },
+    "storage_init_error_retry" : {
+      "extractionState" : "manual",
+      "comment" : "StorageInitErrorView retry button label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try again" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 시도" } }
+      }
+    },
+    "storage_init_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "StorageInitErrorView heading shown when DependencyContainer init throws.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camork can't start" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Camork를 시작할 수 없어요" } }
+      }
     }
   },
   "version" : "1.0"
