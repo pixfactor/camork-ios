@@ -165,7 +165,7 @@ mkdir -p docs/superpowers/adrs
 
 ## 6. AVFoundation → MediaStorage hop 규칙
 - callback queue에서 LocationService.latestKnown 동기 snapshot 접근.
-- PhotoCapturePayload (Sendable) 조립 후 Task { [payload] in await mediaStorage.saveCapture(payload) }.
+- PhotoCapturePayload (Sendable) 조립 후 **CameraScreen에 callback으로 전달**, CameraScreen이 `do { try await mediaStorage.saveCapture(payload) } catch { ... }` (C8 v1.2 — detached Task 금지).
 
 ## 7. Cross-actor 통신
 - await 직접 호출만. Combine/AsyncStream UI 구독에만.
@@ -285,7 +285,7 @@ EOF
 - Create: `Camork/Storage/Migrations.swift`
 - Test: `CamorkTests/MigrationsTests.swift`
 
-**C7 정정**: 마이그레이션 검증은 GRDB의 비공식 `schemaVersion()` 대신 **공식 `DatabaseMigrator.appliedMigrations(_:)` API** 사용. `Migrations.makeMigrator() -> DatabaseMigrator`를 노출해 test가 직접 호출.
+**C7 정정** (v1.2 추가 정합): 마이그레이션 검증은 GRDB의 비공식 `schemaVersion()` 대신 **공식 `DatabaseMigrator.appliedMigrations(_:) -> [String]`** 사용 (`appliedIdentifiers(_:) -> Set<String>`이 아닌 Array — 등록 순서 보존이 필요). `Migrations.makeMigrator() -> DatabaseMigrator`를 노출해 test가 직접 호출.
 
 - [ ] **Step 1: 실패 테스트** (Migration idempotent + schema 생성, C7 정정 API)
 
@@ -297,19 +297,43 @@ import GRDB
 
 @Suite("Migrations")
 struct MigrationsTests {
-    @Test("migration v1 두 번 호출해도 appliedMigrations 동일")
+    @Test("migration v1 두 번 호출해도 appliedMigrations 동일 (Array — 등록 순서 보존)")
     func idempotent() throws {
         let db = try DatabaseQueue()
         let migrator = Migrations.makeMigrator()
 
         try migrator.migrate(db)
-        let first = try db.read { try migrator.appliedIdentifiers($0) }
+        let first = try db.read { try migrator.appliedMigrations($0) }   // [String]
 
         try migrator.migrate(db)
-        let second = try db.read { try migrator.appliedIdentifiers($0) }
+        let second = try db.read { try migrator.appliedMigrations($0) }
 
         #expect(first == second)
-        #expect(first.contains("v1"))
+        #expect(first == ["v1"])
+    }
+
+    @Test("FK enforcement on — PRAGMA foreign_keys 활성화")
+    func foreignKeysEnforced() throws {
+        let db = try DatabaseQueue()
+        try Migrations.makeMigrator().migrate(db)
+        let fk: Int = try db.read { try Int.fetchOne($0, sql: "PRAGMA foreign_keys") ?? 0 }
+        #expect(fk == 1)
+    }
+
+    @Test("CASCADE: Session 삭제 시 Photo도 삭제")
+    func cascadeDelete() throws {
+        let db = try DatabaseQueue()
+        try Migrations.makeMigrator().migrate(db)
+        try db.write { row in
+            try row.execute(sql: """
+                INSERT INTO Session(id, name, createdAt) VALUES('s1','test',0);
+                INSERT INTO Photo(id, sessionId, fileName, kind, capturedAt)
+                VALUES('p1','s1','x.heic','photo',0);
+                DELETE FROM Session WHERE id='s1';
+                """)
+            let count = try Int.fetchOne(row, sql: "SELECT COUNT(*) FROM Photo")
+            #expect(count == 0)
+        }
     }
 
     @Test("v1 schema 생성 후 Session/Photo 테이블 존재")
@@ -379,9 +403,17 @@ enum CamorkDatabase {
         var config = Configuration()
         config.prepareDatabase { db in
             try db.execute(sql: "PRAGMA journal_mode = WAL")
+            try db.execute(sql: "PRAGMA foreign_keys = ON")   // S1 (v1.2): CASCADE 작동 보장
         }
 
         let queue = try DatabaseQueue(path: url.path, configuration: config)
+
+        // C6 (v1.2): Data Protection — 부팅 후 첫 잠금 해제까지 디스크 암호화 유지
+        try FileManager.default.setAttributes(
+            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+            ofItemAtPath: url.path
+        )
+
         try Migrations.makeMigrator().migrate(queue)
         return queue
     }
@@ -393,7 +425,7 @@ enum CamorkDatabase {
 import GRDB
 
 enum Migrations {
-    /// 공식 GRDB API 노출 — test가 `appliedIdentifiers(_:)`로 검증 가능 (C7)
+    /// 공식 GRDB API 노출 — test가 `appliedMigrations(_:) -> [String]`로 검증 가능 (C7)
     static func makeMigrator() -> DatabaseMigrator {
         var migrator = DatabaseMigrator()
 
@@ -515,12 +547,26 @@ struct Photo: Identifiable, Codable, Sendable, FetchableRecord, PersistableRecor
     }
 
     init(row: Row) throws {
-        id = try UUID.fromDatabaseValue(row[Columns.id]) ?? UUID()
-        sessionId = try UUID.fromDatabaseValue(row[Columns.sessionId]) ?? UUID()
+        // C2 (v1.2): UUID/MediaKind은 명시 validate + throw — corrupt row를 silent mint 금지.
+        guard let idStr: String = row[Columns.id], let parsedId = UUID(uuidString: idStr) else {
+            throw PhotoDecodingError.invalidUUID(column: "id")
+        }
+        guard let sidStr: String = row[Columns.sessionId], let parsedSid = UUID(uuidString: sidStr) else {
+            throw PhotoDecodingError.invalidUUID(column: "sessionId")
+        }
+        guard let kindStr: String = row[Columns.kind], let parsedKind = MediaKind(rawValue: kindStr) else {
+            throw PhotoDecodingError.invalidMediaKind
+        }
+        id = parsedId
+        sessionId = parsedSid
+        kind = parsedKind
         fileName = row[Columns.fileName]
         thumbnailFileName = row[Columns.thumbnailFileName]
-        kind = MediaKind(rawValue: row[Columns.kind]) ?? .photo
-        capturedAt = Date(timeIntervalSince1970: row[Columns.capturedAt])   // C8: Int64 → Date
+
+        // C1 (v1.2): Date ↔ Int64 (Unix epoch seconds) 명시 매핑. REAL/Double 회피.
+        let capturedSeconds: Int64 = row[Columns.capturedAt]
+        capturedAt = Date(timeIntervalSince1970: TimeInterval(capturedSeconds))
+
         // LocationSnapshot embed
         if let lat: Double = row[Columns.lat], let lon: Double = row[Columns.lon] {
             location = LocationSnapshot(
@@ -533,8 +579,8 @@ struct Photo: Identifiable, Codable, Sendable, FetchableRecord, PersistableRecor
             exif = try JSONDecoder().decode(ExifData.self, from: Data(json.utf8))
         } else { exif = nil }
         note = row[Columns.note]
-        if let d: TimeInterval = row[Columns.deletedAt] {
-            deletedAt = Date(timeIntervalSince1970: d)
+        if let d: Int64 = row[Columns.deletedAt] {
+            deletedAt = Date(timeIntervalSince1970: TimeInterval(d))
         } else { deletedAt = nil }
     }
 
@@ -544,7 +590,8 @@ struct Photo: Identifiable, Codable, Sendable, FetchableRecord, PersistableRecor
         container[Columns.fileName] = fileName
         container[Columns.thumbnailFileName] = thumbnailFileName
         container[Columns.kind] = kind.rawValue
-        container[Columns.capturedAt] = capturedAt.timeIntervalSince1970   // C8: Date → Int64
+        // C1 (v1.2): Int64 명시 encode
+        container[Columns.capturedAt] = Int64(capturedAt.timeIntervalSince1970)
         container[Columns.lat] = location?.latitude
         container[Columns.lon] = location?.longitude
         container[Columns.horizontalAccuracy] = location?.horizontalAccuracy
@@ -553,12 +600,21 @@ struct Photo: Identifiable, Codable, Sendable, FetchableRecord, PersistableRecor
             container[Columns.exifJson] = String(data: try JSONEncoder().encode(exif), encoding: .utf8)
         }
         container[Columns.note] = note
-        container[Columns.deletedAt] = deletedAt?.timeIntervalSince1970
+        container[Columns.deletedAt] = deletedAt.map { Int64($0.timeIntervalSince1970) }
     }
+}
+
+enum PhotoDecodingError: Error, Sendable {
+    case invalidUUID(column: String)
+    case invalidMediaKind
 }
 ```
 
-Session 모델도 동일 패턴 (createdAt/endedAt/deletedAt 모두 Int64 매핑). 단위 테스트로 round-trip 검증 (Task 1.3 끝 step에 추가).
+**C1 추가**: Round-trip 테스트로 SQLite storage가 INTEGER인지 검증 (`typeof(capturedAt) == 'integer'` SQL). 서브초 정밀도 미요구 → seconds 채택. 향후 video v1.2에서 ms가 필요해지면 migration v3로 변경 검토.
+
+**C2 추가**: 유효하지 않은 UUID/MediaKind 행을 fetch할 때 `PhotoDecodingError`로 명시 throw. CHECK 제약이 작동 못 하는 경우(예: 외부 도구로 DB 직접 수정)에도 silent mint를 막아 잘못된 사진을 임의 세션에 attach하지 않음.
+
+Session 모델도 동일 패턴 (createdAt/endedAt/deletedAt Int64 + `SessionDecodingError`). 단위 테스트: round-trip + INTEGER typeof + invalid UUID/kind 시 throw.
 
 각 파일은 단일 책임 (각 50~100 lines).
 
@@ -610,7 +666,7 @@ EOF
 - Failure matrix 테스트를 위한 **`protocol FileOps`** 도입 — production은 `MediaFileSystem`, test는 `FakeFileOps`로 staging write/mv/final-delete 실패를 강제할 수 있게.
 
 ```swift
-// Camork/Storage/FileOps.swift
+// Camork/Storage/FileOps.swift  (C5: stagingExists / finalExists 명명 통일)
 import Foundation
 
 protocol FileOps: Sendable {
@@ -624,6 +680,8 @@ protocol FileOps: Sendable {
 }
 ```
 
+**C5 (v1.2)**: 명명은 `stagingExists` / `finalExists`로 통일 (이전 `stagingExists`/`finalExists` 변종 제거). 모든 test/impl 일관.
+
 ```swift
 // Camork/Storage/MediaFileSystem.swift (C5 — init throws)
 struct MediaFileSystem: FileOps {
@@ -634,8 +692,22 @@ struct MediaFileSystem: FileOps {
         try Self.bootstrap(root: root)   // C5: 에러 swallow 금지
     }
 
-    static func bootstrap(root: URL) throws { /* 기존 로직 */ }
-    // ... 나머지 FileOps 구현
+    static func bootstrap(root: URL) throws {
+        for sub in ["Media", "Media/.staging", "Thumbnails"] {
+            let dir = root.appendingPathComponent(sub, isDirectory: true)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            var values = URLResourceValues()
+            values.isExcludedFromBackup = true
+            var mutableDir = dir
+            try mutableDir.setResourceValues(values)
+            // C6 (v1.2): media 디렉토리도 Data Protection 적용
+            try FileManager.default.setAttributes(
+                [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                ofItemAtPath: dir.path
+            )
+        }
+    }
+    // ... 나머지 FileOps 구현 (writeStaging은 .completeFileProtection 옵션으로 파일별 protection 적용)
 }
 ```
 
@@ -647,25 +719,25 @@ struct MediaFileSystem: FileOps {
 struct MediaFileSystemTests {
     @Test("staging write 후 final로 mv 성공")
     func stagingToFinalSuccess() throws {
-        let fs = MediaFileSystem(root: tempDir())
+        let fs = try MediaFileSystem(root: tempDir())
         try fs.writeStaging(fileName: "abc.heic", data: Data([1,2,3]))
         try fs.moveStagingToFinal(fileName: "abc.heic")
-        #expect(try fs.finalDataExists(fileName: "abc.heic"))
-        #expect(try !fs.stagingDataExists(fileName: "abc.heic"))
+        #expect(try fs.finalExists(fileName: "abc.heic"))
+        #expect(try !fs.stagingExists(fileName: "abc.heic"))
     }
 
     @Test("staging cleanup")
     func stagingCleanup() throws {
-        let fs = MediaFileSystem(root: tempDir())
+        let fs = try MediaFileSystem(root: tempDir())
         try fs.writeStaging(fileName: "abc.heic", data: Data([1,2,3]))
         try fs.removeStaging(fileName: "abc.heic")
-        #expect(try !fs.stagingDataExists(fileName: "abc.heic"))
+        #expect(try !fs.stagingExists(fileName: "abc.heic"))
     }
 
     @Test("Media root에 isExcludedFromBackup 플래그")
     func excludedFromBackup() throws {
         let root = tempDir()
-        _ = MediaFileSystem(root: root)
+        _ = try MediaFileSystem(root: root)
         let values = try root.appendingPathComponent("Media").resourceValues(forKeys: [.isExcludedFromBackupKey])
         #expect(values.isExcludedFromBackup == true)
     }
@@ -716,8 +788,8 @@ struct MediaFileSystem: FileOps {
 
     func removeStaging(fileName: String) throws { /* ... */ }
     func removeFinal(fileName: String) throws { /* ... */ }
-    func stagingDataExists(fileName: String) throws -> Bool { /* ... */ }
-    func finalDataExists(fileName: String) throws -> Bool { /* ... */ }
+    func stagingExists(fileName: String) throws -> Bool { /* ... */ }
+    func finalExists(fileName: String) throws -> Bool { /* ... */ }
     func enumerateFinal() throws -> [String] { /* ... */ }
 }
 ```
@@ -839,10 +911,10 @@ Lore commit.
 ```swift
 // Camork/Sessions/MediaStorageTestHooks.swift
 #if DEBUG
+// S2 (v1.2): hooks는 ordering gates 전용. 파일 실패 주입은 FakeFileOps (FileOps protocol).
 struct MediaStorageTestHooks: Sendable {
     var afterManualFlagSnapshot: (@Sendable () async -> Void)?  // gate for race tests
-    var beforeDBCommit: (@Sendable () async -> Void)?          // failure injection / ordering
-    var forceFinalRemoveFailure: Bool = false                  // cleanup branch test
+    var beforeDBCommit: (@Sendable () async -> Void)?           // gate for race/order tests
 }
 #endif
 ```
@@ -880,7 +952,7 @@ struct MediaStorageTests {
             .appendingPathComponent(UUID().uuidString)
         let db = try DatabaseQueue()
         try Migrations.register(on: db)
-        let fs = MediaFileSystem(root: dir)
+        let fs = try MediaFileSystem(root: dir)
         let storage = MediaStorage(db: db, fs: fs)
         return (storage, db, dir)
     }
@@ -1208,7 +1280,7 @@ struct LocationServiceTests {
   2. `ExifBuilder.build(from: photo)` → ExifData
   3. `locationService.latestKnown()` 동기 호출 (callback queue에서)
   4. `PhotoCapturePayload` 조립
-  5. `Task { [payload] in try await mediaStorage.saveCapture(payload) }` hop
+  5. **C8 (v1.2)**: detached `Task { }`로 saveCapture 호출하지 않음. payload를 `onPayloadReady: (Result<PhotoCapturePayload, Error>) -> Void` callback (또는 AsyncStream)로 CameraScreen에 전달. CameraScreen이 `do { try await mediaStorage.saveCapture(payload) } catch { ... }`로 inFlight/에러 처리. save는 단일 owner (CameraScreen → MediaStorage), UI duplicate 경로 없음.
 
 - [ ] **Step 2**: 빌드 검증. 실제 capture 검증은 실기기 manual.
 - [ ] **Step 3**: Lore commit (capture delegate + Sendable payload hop, AVCapturePhoto 직접 hop 금지 명시).
@@ -1236,9 +1308,38 @@ final class DependencyContainer: ObservableObject {
     }
 }
 
-// CamorkApp.swift에서:
-// @StateObject private var deps = try! DependencyContainer()
-// RootTabView().environmentObject(deps)
+// C7 (v1.2): try! 금지. CamorkApp에서 safe bootstrap state로 분기.
+@main
+struct CamorkApp: App {
+    @State private var bootstrap: Bootstrap = .pending
+
+    enum Bootstrap {
+        case pending
+        case ready(DependencyContainer)
+        case failed(Error)
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            switch bootstrap {
+            case .pending:
+                ProgressView().task { await load() }
+            case .ready(let deps):
+                RootTabView().environmentObject(deps)
+            case .failed(let error):
+                StorageInitErrorView(error: error, retry: { Task { await load() } })
+            }
+        }
+    }
+
+    @MainActor private func load() async {
+        do {
+            bootstrap = .ready(try DependencyContainer())
+        } catch {
+            bootstrap = .failed(error)
+        }
+    }
+}
 ```
 
 - [ ] **Step 2**: CamorkApp.swift 업데이트 + RootTabView.swift environmentObject.
@@ -1317,13 +1418,15 @@ enum CameraScreenViewState: Equatable {
 
 - [ ] **Step 1**: CameraScreen SwiftUI View. Environment에서 DependencyContainer 받음. `@State`로 `isInFlight: Bool` 관리. CameraScreenViewState.compute 결과로 layout 분기.
 
-- [ ] **Step 2: ScenePhase hook**
+- [ ] **Step 2: ScenePhase hook** (C9: `if case .cameraActive`)
 ```swift
 @Environment(\.scenePhase) var scenePhase
 
 .onChange(of: scenePhase) { _, phase in
     if phase == .background { Task { await cameraSession.stopRunning() } }
-    if phase == .active && viewState == .cameraActive { Task { await cameraSession.startRunning() } }
+    if phase == .active, case .cameraActive = viewState {
+        Task { await cameraSession.startRunning() }
+    }
 }
 ```
 
