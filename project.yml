@@ -27,6 +27,7 @@ targets:
         UILaunchScreen: {}
         NSCameraUsageDescription: "현장 기록을 위해 카메라 사용 권한이 필요합니다."
         NSLocationWhenInUseUsageDescription: "촬영 위치를 사진에 함께 기록하기 위해 위치 권한을 요청합니다."
+        # NSMicrophoneUsageDescription은 v1.2 동영상 추가 시 활성화. v1 Core (photo only)는 마이크 미사용.
         NSFaceIDUsageDescription: "앱 잠금을 해제하기 위해 Face ID를 사용합니다."
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
