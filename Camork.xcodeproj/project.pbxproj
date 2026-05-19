@@ -16,6 +16,7 @@
 		256B247318CA41F0E5F3833D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C05D0B6C6E4B6A157F9012C /* Colors.swift */; };
 		2DEE4A050802F4473FB066A0 /* MigrationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */; };
 		3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */; };
+		417863673FE447DFE2848780 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 661C72790B8B0D9C11813E0A /* CameraSession.swift */; };
 		42EEF308903DC1C6B8F66B92 /* CameraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */; };
 		45499F188C28B8E4CEE76947 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */; };
 		4751C8016E6E90472FACE3BA /* ColorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */; };
@@ -79,6 +80,7 @@
 		5A54AD5C852EA21CCC9EB059 /* ExifBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifBuilder.swift; sourceTree = "<group>"; };
 		5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkCard.swift; sourceTree = "<group>"; };
 		5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicyTests.swift; sourceTree = "<group>"; };
+		661C72790B8B0D9C11813E0A /* CameraSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSession.swift; sourceTree = "<group>"; };
 		6C13B28107AE53591B28E00D /* CamorkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkApp.swift; sourceTree = "<group>"; };
 		6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSnapshot.swift; sourceTree = "<group>"; };
 		787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifBuilderTests.swift; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 		5D022612BA631678EFC6D420 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				661C72790B8B0D9C11813E0A /* CameraSession.swift */,
 				E361B9EB071C39F1DF2E23FA /* Internal */,
 			);
 			path = Camera;
@@ -387,6 +390,7 @@
 			files = (
 				6BA14EDA68E3D44BF32D733C /* AppBackgroundShield.swift in Sources */,
 				42EEF308903DC1C6B8F66B92 /* CameraPlaceholderView.swift in Sources */,
+				417863673FE447DFE2848780 /* CameraSession.swift in Sources */,
 				52A3E8CB0CC86C07B88E4C19 /* CameraSessionBuilder.swift in Sources */,
 				75EB773C45562339A9725378 /* CamorkApp.swift in Sources */,
 				736638AEDA70D44F5E4E2A29 /* CamorkBundleToken.swift in Sources */,
