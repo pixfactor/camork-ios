@@ -15,6 +15,13 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "확인" } }
       }
     },
+    "button_retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 시도" } }
+      }
+    },
     "button_save" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -165,6 +172,54 @@
     },
     "gallery_tab_label" : {
       "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
+      }
+    },
+    "gallery_empty_description" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery empty state body.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Captured photos will appear here by site." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영한 사진이 현장별로 여기에 모여요." } }
+      }
+    },
+    "gallery_empty_title" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery empty state title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No sites yet" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "아직 현장이 없어요" } }
+      }
+    },
+    "gallery_load_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery load failure title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't load sites" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장을 불러오지 못했어요" } }
+      }
+    },
+    "gallery_loading" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery loading progress label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading sites" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장을 불러오는 중" } }
+      }
+    },
+    "gallery_refresh_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery refresh button VoiceOver label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Refresh sites" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 새로고침" } }
+      }
+    },
+    "gallery_title" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery navigation title.",
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
