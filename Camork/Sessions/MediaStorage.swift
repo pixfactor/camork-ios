@@ -432,14 +432,14 @@ actor MediaStorage {
         }
     }
 
-    /// 영구 삭제. DB row 제거 + final media + thumbnail cache 둘 다 best-effort unlink.
+    /// 휴지통 사진만 영구 삭제. DB row 제거 + final media + thumbnail cache 둘 다 best-effort unlink.
     /// ADR §3 4-bucket failure matrix 역방향 패턴: **DB 먼저 → 파일** 순. DB DELETE가 실패
     /// 하면 파일에 손대지 않고 throw. DB가 성공하면 파일 unlink 실패는 reaper가 후속
     /// orphan 청소를 통해 정리하므로 best-effort로 충분.
     func purgePhoto(id: UUID) async throws {
         try await db.write { db in
             try db.execute(
-                sql: "DELETE FROM Photo WHERE id = ?",
+                sql: "DELETE FROM Photo WHERE id = ? AND deletedAt IS NOT NULL",
                 arguments: [id.uuidString]
             )
             if db.changesCount == 0 {

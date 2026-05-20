@@ -681,6 +681,7 @@ struct MediaStorageTests {
         let thumbName = "\(photo.id.uuidString).jpg"
         try fakeFs.writeThumb(fileName: thumbName, data: Data([0x01]))
 
+        try await storage.softDeletePhoto(id: photo.id, at: Date(timeIntervalSince1970: 5_000))
         try await storage.purgePhoto(id: photo.id)
 
         let count = try await db.read { db in
@@ -691,6 +692,26 @@ struct MediaStorageTests {
         #expect(throws: FakeFileOpsError.self) {
             _ = try fakeFs.readThumb(fileName: thumbName)
         }
+    }
+
+    @Test("Plan E E1: purgePhoto on 정상 상태 photo → photoNotFound, DB/file/thumb 보존")
+    func purgeActivePhotoThrowsAndPreservesEverything() async throws {
+        let fakeFs = FakeFileOps()
+        let (storage, db) = try await makeStorage(fs: fakeFs)
+        let photo = try await storage.saveCapture(makePayload())
+        let thumbName = "\(photo.id.uuidString).jpg"
+        try fakeFs.writeThumb(fileName: thumbName, data: Data([0x01]))
+
+        await #expect(throws: MediaStorage.Error.photoNotFound) {
+            try await storage.purgePhoto(id: photo.id)
+        }
+
+        let count = try await db.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Photo WHERE id = ?", arguments: [photo.id.uuidString]) ?? 0
+        }
+        #expect(count == 1)
+        #expect(try fakeFs.finalExists(fileName: photo.fileName))
+        #expect(try fakeFs.readThumb(fileName: thumbName) == Data([0x01]))
     }
 
     @Test("Plan E E1: purgePhoto on 미존재 id → photoNotFound, 파일 시스템 무영향")
