@@ -4,9 +4,15 @@ import SwiftUI
 /// `.environmentObject(_:)`로 받아 자식 화면에 전파.
 ///
 /// Plan E Batch E3.b 부터는 `AppLockController.isLocked`를 반영하는 `LockScreen` overlay를
-/// `ZStack` 최상위에 둔다. scene phase 추적은 background/inactive → active 전환에서만
-/// `didBecomeActive(at:)`를 호출 — active → active 반복(예: 시스템 alert 후 복귀)에서
-/// 의도치 않은 재잠금 루프가 발생하지 않도록 이전 phase를 기억.
+/// `ZStack` 최상위에 둔다. scene phase 처리는 다음 두 view-local state로 결정성을 보장한다:
+///
+/// - `hasEnteredBackgroundSinceActive`: `.background`를 실제로 거친 active 복귀만 lock 판정
+///   대상으로 인정. LAContext / Face ID prompt 자체가 만드는 `.active → .inactive → .active`
+///   루프나 알림 배너로 인한 일시적 .inactive 통과는 lock을 트리거하지 않는다.
+/// - `lastBackgroundedAt`: `.background` 시점에 View가 직접 캡쳐한 `Date`. `.active` 경로의
+///   Task가 이 timestamp를 actor에 명시적으로 다시 박은 뒤 `didBecomeActive`를 호출 —
+///   suspend된 unstructured background Task의 actor write가 active 판정보다 늦어져 stale
+///   상태를 보는 race를 차단한다.
 ///
 /// `#Preview` 제거 사유는 기존과 동일: `DependencyContainer.init()`이 GRDB / 카메라 등
 /// 실제 리소스를 잡으므로 preview-safe stub seam이 도입되기 전까지 본 RootTabView preview를
