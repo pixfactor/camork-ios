@@ -7,6 +7,7 @@ import SwiftUI
 /// Share remains a disabled affordance until the Plan C share phase wires it.
 struct SessionDetailScreen: View {
     @EnvironmentObject private var deps: DependencyContainer
+    @Environment(\.dismiss) private var dismiss
 
     let session: Session
 
@@ -19,6 +20,8 @@ struct SessionDetailScreen: View {
     @State private var loadingPhotoID: UUID?
     @State private var detailItem: SessionPhotoDetailItem?
     @State private var sheet: SessionDetailSheet?
+    @State private var trashError: String?
+    @State private var confirmSessionDelete: Bool = false
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.xs),
@@ -59,6 +62,17 @@ struct SessionDetailScreen: View {
                         photos: photos,
                         sharePreparer: deps.sharePreparer
                     )
+
+                    Menu {
+                        Button(role: .destructive) {
+                            confirmSessionDelete = true
+                        } label: {
+                            Label("session_detail_delete_session", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .accessibilityLabel(Text("session_detail_overflow_a11y"))
                 }
             }
             .task {
@@ -102,6 +116,27 @@ struct SessionDetailScreen: View {
                 Button("button_ok", role: .cancel) { photoOpenError = nil }
             } message: { message in
                 Text(message)
+            }
+            .alert(
+                "session_detail_trash_error_title",
+                isPresented: trashErrorBinding,
+                presenting: trashError
+            ) { _ in
+                Button("button_ok", role: .cancel) { trashError = nil }
+            } message: { message in
+                Text(message)
+            }
+            .confirmationDialog(
+                Text("session_detail_delete_confirm_title"),
+                isPresented: $confirmSessionDelete,
+                titleVisibility: .visible
+            ) {
+                Button("session_detail_delete_session", role: .destructive) {
+                    Task { await trashSession() }
+                }
+                Button("button_cancel", role: .cancel) {}
+            } message: {
+                Text("session_detail_delete_confirm_message")
             }
     }
 
@@ -182,6 +217,13 @@ struct SessionDetailScreen: View {
                 .buttonStyle(.plain)
                 .disabled(loadingPhotoID != nil)
                 .accessibilityLabel(Text(photo.capturedAt.formatted(date: .numeric, time: .shortened)))
+                .contextMenu {
+                    Button(role: .destructive) {
+                        Task { await trashPhoto(photo) }
+                    } label: {
+                        Label("session_detail_move_to_trash", systemImage: "trash")
+                    }
+                }
             }
         }
     }
@@ -223,11 +265,41 @@ struct SessionDetailScreen: View {
         }
     }
 
+    @MainActor
+    private func trashPhoto(_ photo: Photo) async {
+        do {
+            try await deps.mediaStorage.softDeletePhoto(id: photo.id)
+            await refresh()
+        } catch {
+            trashError = String(describing: error)
+        }
+    }
+
+    /// Session 단위 trash 후 화면을 닫아 갤러리로 돌아간다. 실패 시 화면 유지 + alert.
+    @MainActor
+    private func trashSession() async {
+        do {
+            try await deps.mediaStorage.softDeleteSession(sessionId: session.id)
+            dismiss()
+        } catch {
+            trashError = String(describing: error)
+        }
+    }
+
     private var photoOpenErrorBinding: Binding<Bool> {
         Binding(
             get: { photoOpenError != nil },
             set: { newValue in
                 if !newValue { photoOpenError = nil }
+            }
+        )
+    }
+
+    private var trashErrorBinding: Binding<Bool> {
+        Binding(
+            get: { trashError != nil },
+            set: { newValue in
+                if !newValue { trashError = nil }
             }
         )
     }

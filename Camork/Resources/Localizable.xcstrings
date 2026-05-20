@@ -401,6 +401,54 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통" } }
       }
     },
+    "session_detail_delete_confirm_message" : {
+      "extractionState" : "manual",
+      "comment" : "Body of the confirmation dialog when deleting an entire session (Plan E E2).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This session and all of its photos will move to Trash. You can restore them within 30 days." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 세션과 모든 사진을 휴지통으로 이동합니다. 30일 안에 복원할 수 있습니다." } }
+      }
+    },
+    "session_detail_delete_confirm_title" : {
+      "extractionState" : "manual",
+      "comment" : "Title of the confirmation dialog when deleting an entire session (Plan E E2).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Move this session to Trash?" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 세션을 휴지통으로 이동할까요?" } }
+      }
+    },
+    "session_detail_delete_session" : {
+      "extractionState" : "manual",
+      "comment" : "Menu / confirmation action for moving a session to the trash.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete session" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 삭제" } }
+      }
+    },
+    "session_detail_move_to_trash" : {
+      "extractionState" : "manual",
+      "comment" : "Context menu action on a photo grid tile that soft-deletes a single photo.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Move to Trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동" } }
+      }
+    },
+    "session_detail_overflow_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "VoiceOver label for the SessionDetailScreen toolbar overflow menu (Plan E E2).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "More options" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "추가 옵션" } }
+      }
+    },
+    "session_detail_trash_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Alert title when soft-deleting a photo or session fails on SessionDetailScreen.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't move to Trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동하지 못했습니다" } }
+      }
+    },
     "placeholder_camera_description" : {
       "extractionState" : "manual",
       "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",

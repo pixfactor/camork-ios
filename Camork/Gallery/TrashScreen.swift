@@ -68,11 +68,11 @@ struct TrashScreen: View {
 
     @ViewBuilder
     private var content: some View {
-        if isLoading && sessions.isEmpty && photos.isEmpty {
+        if isLoading && sessions.isEmpty && visiblePhotos.isEmpty {
             ProgressView("trash_loading")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .appBackgroundShield()
-        } else if let loadError, sessions.isEmpty && photos.isEmpty {
+        } else if let loadError, sessions.isEmpty && visiblePhotos.isEmpty {
             ContentUnavailableView {
                 Text("trash_load_error_title")
             } description: {
@@ -83,7 +83,7 @@ struct TrashScreen: View {
                 }
             }
             .appBackgroundShield()
-        } else if sessions.isEmpty && photos.isEmpty {
+        } else if sessions.isEmpty && visiblePhotos.isEmpty {
             ContentUnavailableView(
                 "trash_empty_title",
                 systemImage: "trash",
@@ -108,9 +108,9 @@ struct TrashScreen: View {
                     }
                 }
 
-                if !photos.isEmpty {
+                if !visiblePhotos.isEmpty {
                     Section("trash_section_photos") {
-                        ForEach(photos, id: \.id) { photo in
+                        ForEach(visiblePhotos, id: \.id) { photo in
                             photoRow(photo)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button {
@@ -134,6 +134,14 @@ struct TrashScreen: View {
             .refreshable { await refresh() }
             .appBackgroundShield()
         }
+    }
+
+    /// Photos cascaded by a session delete are represented by the session row.
+    /// Showing them again as independent photo rows would let users restore a
+    /// photo while its parent session remains trashed, stranding the photo.
+    private var visiblePhotos: [Photo] {
+        let deletedSessionIds = Set(sessions.map(\.id))
+        return photos.filter { !deletedSessionIds.contains($0.sessionId) }
     }
 
     private func sessionRow(_ session: Session) -> some View {
