@@ -28,6 +28,9 @@ final class DependencyContainer: ObservableObject {
     let locationService: LocationService
     let permissionsService: PermissionsService
     let cameraSession: CameraSession
+    /// Plan E Batch E4 — Settings 화면이 lock policy picker로 본 actor를 조작. E3.b가
+    /// LockScreen overlay에서 `isLocked` 상태를 구독.
+    let appLockController: AppLockController
 
     init() throws {
         let appRoot = try Self.appRoot()
@@ -40,6 +43,7 @@ final class DependencyContainer: ObservableObject {
         self.sharePreparer = sharePreparer
         self.locationService = LocationService()
         self.permissionsService = PermissionsService()
+        self.appLockController = AppLockController()
 
         let cameraConfig = CameraSessionBuilder.makeConfiguration()
         self.cameraSession = try CameraSession(configuration: cameraConfig)

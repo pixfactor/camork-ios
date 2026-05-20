@@ -20,7 +20,7 @@ struct RootTabView: View {
             GalleryScreen()
                 .tabItem { Label("gallery_tab_label", systemImage: "square.grid.2x2") }
 
-            SettingsPlaceholderView()
+            SettingsScreen()
                 .tabItem { Label("settings_tab_label", systemImage: "gearshape") }
         }
         .appBackgroundShield()

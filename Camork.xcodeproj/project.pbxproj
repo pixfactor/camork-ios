@@ -66,6 +66,7 @@
 		A7C8D9BE0F391D659FDEFE4E /* SessionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D617F52812535550DBADD34 /* SessionDetailScreen.swift */; };
 		AED2F21A3054B8DA752AA6EA /* StorageInitErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE1680BB543934E6AD0E068 /* StorageInitErrorView.swift */; };
 		AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */; };
+		B0953678A79E7DFE47009668 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA39AC0443497D9FA05B1033 /* SettingsScreen.swift */; };
 		B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E16FBB8537135AEAA25D510 /* Assets.xcassets */; };
 		B84BB8098D7C6AA3B9E30BB1 /* ThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F73F1A7B610A55DC45C684E /* ThumbnailView.swift */; };
 		B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */; };
@@ -156,6 +157,7 @@
 		A6165FFA504FB244DB02F113 /* MediaCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCapture.swift; sourceTree = "<group>"; };
 		A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsServiceTests.swift; sourceTree = "<group>"; };
 		AA140D0E346D56C7AA3628E2 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		AA39AC0443497D9FA05B1033 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		AAD356D2E9206B35CDE4E3C2 /* SessionNameEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNameEditor.swift; sourceTree = "<group>"; };
 		B6B8F220B91B8B822AF83106 /* TrashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrashScreen.swift; sourceTree = "<group>"; };
 		BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
@@ -298,6 +300,7 @@
 				896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */,
 				2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */,
 				DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */,
+				AA39AC0443497D9FA05B1033 /* SettingsScreen.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -567,6 +570,7 @@
 				67A3EF2799F4D431B8D37681 /* SessionNoteEditSheet.swift in Sources */,
 				783089B6F039897643303D42 /* SessionNoteEditor.swift in Sources */,
 				C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */,
+				B0953678A79E7DFE47009668 /* SettingsScreen.swift in Sources */,
 				00ED29F9FE9139AF4188F9C1 /* ShareEntryButton.swift in Sources */,
 				F20D0CC1DFF4AD084F47F535 /* SharePreparer.swift in Sources */,
 				3DC0586038B7FE039E1BE63B /* ShareSanitizer.swift in Sources */,

@@ -449,6 +449,102 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동하지 못했습니다" } }
       }
     },
+    "settings_about_bundle_id" : {
+      "extractionState" : "manual",
+      "comment" : "Settings About row label for the bundle identifier.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bundle ID" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Bundle ID" } }
+      }
+    },
+    "settings_about_version" : {
+      "extractionState" : "manual",
+      "comment" : "Settings About row label for the app version + build.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "버전" } }
+      }
+    },
+    "settings_lock_policy_fifteen_minutes" : {
+      "extractionState" : "manual",
+      "comment" : "AppLockPolicy.fifteenMinutes display name.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "After 15 minutes" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "15분 후" } }
+      }
+    },
+    "settings_lock_policy_five_minutes" : {
+      "extractionState" : "manual",
+      "comment" : "AppLockPolicy.fiveMinutes display name.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "After 5 minutes" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "5분 후" } }
+      }
+    },
+    "settings_lock_policy_immediate" : {
+      "extractionState" : "manual",
+      "comment" : "AppLockPolicy.immediate display name.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Immediately" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "즉시" } }
+      }
+    },
+    "settings_lock_policy_label" : {
+      "extractionState" : "manual",
+      "comment" : "Picker label inside the App Lock settings section.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Lock app" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠금 시점" } }
+      }
+    },
+    "settings_lock_policy_off" : {
+      "extractionState" : "manual",
+      "comment" : "AppLockPolicy.off display name.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Off" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "끔" } }
+      }
+    },
+    "settings_lock_policy_one_minute" : {
+      "extractionState" : "manual",
+      "comment" : "AppLockPolicy.oneMinute display name.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "After 1 minute" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "1분 후" } }
+      }
+    },
+    "settings_open_trash" : {
+      "extractionState" : "manual",
+      "comment" : "Settings row that opens the Trash viewer.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통 열기" } }
+      }
+    },
+    "settings_section_about" : {
+      "extractionState" : "manual",
+      "comment" : "Settings section header for the About area.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱 정보" } }
+      }
+    },
+    "settings_section_app_lock" : {
+      "extractionState" : "manual",
+      "comment" : "Settings section header for App Lock policy controls.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "App Lock" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱 잠금" } }
+      }
+    },
+    "settings_section_trash" : {
+      "extractionState" : "manual",
+      "comment" : "Settings section header for the Trash entry point.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통" } }
+      }
+    },
     "placeholder_camera_description" : {
       "extractionState" : "manual",
       "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
