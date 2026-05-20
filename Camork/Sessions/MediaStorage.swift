@@ -452,6 +452,61 @@ actor MediaStorage {
         try? fs.removeThumb(fileName: thumbName)
     }
 
+    // MARK: - Trash (Plan E Batch E1.b — session-level cascade)
+
+    /// 휴지통에 들어 있는 모든 세션 (deletedAt IS NOT NULL). 최근 삭제 순.
+    func fetchDeletedSessions() async throws -> [Session] {
+        try await db.read { db in
+            try Session
+                .filter(sql: "deletedAt IS NOT NULL")
+                .order(Column("deletedAt").desc)
+                .fetchAll(db)
+        }
+    }
+
+    /// 세션을 휴지통으로 이동. master spec §5.6에 따라 **세션 삭제 시 그 세션의 모든
+    /// 사진도 같은 timestamp로 trash 처리**. 이미 개별 trash 상태였던 사진은 그대로
+    /// (자신의 deletedAt 유지). 단일 transaction으로 일관성 유지.
+    func softDeleteSession(sessionId: UUID, at: Date = Date()) async throws {
+        try await db.write { db in
+            let stamp = Int64(at.timeIntervalSince1970)
+            try db.execute(
+                sql: "UPDATE Session SET deletedAt = ? WHERE id = ? AND deletedAt IS NULL",
+                arguments: [stamp, sessionId.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.sessionNotFound
+            }
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = ? WHERE sessionId = ? AND deletedAt IS NULL",
+                arguments: [stamp, sessionId.uuidString]
+            )
+        }
+    }
+
+    /// 휴지통에서 세션 복원. 세션 삭제 시 함께 trash로 간 사진들(같은 timestamp)만 복원.
+    /// 사용자가 세션 삭제 *이전*에 개별 휴지통으로 보냈던 사진은 deletedAt timestamp가
+    /// 다르므로 복원 대상에서 제외 — 사용자의 두 번의 의사 결정을 분리해 존중.
+    func restoreSession(sessionId: UUID) async throws {
+        try await db.write { db in
+            guard let row = try Row.fetchOne(
+                db,
+                sql: "SELECT deletedAt FROM Session WHERE id = ?",
+                arguments: [sessionId.uuidString]
+            ), let stamp: Int64 = row["deletedAt"] else {
+                throw Error.sessionNotFound
+            }
+            try db.execute(
+                sql: "UPDATE Session SET deletedAt = NULL WHERE id = ?",
+                arguments: [sessionId.uuidString]
+            )
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = NULL WHERE sessionId = ? AND deletedAt = ?",
+                arguments: [sessionId.uuidString, stamp]
+            )
+        }
+    }
+
     // MARK: - Test hooks (DEBUG only)
 
     #if DEBUG

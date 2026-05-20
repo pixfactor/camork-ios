@@ -706,6 +706,106 @@ struct MediaStorageTests {
         // 무관한 photo의 final/thumb는 보존
         #expect(try fakeFs.finalExists(fileName: photo.fileName))
     }
+
+    // MARK: - Trash session-level (Plan E Batch E1.b)
+
+    @Test("Plan E E1.b: softDeleteSession cascades photos with same timestamp")
+    func softDeleteSessionCascades() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_010), location: loc))
+        #expect(p1.sessionId == p2.sessionId)
+
+        let stamp = Date(timeIntervalSince1970: 5_000)
+        try await storage.softDeleteSession(sessionId: p1.sessionId, at: stamp)
+
+        let deletedSessions = try await storage.fetchDeletedSessions()
+        #expect(deletedSessions.count == 1)
+        #expect(deletedSessions[0].id == p1.sessionId)
+        #expect(deletedSessions[0].deletedAt == stamp)
+
+        let trashedPhotos = try await storage.fetchDeletedPhotos()
+        #expect(trashedPhotos.count == 2)
+        #expect(trashedPhotos.allSatisfy { $0.deletedAt == stamp })
+
+        // active queries에서 모두 제거
+        let activeSessions = try await storage.fetchSessions()
+        #expect(activeSessions.isEmpty)
+        let activePhotos = try await storage.fetchPhotos(sessionId: p1.sessionId)
+        #expect(activePhotos.isEmpty)
+    }
+
+    @Test("Plan E E1.b: softDeleteSession은 사전 개별 trash된 사진의 timestamp를 덮지 않음")
+    func softDeleteSessionPreservesPriorTrashStamp() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_010), location: loc))
+
+        // p1만 먼저 개별 trash
+        let earlyStamp = Date(timeIntervalSince1970: 3_000)
+        try await storage.softDeletePhoto(id: p1.id, at: earlyStamp)
+
+        // 세션 삭제
+        let sessionStamp = Date(timeIntervalSince1970: 5_000)
+        try await storage.softDeleteSession(sessionId: p1.sessionId, at: sessionStamp)
+
+        let trashed = try await storage.fetchDeletedPhotos()
+        let byId = Dictionary(uniqueKeysWithValues: trashed.map { ($0.id, $0.deletedAt) })
+        // p1은 자신의 earlier timestamp 유지, p2는 session stamp
+        #expect(byId[p1.id] == earlyStamp)
+        #expect(byId[p2.id] == sessionStamp)
+    }
+
+    @Test("Plan E E1.b: softDeleteSession on 이미 deleted session → sessionNotFound")
+    func softDeleteSessionAlreadyDeletedThrows() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload())
+        try await storage.softDeleteSession(sessionId: photo.sessionId, at: Date(timeIntervalSince1970: 5_000))
+
+        await #expect(throws: MediaStorage.Error.sessionNotFound) {
+            try await storage.softDeleteSession(sessionId: photo.sessionId, at: Date(timeIntervalSince1970: 6_000))
+        }
+    }
+
+    @Test("Plan E E1.b: restoreSession은 same-timestamp 사진만 복원, 사전 trash는 그대로")
+    func restoreSessionAtomic() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_010), location: loc))
+
+        let earlyStamp = Date(timeIntervalSince1970: 3_000)
+        try await storage.softDeletePhoto(id: p1.id, at: earlyStamp)
+        let sessionStamp = Date(timeIntervalSince1970: 5_000)
+        try await storage.softDeleteSession(sessionId: p1.sessionId, at: sessionStamp)
+
+        try await storage.restoreSession(sessionId: p1.sessionId)
+
+        // Session은 복원, p2는 복원, p1은 여전히 trash
+        let sessions = try await storage.fetchSessions()
+        #expect(sessions.count == 1)
+
+        let active = try await storage.fetchPhotos(sessionId: p1.sessionId)
+        #expect(active.count == 1)
+        #expect(active[0].id == p2.id)
+
+        let trash = try await storage.fetchDeletedPhotos()
+        #expect(trash.count == 1)
+        #expect(trash[0].id == p1.id)
+        #expect(trash[0].deletedAt == earlyStamp)
+    }
+
+    @Test("Plan E E1.b: restoreSession on 정상 상태 session → sessionNotFound")
+    func restoreSessionNotInTrashThrows() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload())
+
+        await #expect(throws: MediaStorage.Error.sessionNotFound) {
+            try await storage.restoreSession(sessionId: photo.sessionId)
+        }
+    }
 }
 
 // MARK: - File-scope helpers
