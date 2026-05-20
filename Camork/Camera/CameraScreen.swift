@@ -217,7 +217,7 @@ struct CameraScreen: View {
     @ViewBuilder
     private func requestView() -> some View {
         VStack(spacing: 16) {
-            Image(systemName: "camera.metering.center.weighted")
+            Image(systemName: "camera.viewfinder")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
             Text("camera_permission_request_title")
