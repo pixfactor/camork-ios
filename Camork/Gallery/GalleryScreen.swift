@@ -10,12 +10,21 @@ struct GalleryScreen: View {
     @State private var sessions: [SessionWithPreview] = []
     @State private var isLoading = true
     @State private var loadError: String?
+    @State private var showTrash = false
 
     var body: some View {
         NavigationStack {
             content
                 .navigationTitle("gallery_title")
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showTrash = true
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .accessibilityLabel(Text("gallery_trash_a11y"))
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             Task { await refresh() }
@@ -29,6 +38,12 @@ struct GalleryScreen: View {
         }
         .task {
             await refresh()
+        }
+        .sheet(isPresented: $showTrash, onDismiss: {
+            Task { await refresh() }
+        }) {
+            TrashScreen()
+                .environmentObject(deps)
         }
     }
 

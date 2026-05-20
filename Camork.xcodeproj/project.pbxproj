@@ -52,6 +52,7 @@
 		7AE50E4A6965593F64CFDFBB /* PhotoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
 		82E43053C6FA4681B8E1656D /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28976A486B5F969E3D7132BD /* CameraView.swift */; };
+		852F72BE39CAF8EBC332482C /* TrashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B8F220B91B8B822AF83106 /* TrashScreen.swift */; };
 		857F58097954C0F289DA7D3A /* FileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80A7C2E5BF1E243F855544 /* FileOps.swift */; };
 		8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */; };
 		925CE1EE8BCAE6B0D42791C5 /* PermissionsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */; };
@@ -152,6 +153,7 @@
 		A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsServiceTests.swift; sourceTree = "<group>"; };
 		AA140D0E346D56C7AA3628E2 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		AAD356D2E9206B35CDE4E3C2 /* SessionNameEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNameEditor.swift; sourceTree = "<group>"; };
+		B6B8F220B91B8B822AF83106 /* TrashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrashScreen.swift; sourceTree = "<group>"; };
 		BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		BDDFC1D1B9B451D3F4DAA926 /* CamorkTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CamorkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5D86B7445F8235736D9E1DB /* Migrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migrations.swift; sourceTree = "<group>"; };
@@ -232,6 +234,7 @@
 				9BCED103095DA1693814ADAB /* SessionNameEditSheet.swift */,
 				52C80ED1C0028BD1D84F4358 /* SessionNoteEditSheet.swift */,
 				8F73F1A7B610A55DC45C684E /* ThumbnailView.swift */,
+				B6B8F220B91B8B822AF83106 /* TrashScreen.swift */,
 			);
 			path = Gallery;
 			sourceTree = "<group>";
@@ -565,6 +568,7 @@
 				4E12AC69BC0ECE687EE344B5 /* ThumbnailCoordinator.swift in Sources */,
 				ED3CA235C62DEB02EB3EE0FE /* ThumbnailGenerator.swift in Sources */,
 				B84BB8098D7C6AA3B9E30BB1 /* ThumbnailView.swift in Sources */,
+				852F72BE39CAF8EBC332482C /* TrashScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

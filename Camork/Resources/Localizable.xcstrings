@@ -8,6 +8,14 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
       }
     },
+    "button_close" : {
+      "extractionState" : "manual",
+      "comment" : "TrashScreen modal close button (Plan E E1.c).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "닫기" } }
+      }
+    },
     "button_ok" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -287,6 +295,110 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
+      }
+    },
+    "gallery_trash_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "Gallery toolbar trash button VoiceOver label (Plan E E1.c).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통 열기" } }
+      }
+    },
+    "trash_action_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Title of the alert shown when a trash restore or purge action fails.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't complete action" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "작업을 완료하지 못했습니다" } }
+      }
+    },
+    "trash_action_purge" : {
+      "extractionState" : "manual",
+      "comment" : "Trash row swipe action: permanently delete the photo.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete forever" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "영구 삭제" } }
+      }
+    },
+    "trash_action_restore" : {
+      "extractionState" : "manual",
+      "comment" : "Trash row swipe action: restore item back into the gallery.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Restore" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "복원" } }
+      }
+    },
+    "trash_empty_description" : {
+      "extractionState" : "manual",
+      "comment" : "ContentUnavailableView description shown when both deleted sessions and deleted photos are empty.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Deleted sessions and photos will appear here for 30 days before being removed forever." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "삭제된 세션과 사진이 30일 동안 이곳에 보관되었다가 영구 삭제됩니다." } }
+      }
+    },
+    "trash_empty_title" : {
+      "extractionState" : "manual",
+      "comment" : "ContentUnavailableView title for an empty trash.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trash is empty" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통이 비었습니다" } }
+      }
+    },
+    "trash_load_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "ContentUnavailableView title when fetching trash contents fails.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't load trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통을 불러오지 못했습니다" } }
+      }
+    },
+    "trash_loading" : {
+      "extractionState" : "manual",
+      "comment" : "ProgressView label shown while trash contents load.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통을 불러오는 중" } }
+      }
+    },
+    "trash_purge_confirm_message" : {
+      "extractionState" : "manual",
+      "comment" : "Confirmation dialog body for permanent photo deletion.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This photo will be removed forever. It can't be restored." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 사진은 영구 삭제되어 복원할 수 없습니다." } }
+      }
+    },
+    "trash_purge_confirm_title" : {
+      "extractionState" : "manual",
+      "comment" : "Confirmation dialog title for permanent photo deletion.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete this photo forever?" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 사진을 영구 삭제할까요?" } }
+      }
+    },
+    "trash_section_photos" : {
+      "extractionState" : "manual",
+      "comment" : "Trash list section header for individual photo entries.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진" } }
+      }
+    },
+    "trash_section_sessions" : {
+      "extractionState" : "manual",
+      "comment" : "Trash list section header for session entries.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sessions" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션" } }
+      }
+    },
+    "trash_title" : {
+      "extractionState" : "manual",
+      "comment" : "TrashScreen navigation title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trash" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통" } }
       }
     },
     "placeholder_camera_description" : {
