@@ -19,6 +19,7 @@
 		2DEE4A050802F4473FB066A0 /* MigrationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */; };
 		33636B69F3241E9CCDCE1C82 /* SessionNameEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BCED103095DA1693814ADAB /* SessionNameEditSheet.swift */; };
 		3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */; };
+		3DC0586038B7FE039E1BE63B /* ShareSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E822718BB4E84C39AA5CE7 /* ShareSanitizer.swift */; };
 		417863673FE447DFE2848780 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 661C72790B8B0D9C11813E0A /* CameraSession.swift */; };
 		42EEF308903DC1C6B8F66B92 /* CameraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */; };
 		45499F188C28B8E4CEE76947 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */; };
@@ -27,6 +28,7 @@
 		4B47B53DAC53EFE4D47661BB /* CameraScreenViewStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8BB5CBC6E53DD577674197F /* CameraScreenViewStateTests.swift */; };
 		4E12AC69BC0ECE687EE344B5 /* ThumbnailCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D961C06607530A8BC0CDE6 /* ThumbnailCoordinator.swift */; };
 		52A3E8CB0CC86C07B88E4C19 /* CameraSessionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799C103081B5005405E05A45 /* CameraSessionBuilder.swift */; };
+		5785FA4B3289DE094819C769 /* ShareSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F7A812953C127A3A3CE54 /* ShareSanitizerTests.swift */; };
 		5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */; };
 		64A84F599216BA18D6D9DAA2 /* ExifBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */; };
 		66CB2DC0230556B6112B7DC7 /* PhotoMemoEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A931643B8B1BD2A58F7A8D7 /* PhotoMemoEditor.swift */; };
@@ -115,11 +117,13 @@
 		5A54AD5C852EA21CCC9EB059 /* ExifBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifBuilder.swift; sourceTree = "<group>"; };
 		5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkCard.swift; sourceTree = "<group>"; };
 		5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicyTests.swift; sourceTree = "<group>"; };
+		64E822718BB4E84C39AA5CE7 /* ShareSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSanitizer.swift; sourceTree = "<group>"; };
 		661C72790B8B0D9C11813E0A /* CameraSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSession.swift; sourceTree = "<group>"; };
 		6C13B28107AE53591B28E00D /* CamorkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkApp.swift; sourceTree = "<group>"; };
 		6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSnapshot.swift; sourceTree = "<group>"; };
 		787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifBuilderTests.swift; sourceTree = "<group>"; };
 		799C103081B5005405E05A45 /* CameraSessionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSessionBuilder.swift; sourceTree = "<group>"; };
+		7C9F7A812953C127A3A3CE54 /* ShareSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSanitizerTests.swift; sourceTree = "<group>"; };
 		7EC5AAB226ED33D6CFC78C2F /* CameraScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreen.swift; sourceTree = "<group>"; };
 		84249623116F71C2B7E2F8D1 /* ExifData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifData.swift; sourceTree = "<group>"; };
 		86F03241D9611547DAA1B731 /* SessionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionCardView.swift; sourceTree = "<group>"; };
@@ -240,6 +244,14 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
+		52032722886A4FCBEA66316E /* Share */ = {
+			isa = PBXGroup;
+			children = (
+				64E822718BB4E84C39AA5CE7 /* ShareSanitizer.swift */,
+			);
+			path = Share;
+			sourceTree = "<group>";
+		};
 		5D022612BA631678EFC6D420 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
@@ -285,6 +297,7 @@
 				3745ED33CE9A1FD341909DC6 /* Resources */,
 				E570F09510C6DF05AF395AD8 /* Services */,
 				30B29EF515ED1BFDF9E4F2B4 /* Sessions */,
+				52032722886A4FCBEA66316E /* Share */,
 				46D202837274B3D714FA377E /* Storage */,
 				65DAC50BF9A6EA02861762C3 /* Views */,
 			);
@@ -347,6 +360,7 @@
 				5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */,
 				11EA37EC593C52C6B57E60AE /* SessionNameEditorTests.swift */,
 				1ED2309B7A38D8B95C65553C /* SessionNoteEditorTests.swift */,
+				7C9F7A812953C127A3A3CE54 /* ShareSanitizerTests.swift */,
 				8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */,
 				34C2A137B5A5A6EEE6D07249 /* ThumbnailCoordinatorTests.swift */,
 				A52900B223EEF495625FBF0E /* ThumbnailGeneratorTests.swift */,
@@ -475,6 +489,7 @@
 				B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */,
 				C9657E5A0E90F9BFD85A16A0 /* SessionNameEditorTests.swift in Sources */,
 				94481241DC90A6DDBFFBE56E /* SessionNoteEditorTests.swift in Sources */,
+				5785FA4B3289DE094819C769 /* ShareSanitizerTests.swift in Sources */,
 				0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */,
 				E5BEB9E21A834C67818EDAD2 /* ThumbnailCoordinatorTests.swift in Sources */,
 				4A9C7007B8B9294EEE547473 /* ThumbnailGeneratorTests.swift in Sources */,
@@ -527,6 +542,7 @@
 				67A3EF2799F4D431B8D37681 /* SessionNoteEditSheet.swift in Sources */,
 				783089B6F039897643303D42 /* SessionNoteEditor.swift in Sources */,
 				C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */,
+				3DC0586038B7FE039E1BE63B /* ShareSanitizer.swift in Sources */,
 				AED2F21A3054B8DA752AA6EA /* StorageInitErrorView.swift in Sources */,
 				7350EA82727FFDA235B1269F /* Theme.swift in Sources */,
 				4E12AC69BC0ECE687EE344B5 /* ThumbnailCoordinator.swift in Sources */,
