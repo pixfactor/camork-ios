@@ -35,6 +35,21 @@ struct SessionDetailScreen: View {
         self._sessionNote = State(initialValue: session.note)
     }
 
+    /// 사용자가 sheet에서 편집한 직후의 name/note 값을 반영한 Session 사본. ShareEntryButton과
+    /// PhotoDetailView 같이 자식에 흐르는 share/메타 텍스트가 즉시 새 값을 사용하도록 한다 —
+    /// 원본 `session` (init parameter) 는 immutable이라 직접 갱신 불가.
+    private var liveSession: Session {
+        Session(
+            id: session.id,
+            name: sessionName,
+            note: sessionNote,
+            createdAt: session.createdAt,
+            endedAt: session.endedAt,
+            firstLocation: session.firstLocation,
+            deletedAt: session.deletedAt
+        )
+    }
+
     var body: some View {
         content
             .navigationTitle(sessionName)
@@ -42,23 +57,16 @@ struct SessionDetailScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        sheet = .name
+                        sheet = .info
                     } label: {
                         Image(systemName: "pencil")
                     }
-                    .accessibilityLabel(Text("session_detail_edit_name_a11y"))
+                    .accessibilityLabel(Text("session_detail_edit_info_a11y"))
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button {
-                        sheet = .note
-                    } label: {
-                        Image(systemName: "note.text")
-                    }
-                    .accessibilityLabel(Text("session_detail_edit_note_a11y"))
-
                     ShareEntryButton(
-                        session: session,
+                        session: liveSession,
                         photos: photos,
                         sharePreparer: deps.sharePreparer
                     )
@@ -84,26 +92,20 @@ struct SessionDetailScreen: View {
                     data: item.data,
                     memoEditor: PhotoMemoEditor(mediaStorage: deps.mediaStorage),
                     onDismiss: { detailItem = nil },
-                    session: session,
+                    session: liveSession,
                     sharePreparer: deps.sharePreparer
                 )
             }
             .sheet(item: $sheet) { sheet in
                 switch sheet {
-                case .name:
-                    SessionNameEditSheet(
+                case .info:
+                    SessionInfoEditSheet(
                         sessionId: session.id,
                         initialName: sessionName,
-                        editor: SessionNameEditor(mediaStorage: deps.mediaStorage)
-                    ) { savedName in
-                        sessionName = savedName
-                    }
-                case .note:
-                    SessionNoteEditSheet(
-                        sessionId: session.id,
                         initialNote: sessionNote,
-                        editor: SessionNoteEditor(mediaStorage: deps.mediaStorage)
-                    ) { savedNote in
+                        editor: SessionInfoEditor(mediaStorage: deps.mediaStorage)
+                    ) { savedName, savedNote in
+                        sessionName = savedName
                         sessionNote = savedNote
                     }
                 }
@@ -306,13 +308,12 @@ struct SessionDetailScreen: View {
 }
 
 private enum SessionDetailSheet: Identifiable {
-    case name
-    case note
+    /// 이름/메모 통합 편집 시트 (Plan F). 기존 `.name` / `.note` 두 cases를 합쳤다.
+    case info
 
     var id: String {
         switch self {
-        case .name: "name"
-        case .note: "note"
+        case .info: "info"
         }
     }
 }

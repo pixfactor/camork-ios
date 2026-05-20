@@ -36,8 +36,11 @@ struct GalleryScreen: View {
                     }
                 }
         }
-        .task {
-            await refresh()
+        // Plan F dogfood: SessionDetailScreen 편집 후 pop back / TrashScreen dismiss /
+        // 탭 재진입 등 모든 재출현 경로에서 최신 sessions를 보여주도록 .onAppear 사용.
+        // (.task는 NavigationLink 복귀에서 재실행을 보장하지 않음.)
+        .onAppear {
+            Task { await refresh() }
         }
         .sheet(isPresented: $showTrash, onDismiss: {
             Task { await refresh() }

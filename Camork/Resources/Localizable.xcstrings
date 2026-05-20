@@ -441,12 +441,36 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "추가 옵션" } }
       }
     },
+    "session_detail_edit_info_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "VoiceOver label for the unified name+note edit button on SessionDetailScreen (Plan F).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit session info" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보 편집" } }
+      }
+    },
     "session_detail_trash_error_title" : {
       "extractionState" : "manual",
       "comment" : "Alert title when soft-deleting a photo or session fails on SessionDetailScreen.",
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't move to Trash" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동하지 못했습니다" } }
+      }
+    },
+    "session_info_edit_title" : {
+      "extractionState" : "manual",
+      "comment" : "Navigation title of the unified Session info edit sheet (Plan F).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Session info" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보" } }
+      }
+    },
+    "session_info_save_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Alert title when SessionInfoEditSheet save fails (Plan F).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save session info" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보를 저장하지 못했습니다" } }
       }
     },
     "lock_screen_failed" : {

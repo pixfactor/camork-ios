@@ -12,6 +12,7 @@
 		09C750A7E15A94B6599FB1E3 /* CamorkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6964EA516629442CFF13685 /* CamorkButton.swift */; };
 		0D2E1D87394C839B6218EE15 /* FakeFileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */; };
 		0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */; };
+		0E23B71EB31E072252327CC4 /* SessionInfoEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BF291EFDB937EF96114901 /* SessionInfoEditSheet.swift */; };
 		102F4B5B8A3E2D1D36C9C558 /* ShareSheetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81818A34D96A3AFAC9B8F8F6 /* ShareSheetController.swift */; };
 		15180F70E1BA4C15785E5970 /* ExifBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54AD5C852EA21CCC9EB059 /* ExifBuilder.swift */; };
 		15620BDD74AEB365394CB457 /* SessionInfoEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48AD1B2DF3CBB981248F0A2 /* SessionInfoEditor.swift */; };
@@ -107,6 +108,7 @@
 		018C78605008CB210A51B479 /* MediaStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageTests.swift; sourceTree = "<group>"; };
 		038C9692A09C23A3B38A8CD2 /* AppLockController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockController.swift; sourceTree = "<group>"; };
 		0793057E915500151F00536A /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		07BF291EFDB937EF96114901 /* SessionInfoEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInfoEditSheet.swift; sourceTree = "<group>"; };
 		1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystem.swift; sourceTree = "<group>"; };
 		11EA37EC593C52C6B57E60AE /* SessionNameEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNameEditorTests.swift; sourceTree = "<group>"; };
 		14B888956B201EB0ED26CC34 /* PermissionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsService.swift; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 				F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */,
 				86F03241D9611547DAA1B731 /* SessionCardView.swift */,
 				8D617F52812535550DBADD34 /* SessionDetailScreen.swift */,
+				07BF291EFDB937EF96114901 /* SessionInfoEditSheet.swift */,
 				9BCED103095DA1693814ADAB /* SessionNameEditSheet.swift */,
 				52C80ED1C0028BD1D84F4358 /* SessionNoteEditSheet.swift */,
 				8F73F1A7B610A55DC45C684E /* ThumbnailView.swift */,
@@ -580,6 +583,7 @@
 				5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */,
 				96C562002F463965117DFA92 /* SessionCardView.swift in Sources */,
 				A7C8D9BE0F391D659FDEFE4E /* SessionDetailScreen.swift in Sources */,
+				0E23B71EB31E072252327CC4 /* SessionInfoEditSheet.swift in Sources */,
 				15620BDD74AEB365394CB457 /* SessionInfoEditor.swift in Sources */,
 				33636B69F3241E9CCDCE1C82 /* SessionNameEditSheet.swift in Sources */,
 				6CFDF4B17545B466151FB8A9 /* SessionNameEditor.swift in Sources */,
