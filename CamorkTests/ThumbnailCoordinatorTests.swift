@@ -70,11 +70,14 @@ struct ThumbnailCoordinatorTests {
                         readAttempts.increment()
                         return try store.readCached()
                     },
-                    readOriginal: {
-                        try store.readOriginal()
-                    },
-                    writeCached: { data in
-                        try store.writeCached(data)
+                    generateAndCache: {
+                        let original = try store.readOriginal()
+                        let thumbnail = try await coordinator.generate(
+                            original,
+                            coordinator.shortSidePixels
+                        )
+                        try store.writeCached(thumbnail)
+                        return thumbnail
                     }
                 )
             }
@@ -113,11 +116,14 @@ struct ThumbnailCoordinatorTests {
                     readCached: {
                         try store.readCached()
                     },
-                    readOriginal: {
-                        try store.readOriginal()
-                    },
-                    writeCached: { data in
-                        try store.writeCached(data)
+                    generateAndCache: {
+                        let original = try store.readOriginal()
+                        let thumbnail = try await coordinator.generate(
+                            original,
+                            coordinator.shortSidePixels
+                        )
+                        try store.writeCached(thumbnail)
+                        return thumbnail
                     }
                 )
             }

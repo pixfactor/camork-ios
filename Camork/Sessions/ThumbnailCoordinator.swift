@@ -7,10 +7,17 @@ import Foundation
 /// - coalesce same-photo misses into one in-flight generation task;
 /// - cap distinct miss generation work to `concurrencyLimit`.
 actor ThumbnailCoordinator {
-    private let concurrencyLimit: Int
-    private let shortSidePixels: Int
-    private let generate: @Sendable (Data, Int) async throws -> Data
+    /// Pixel target forwarded to the underlying generator on miss. Exposed `nonisolated`
+    /// so MediaStorage (or any composer) can hand the value to its `generateAndCache`
+    /// closure without round-tripping through the actor.
+    nonisolated let shortSidePixels: Int
 
+    /// Pure thumbnail generator (Data, shortSidePixels) -> Data. Exposed `nonisolated`
+    /// because the closure is immutable + `@Sendable` and callers must invoke it from
+    /// inside the `generateAndCache` closure they pass to `loadThumbnailData`.
+    nonisolated let generate: @Sendable (Data, Int) async throws -> Data
+
+    private let concurrencyLimit: Int
     private var activeCount = 0
     private var waiters: [CheckedContinuation<Void, Never>] = []
     private var inFlight: [UUID: Task<Data, Swift.Error>] = [:]
@@ -27,11 +34,19 @@ actor ThumbnailCoordinator {
         self.generate = generate
     }
 
+    /// Algorithm (spec):
+    /// 1. If `inFlight[id]` exists, await it (the in-flight task already holds a permit,
+    ///    so coalescing callers do not consume an additional slot).
+    /// 2. Otherwise try `readCached()` synchronously. Cache hit returns immediately and
+    ///    never touches the permit pool — small responses must not stall behind misses.
+    /// 3. On cache read failure (miss or corrupt entry), spawn a `Task` that acquires a
+    ///    permit, runs `generateAndCache`, releases the permit in `defer`. Store the task
+    ///    in `inFlight` *before* awaiting; remove it in `defer` after the await completes,
+    ///    success or failure, so the next caller for the same id refreshes from cache.
     func loadThumbnailData(
         id: UUID,
         readCached: @Sendable () throws -> Data,
-        readOriginal: @escaping @Sendable () throws -> Data,
-        writeCached: @escaping @Sendable (Data) throws -> Void
+        generateAndCache: @escaping @Sendable () async throws -> Data
     ) async throws -> Data {
         if let task = inFlight[id] {
             return try await task.value
@@ -40,33 +55,24 @@ actor ThumbnailCoordinator {
         do {
             return try readCached()
         } catch {
-            // Cache misses and cache read failures are both self-healed by regenerating
-            // from the canonical original file.
+            // Cache miss or unreadable entry — both self-heal via regeneration.
         }
 
-        let task = Task { [shortSidePixels, generate] in
-            try await self.runWithPermit {
-                let original = try readOriginal()
-                let thumbnail = try await generate(original, shortSidePixels)
-                try writeCached(thumbnail)
-                return thumbnail
-            }
+        let task = Task<Data, Swift.Error> { [weak self] in
+            guard let self else { throw CancellationError() }
+            return try await self.runGuarded(generateAndCache)
         }
         inFlight[id] = task
         defer { inFlight[id] = nil }
         return try await task.value
     }
 
-    private func runWithPermit(_ operation: @Sendable () async throws -> Data) async throws -> Data {
+    private func runGuarded(
+        _ generateAndCache: @escaping @Sendable () async throws -> Data
+    ) async throws -> Data {
         await acquirePermit()
-        do {
-            let data = try await operation()
-            releasePermit()
-            return data
-        } catch {
-            releasePermit()
-            throw error
-        }
+        defer { releasePermit() }
+        return try await generateAndCache()
     }
 
     private func acquirePermit() async {

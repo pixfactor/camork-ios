@@ -336,11 +336,14 @@ actor MediaStorage {
             readCached: { [fs] in
                 try fs.readThumb(fileName: thumbName)
             },
-            readOriginal: { [fs] in
-                try fs.readFinal(fileName: originalName)
-            },
-            writeCached: { [fs] data in
-                try fs.writeThumb(fileName: thumbName, data: data)
+            generateAndCache: { [fs, thumbnailCoordinator] in
+                let original = try fs.readFinal(fileName: originalName)
+                let thumbnail = try await thumbnailCoordinator.generate(
+                    original,
+                    thumbnailCoordinator.shortSidePixels
+                )
+                try fs.writeThumb(fileName: thumbName, data: thumbnail)
+                return thumbnail
             }
         )
     }
