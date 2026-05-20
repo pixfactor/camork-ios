@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Gallery root screen (Plan C Phase 3.1).
+/// Gallery root screen.
 ///
-/// Phase 3.1 owns only data loading, empty/loading/error states, and a minimal session
-/// summary row. Rich 4-photo cards are introduced by `SessionCardView` in Phase 3.2.
+/// Owns data loading and screen states. Session card composition lives in
+/// `SessionCardView` so thumbnail loading can land as a focused follow-up.
 struct GalleryScreen: View {
     @EnvironmentObject private var deps: DependencyContainer
 
@@ -58,7 +58,15 @@ struct GalleryScreen: View {
             .appBackgroundShield()
         } else {
             List(sessions, id: \.session.id) { item in
-                GallerySessionSummaryRow(item: item)
+                SessionCardView(item: item)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(
+                        top: Spacing.sm,
+                        leading: Spacing.md,
+                        bottom: Spacing.sm,
+                        trailing: Spacing.md
+                    ))
             }
             .listStyle(.plain)
             .refreshable {
@@ -78,29 +86,5 @@ struct GalleryScreen: View {
             loadError = String(describing: error)
         }
         isLoading = false
-    }
-}
-
-private struct GallerySessionSummaryRow: View {
-    let item: SessionWithPreview
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(item.session.name)
-                .font(.headline)
-                .lineLimit(2)
-            HStack(spacing: 10) {
-                Text(item.session.createdAt.formatted(date: .numeric, time: .shortened))
-                if let placeName = item.session.firstLocation?.placeName, !placeName.isEmpty {
-                    Text(placeName)
-                        .lineLimit(1)
-                }
-                Label("\(item.preview.totalPhotoCount)", systemImage: "photo")
-                    .labelStyle(.titleAndIcon)
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 8)
     }
 }
