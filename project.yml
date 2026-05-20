@@ -34,21 +34,36 @@ targets:
         NSLocationWhenInUseUsageDescription: "촬영 위치를 사진에 함께 기록하기 위해 위치 권한을 요청합니다."
         # NSMicrophoneUsageDescription은 v1.2 동영상 추가 시 활성화. v1 Core (photo only)는 마이크 미사용.
         NSFaceIDUsageDescription: "앱 잠금을 해제하기 위해 Face ID를 사용합니다."
-        UISupportedInterfaceOrientations:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        # iPhone-only 앱이지만 App Store Connect 검증이 iPad orientations 4개를 요구하므로
+        # idiom-specific 키로 분리. iPhone은 portrait 고정(카메라 UX 의도), iPad는 ASC 검증 통과용.
+        "UISupportedInterfaceOrientations~iphone":
           - UIInterfaceOrientationPortrait
+        "UISupportedInterfaceOrientations~ipad":
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         # UIUserInterfaceStyle 의도적 미설정 — 시스템 appearance를 따름. 다크 1차는 Asset Catalog의 다크 우선 컬러로.
+        # 표준 시스템 암호화(TLS 등)만 사용 — App Store Connect의 Export Compliance prompt를 자동 면제.
+        ITSAppUsesNonExemptEncryption: false
+        # iOS 11+ AssetCatalog 기반 AppIcon은 본 키를 Info.plist에 명시해야 한다.
+        CFBundleIconName: AppIcon
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.camork.app
         MARKETING_VERSION: "1.0.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "6"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SWIFT_EMIT_LOC_STRINGS: "YES"
         ENABLE_PREVIEWS: "YES"
         CODE_SIGN_STYLE: Automatic
-        # DEVELOPMENT_TEAM 의도적 미설정 — 개인/회사 Mac 차이 흡수.
-        # 시뮬레이터 빌드는 CODE_SIGNING_ALLOWED=NO 명령행 옵션으로 회피.
+        # v1 TestFlight는 1인 개발/단일 Apple team archive를 우선해 고정.
+        # 협업/CI 진입 시 gitignored xcconfig 또는 환경변수 기반으로 분리.
+        DEVELOPMENT_TEAM: RCNZ7N94S3
+        # 시뮬레이터 빌드는 CODE_SIGNING_ALLOWED=NO 명령행 옵션으로 우회 가능.
     entitlements:
       path: Camork/Camork.entitlements
     dependencies:
