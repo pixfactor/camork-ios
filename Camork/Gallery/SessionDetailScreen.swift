@@ -54,11 +54,11 @@ struct SessionDetailScreen: View {
                     }
                     .accessibilityLabel(Text("session_detail_edit_note_a11y"))
 
-                    Button {} label: {
-                        Image(systemName: "square.and.arrow.up")
-                    }
-                    .disabled(true)
-                    .accessibilityLabel(Text("session_detail_share_a11y"))
+                    ShareEntryButton(
+                        session: session,
+                        photos: photos,
+                        mediaStorage: deps.mediaStorage
+                    )
                 }
             }
             .task {

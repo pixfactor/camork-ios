@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00ED29F9FE9139AF4188F9C1 /* ShareEntryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31F5475D3D092213CDF9172F /* ShareEntryButton.swift */; };
 		03B73C2C45EB80D96D61EEB5 /* LocationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA977E72449CB74164D357A6 /* LocationServiceTests.swift */; };
 		09C750A7E15A94B6599FB1E3 /* CamorkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6964EA516629442CFF13685 /* CamorkButton.swift */; };
 		0D2E1D87394C839B6218EE15 /* FakeFileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */; };
@@ -109,6 +110,7 @@
 		29E6B68E8E8F1C5D13005D96 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		2D512AE4280E1BBD6A543156 /* GalleryPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryPlaceholderView.swift; sourceTree = "<group>"; };
 		2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewTests.swift; sourceTree = "<group>"; };
+		31F5475D3D092213CDF9172F /* ShareEntryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareEntryButton.swift; sourceTree = "<group>"; };
 		34C2A137B5A5A6EEE6D07249 /* ThumbnailCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCoordinatorTests.swift; sourceTree = "<group>"; };
 		37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkButtonStyleTests.swift; sourceTree = "<group>"; };
 		3C05D0B6C6E4B6A157F9012C /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -253,6 +255,7 @@
 		52032722886A4FCBEA66316E /* Share */ = {
 			isa = PBXGroup;
 			children = (
+				31F5475D3D092213CDF9172F /* ShareEntryButton.swift */,
 				A50400D2ECBD1D89A5904D35 /* SharePreparer.swift */,
 				64E822718BB4E84C39AA5CE7 /* ShareSanitizer.swift */,
 				81818A34D96A3AFAC9B8F8F6 /* ShareSheetController.swift */,
@@ -552,6 +555,7 @@
 				67A3EF2799F4D431B8D37681 /* SessionNoteEditSheet.swift in Sources */,
 				783089B6F039897643303D42 /* SessionNoteEditor.swift in Sources */,
 				C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */,
+				00ED29F9FE9139AF4188F9C1 /* ShareEntryButton.swift in Sources */,
 				F20D0CC1DFF4AD084F47F535 /* SharePreparer.swift in Sources */,
 				3DC0586038B7FE039E1BE63B /* ShareSanitizer.swift in Sources */,
 				102F4B5B8A3E2D1D36C9C558 /* ShareSheetController.swift in Sources */,

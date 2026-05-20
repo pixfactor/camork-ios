@@ -163,6 +163,46 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유하기" } }
       }
     },
+    "share_include_location" : {
+      "extractionState" : "manual",
+      "comment" : "Share options toggle for including location metadata and text.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Include location" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "위치 정보 포함" } }
+      }
+    },
+    "share_include_time" : {
+      "extractionState" : "manual",
+      "comment" : "Share options toggle for including capture time in share text.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Include capture time" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영 시간 포함" } }
+      }
+    },
+    "share_options_title" : {
+      "extractionState" : "manual",
+      "comment" : "Share options sheet navigation title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share options" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유 옵션" } }
+      }
+    },
+    "share_prepare_error_message" : {
+      "extractionState" : "manual",
+      "comment" : "Share preparation failure alert body.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reload the photos and try again." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진을 다시 불러온 뒤 시도해 주세요." } }
+      }
+    },
+    "share_prepare_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Share preparation failure alert title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't prepare share" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유를 준비할 수 없어요" } }
+      }
+    },
     "camera_tab_label" : {
       "extractionState" : "manual",
       "localizations" : {
