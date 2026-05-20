@@ -47,6 +47,14 @@ final class DependencyContainer: ObservableObject {
         Task {
             await sharePreparer.cleanupExpired()
         }
+
+        // Plan E Batch E5 — 30일 자동 영구 삭제. 앱 시작 시 best-effort. BGTaskScheduler
+        // 통합은 v1.1 이후. cutoff은 호출 시점 기준이며 결정성 / DI는 본 init 외부에서
+        // 필요해질 때 분리.
+        Task { [mediaStorage] in
+            let cutoff = Date().addingTimeInterval(-30 * 24 * 60 * 60)
+            _ = try? await mediaStorage.purgeExpired(cutoff: cutoff)
+        }
     }
 
     /// `Library/Application Support/Camork/` — DB metadata와 primary media storage의 루트.

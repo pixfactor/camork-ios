@@ -23,6 +23,13 @@ struct SessionWithPreview: Sendable {
     let preview: SessionPreview
 }
 
+/// Plan E Batch E5 — `purgeExpired` 호출 결과. 진단/로그용 카운트. UI 분기는 사용하지
+/// 않음 (cleanup은 비가시 background 작업).
+struct PurgeExpiredResult: Sendable, Equatable {
+    let photosPurged: Int
+    let sessionsPurged: Int
+}
+
 /// 단일 capture-save writer (ADR #2). 모든 capture-save 흐름이 본 actor를 통해 직렬화된다.
 ///
 /// ## saveCapture 5-step sequence (ADR #2 + v1.2 C6)
@@ -505,6 +512,60 @@ actor MediaStorage {
                 arguments: [sessionId.uuidString, stamp]
             )
         }
+    }
+
+    // MARK: - Trash background purge (Plan E Batch E5 — 30일 보존 정책)
+
+    /// `deletedAt < cutoff`인 사진/세션을 영구 삭제. master spec §5.6 "휴지통에서 30일 후
+    /// 자동 영구 삭제". 호출자는 cutoff = now() - 30일을 전달. 결과 struct는 진단/로그용.
+    ///
+    /// 순서:
+    /// 1. 만료 사진의 fileName 사전 enumerate (CASCADE로 사라지기 전에 캡쳐).
+    /// 2. 단일 DB transaction: 만료 사진 DELETE + 만료 세션 DELETE (Photo.sessionId CASCADE).
+    /// 3. 캡쳐한 fileName에 대해 best-effort file/thumb unlink. 실패는 reaper 후속 처리.
+    func purgeExpired(cutoff: Date) async throws -> PurgeExpiredResult {
+        let stamp = Int64(cutoff.timeIntervalSince1970)
+
+        // Step 1: 만료 사진의 fileName 캡쳐 (개별 trash + 세션 cascade 양쪽 포함 —
+        // softDeleteSession이 photo.deletedAt을 동일 stamp로 cascade했으므로 한 query로 OK).
+        let expiredFileRefs: [(String, String)] = try await db.read { db in
+            let rows = try Row.fetchAll(
+                db,
+                sql: "SELECT id, fileName FROM Photo WHERE deletedAt IS NOT NULL AND deletedAt < ?",
+                arguments: [stamp]
+            )
+            return rows.map { row in
+                let id: String = row["id"]
+                let fileName: String = row["fileName"]
+                return (fileName, "\(id).jpg")
+            }
+        }
+
+        // Step 2: DB DELETE photos + sessions in single transaction.
+        let (photosPurged, sessionsPurged): (Int, Int) = try await db.write { db in
+            try db.execute(
+                sql: "DELETE FROM Photo WHERE deletedAt IS NOT NULL AND deletedAt < ?",
+                arguments: [stamp]
+            )
+            let photoCount = db.changesCount
+            try db.execute(
+                sql: "DELETE FROM Session WHERE deletedAt IS NOT NULL AND deletedAt < ?",
+                arguments: [stamp]
+            )
+            let sessionCount = db.changesCount
+            return (photoCount, sessionCount)
+        }
+
+        // Step 3: best-effort file unlinks. Failures leave orphans for reaper.
+        for (fileName, thumbName) in expiredFileRefs {
+            try? fs.removeFinal(fileName: fileName)
+            try? fs.removeThumb(fileName: thumbName)
+        }
+
+        return PurgeExpiredResult(
+            photosPurged: photosPurged,
+            sessionsPurged: sessionsPurged
+        )
     }
 
     // MARK: - Test hooks (DEBUG only)

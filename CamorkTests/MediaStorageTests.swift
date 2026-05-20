@@ -827,6 +827,118 @@ struct MediaStorageTests {
             try await storage.restoreSession(sessionId: photo.sessionId)
         }
     }
+
+    // MARK: - Trash background purge (Plan E Batch E5)
+
+    @Test("Plan E E5: purgeExpired on empty trash → (0, 0)")
+    func purgeExpiredEmpty() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let result = try await storage.purgeExpired(cutoff: Date(timeIntervalSince1970: 1_000_000))
+        #expect(result == PurgeExpiredResult(photosPurged: 0, sessionsPurged: 0))
+    }
+
+    @Test("Plan E E5: deletedAt < cutoff인 사진은 DB + file/thumb unlink, deletedAt >= cutoff는 보존")
+    func purgeExpiredHonorsCutoff() async throws {
+        let fakeFs = FakeFileOps()
+        let (storage, db) = try await makeStorage(fs: fakeFs)
+        let old = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+        let fresh = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_010)))
+        try fakeFs.writeThumb(fileName: "\(old.id.uuidString).jpg", data: Data([0x01]))
+        try fakeFs.writeThumb(fileName: "\(fresh.id.uuidString).jpg", data: Data([0x02]))
+
+        try await storage.softDeletePhoto(id: old.id, at: Date(timeIntervalSince1970: 2_000))
+        try await storage.softDeletePhoto(id: fresh.id, at: Date(timeIntervalSince1970: 8_000))
+
+        let result = try await storage.purgeExpired(cutoff: Date(timeIntervalSince1970: 5_000))
+
+        #expect(result.photosPurged == 1)
+        #expect(result.sessionsPurged == 0)
+
+        let surviving = try await db.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Photo") ?? 0
+        }
+        #expect(surviving == 1)
+        #expect(try !fakeFs.finalExists(fileName: old.fileName))
+        #expect(try fakeFs.finalExists(fileName: fresh.fileName))
+        #expect(throws: FakeFileOpsError.self) {
+            _ = try fakeFs.readThumb(fileName: "\(old.id.uuidString).jpg")
+        }
+        #expect(try fakeFs.readThumb(fileName: "\(fresh.id.uuidString).jpg") == Data([0x02]))
+    }
+
+    @Test("Plan E E5: 만료 세션 cascade — Session + 그 안 사진의 DB row + 파일 모두 제거")
+    func purgeExpiredCascadesSession() async throws {
+        let fakeFs = FakeFileOps()
+        let (storage, db) = try await makeStorage(fs: fakeFs)
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        let p1 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        let p2 = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_010), location: loc))
+
+        try await storage.softDeleteSession(sessionId: p1.sessionId, at: Date(timeIntervalSince1970: 2_000))
+
+        let result = try await storage.purgeExpired(cutoff: Date(timeIntervalSince1970: 5_000))
+
+        #expect(result.photosPurged == 2)
+        #expect(result.sessionsPurged == 1)
+
+        let counts = try await db.read { db -> (Int, Int) in
+            let p = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Photo") ?? 0
+            let s = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Session") ?? 0
+            return (p, s)
+        }
+        #expect(counts.0 == 0)
+        #expect(counts.1 == 0)
+        #expect(try !fakeFs.finalExists(fileName: p1.fileName))
+        #expect(try !fakeFs.finalExists(fileName: p2.fileName))
+    }
+
+    @Test("Plan E E5: cutoff 이전 trash + cutoff 이후 trash 혼합 — 부분 purge")
+    func purgeExpiredMixed() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+        let loc = LocationSnapshot(latitude: 0, longitude: 0, horizontalAccuracy: 10, placeName: nil)
+        await storage.markPendingNewSession()
+        _ = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000), location: loc))
+        await storage.markPendingNewSession()
+        let s2Photo = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 2_000), location: loc))
+
+        // s1: 오래된 trash → 만료 대상
+        let p1Sessions = try await storage.fetchSessions()
+        let oldSessionId = p1Sessions.last!.id  // s1 (oldest)
+        try await storage.softDeleteSession(sessionId: oldSessionId, at: Date(timeIntervalSince1970: 1_500))
+        // s2: 최근 trash → 보존
+        try await storage.softDeleteSession(sessionId: s2Photo.sessionId, at: Date(timeIntervalSince1970: 9_000))
+
+        let result = try await storage.purgeExpired(cutoff: Date(timeIntervalSince1970: 5_000))
+
+        #expect(result.sessionsPurged == 1)
+        #expect(result.photosPurged == 1)
+
+        // s2 trash는 유지
+        let trash = try await storage.fetchDeletedSessions()
+        #expect(trash.count == 1)
+        #expect(trash[0].id == s2Photo.sessionId)
+        let remainingPhotoCount = try await db.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Photo") ?? 0
+        }
+        #expect(remainingPhotoCount == 1)
+    }
+
+    @Test("Plan E E5: active(미삭제) row는 cutoff와 무관하게 보존")
+    func purgeExpiredIgnoresActiveRows() async throws {
+        let (storage, db, _) = try await makeStorageReal()
+        _ = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+
+        let result = try await storage.purgeExpired(cutoff: Date(timeIntervalSince1970: 100_000_000))
+
+        #expect(result == PurgeExpiredResult(photosPurged: 0, sessionsPurged: 0))
+        let counts = try await db.read { db -> (Int, Int) in
+            let p = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Photo") ?? 0
+            let s = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Session") ?? 0
+            return (p, s)
+        }
+        #expect(counts.0 == 1)
+        #expect(counts.1 == 1)
+    }
 }
 
 // MARK: - File-scope helpers
