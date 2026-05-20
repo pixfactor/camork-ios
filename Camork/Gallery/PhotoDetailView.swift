@@ -84,12 +84,10 @@ struct PhotoDetailView: View {
 
     private var topBar: some View {
         HStack(spacing: 0) {
-            Button(action: onDismiss) {
-                Image(systemName: "chevron.down")
-                    .font(.title3.weight(.semibold))
-                    .padding(12)
-            }
-            .accessibilityLabel(Text("photo_detail_close_a11y"))
+            Button("button_close", action: onDismiss)
+                .font(.title3.weight(.semibold))
+                .padding(12)
+                .accessibilityLabel(Text("photo_detail_close_a11y"))
 
             Spacer()
 
