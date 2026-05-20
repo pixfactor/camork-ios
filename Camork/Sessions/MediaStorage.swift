@@ -59,6 +59,7 @@ actor MediaStorage {
     private let db: any DatabaseWriter
     private let fs: any FileOps
     private let policy: SessionAssignmentPolicy
+    private let thumbnailCoordinator: ThumbnailCoordinator
 
     #if DEBUG
     private var testHooks: MediaStorageTestHooks = .init()
@@ -67,11 +68,13 @@ actor MediaStorage {
     init(
         db: any DatabaseWriter,
         fs: any FileOps,
-        policy: SessionAssignmentPolicy = .init()
+        policy: SessionAssignmentPolicy = .init(),
+        thumbnailCoordinator: ThumbnailCoordinator = ThumbnailCoordinator()
     ) {
         self.db = db
         self.fs = fs
         self.policy = policy
+        self.thumbnailCoordinator = thumbnailCoordinator
     }
 
     // MARK: - Public API (ADR #2)
@@ -309,16 +312,31 @@ actor MediaStorage {
     ///
     /// 파일이 없으면 fs.readFinal이 throw — silent empty Data 반환 금지.
     func loadPhotoData(for photo: Photo) throws -> Data {
-        let name = photo.fileName
-        // Defense-in-depth: equality check만으로도 path traversal/separator를 제거
-        // 하지만 invariant를 명시적으로 표현.
-        guard !name.contains("/"), !name.contains("..") else {
-            throw Error.invalidFileName
-        }
-        guard name == "\(photo.id.uuidString).heic" else {
-            throw Error.invalidFileName
-        }
+        let name = try canonicalMediaFileName(for: photo)
         return try fs.readFinal(fileName: name)
+    }
+
+    /// Photo thumbnail JPEG Data를 로드. cache hit은 즉시 반환하고, miss는 canonical
+    /// original(`Media/<UUID>.heic`)에서 생성 후 `Library/Caches/.../Thumbnails`에 저장.
+    ///
+    /// `thumbnailFileName` 컬럼은 v1 Core에서 사용하지 않는다. thumbnail cache key는
+    /// 항상 `photo.id.uuidString + ".jpg"`로 고정해 Photo row corruption이 cache path를
+    /// 바꾸지 못하게 한다.
+    func loadThumbnailData(for photo: Photo) async throws -> Data {
+        let originalName = try canonicalMediaFileName(for: photo)
+        let thumbName = "\(photo.id.uuidString).jpg"
+        return try await thumbnailCoordinator.loadThumbnailData(
+            id: photo.id,
+            readCached: { [fs] in
+                try fs.readThumb(fileName: thumbName)
+            },
+            readOriginal: { [fs] in
+                try fs.readFinal(fileName: originalName)
+            },
+            writeCached: { [fs] data in
+                try fs.writeThumb(fileName: thumbName, data: data)
+            }
+        )
     }
 
     func updatePhotoNote(photoId: UUID, note: String?) async throws {
@@ -421,6 +439,19 @@ private func insertPhoto(
     )
     try photo.insert(db)
     return photo
+}
+
+private func canonicalMediaFileName(for photo: Photo) throws -> String {
+    let name = photo.fileName
+    // Defense-in-depth: equality check만으로도 path traversal/separator를 제거하지만
+    // invariant를 명시적으로 표현한다.
+    guard !name.contains("/"), !name.contains("..") else {
+        throw MediaStorage.Error.invalidFileName
+    }
+    guard name == "\(photo.id.uuidString).heic" else {
+        throw MediaStorage.Error.invalidFileName
+    }
+    return name
 }
 
 private func defaultSessionName(at date: Date, placeName: String?) -> String {
