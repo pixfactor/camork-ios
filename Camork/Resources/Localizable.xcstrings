@@ -309,6 +309,14 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 메모 편집" } }
       }
     },
+    "session_detail_edit_name_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail name edit toolbar button VoiceOver label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit site name" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 이름 편집" } }
+      }
+    },
     "session_detail_empty_description" : {
       "extractionState" : "manual",
       "comment" : "Session detail empty state body.",
@@ -355,6 +363,70 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Share site" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 공유" } }
+      }
+    },
+    "session_edit_not_found_error" : {
+      "extractionState" : "manual",
+      "comment" : "Session edit save error when the target session was deleted or cannot be found.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This site is no longer available." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 현장을 더 이상 사용할 수 없어요." } }
+      }
+    },
+    "session_name_edit_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session name edit sheet title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Site name" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 이름" } }
+      }
+    },
+    "session_name_empty_error" : {
+      "extractionState" : "manual",
+      "comment" : "Inline validation shown when a session name is empty.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter a site name." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 이름을 입력해 주세요." } }
+      }
+    },
+    "session_name_field_label" : {
+      "extractionState" : "manual",
+      "comment" : "Session name text field placeholder.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Name" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이름" } }
+      }
+    },
+    "session_name_save_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session name edit save failure alert title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save name" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이름을 저장하지 못했어요" } }
+      }
+    },
+    "session_note_edit_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session note edit sheet title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Site note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 메모" } }
+      }
+    },
+    "session_note_field_label" : {
+      "extractionState" : "manual",
+      "comment" : "Session note text editor VoiceOver label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모" } }
+      }
+    },
+    "session_note_save_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session note edit save failure alert title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모를 저장하지 못했어요" } }
       }
     },
     "storage_init_error_description" : {

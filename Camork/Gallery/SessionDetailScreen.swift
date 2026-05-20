@@ -3,14 +3,15 @@ import SwiftUI
 
 /// Full photo grid for a single session (Plan C Phase 3.4).
 ///
-/// This screen owns gallery-detail loading and photo opening. Name/note editing and
-/// share actions are intentionally left as disabled affordances until their planned
-/// follow-up tasks wire real sheets.
+/// This screen owns gallery-detail loading, name/note editing, and photo opening.
+/// Share remains a disabled affordance until the Plan C share phase wires it.
 struct SessionDetailScreen: View {
     @EnvironmentObject private var deps: DependencyContainer
 
     let session: Session
 
+    @State private var sessionName: String
+    @State private var sessionNote: String?
     @State private var photos: [Photo] = []
     @State private var isLoading = true
     @State private var loadError: String?
@@ -25,23 +26,35 @@ struct SessionDetailScreen: View {
         GridItem(.flexible(), spacing: Spacing.xs)
     ]
 
+    init(session: Session) {
+        self.session = session
+        self._sessionName = State(initialValue: session.name)
+        self._sessionNote = State(initialValue: session.note)
+    }
+
     var body: some View {
         content
-            .navigationTitle(session.name)
+            .navigationTitle(sessionName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        sheet = .name
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                    .accessibilityLabel(Text("session_detail_edit_name_a11y"))
+                }
+
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
                         sheet = .note
                     } label: {
                         Image(systemName: "note.text")
                     }
-                    .disabled(true)
                     .accessibilityLabel(Text("session_detail_edit_note_a11y"))
 
-                    Button {
-                        sheet = .share
-                    } label: {
+                    Button {} label: {
                         Image(systemName: "square.and.arrow.up")
                     }
                     .disabled(true)
@@ -58,6 +71,26 @@ struct SessionDetailScreen: View {
                     memoEditor: PhotoMemoEditor(mediaStorage: deps.mediaStorage),
                     onDismiss: { detailItem = nil }
                 )
+            }
+            .sheet(item: $sheet) { sheet in
+                switch sheet {
+                case .name:
+                    SessionNameEditSheet(
+                        sessionId: session.id,
+                        initialName: sessionName,
+                        editor: SessionNameEditor(mediaStorage: deps.mediaStorage)
+                    ) { savedName in
+                        sessionName = savedName
+                    }
+                case .note:
+                    SessionNoteEditSheet(
+                        sessionId: session.id,
+                        initialNote: sessionNote,
+                        editor: SessionNoteEditor(mediaStorage: deps.mediaStorage)
+                    ) { savedNote in
+                        sessionNote = savedNote
+                    }
+                }
             }
             .alert(
                 "session_detail_photo_open_error_title",
@@ -116,6 +149,12 @@ struct SessionDetailScreen: View {
                 Label(placeName, systemImage: "mappin.and.ellipse")
             }
             Label(photoCountText, systemImage: "photo.on.rectangle")
+            if let sessionNote, !sessionNote.isEmpty {
+                Text(sessionNote)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .padding(.top, Spacing.xs)
+            }
         }
         .font(.subheadline)
         .foregroundStyle(.secondary)
@@ -192,9 +231,16 @@ struct SessionDetailScreen: View {
     }
 }
 
-private enum SessionDetailSheet {
+private enum SessionDetailSheet: Identifiable {
+    case name
     case note
-    case share
+
+    var id: String {
+        switch self {
+        case .name: "name"
+        case .note: "note"
+        }
+    }
 }
 
 private struct SessionPhotoDetailItem: Identifiable {
