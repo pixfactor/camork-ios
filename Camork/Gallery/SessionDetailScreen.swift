@@ -69,7 +69,9 @@ struct SessionDetailScreen: View {
                     photo: item.photo,
                     data: item.data,
                     memoEditor: PhotoMemoEditor(mediaStorage: deps.mediaStorage),
-                    onDismiss: { detailItem = nil }
+                    onDismiss: { detailItem = nil },
+                    session: session,
+                    sharePreparer: deps.sharePreparer
                 )
             }
             .sheet(item: $sheet) { sheet in

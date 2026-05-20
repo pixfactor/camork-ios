@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// 풀스크린 사진 디테일. CameraScreen의 latest thumbnail 탭 진입점 (Phase 3.2).
+/// 풀스크린 사진 디테일. CameraScreen의 latest thumbnail / SessionDetailScreen의 grid 탭 진입점.
 ///
 /// 책임:
 /// - 받은 `Data`를 `UIImage(data:)`로 디코드 시도. 실패하면
@@ -13,12 +13,17 @@ import UIKit
 ///   표시 후 화면 유지 (사용자 입력 유실 방지).
 /// - metaBar의 note indicator는 init parameter `photo.note`가 아닌 로컬 `savedNote`
 ///   @State를 사용 — 사용자가 sheet에서 저장한 즉시 반영 (dismiss/reopen 기다리지 않음).
-/// - 갤러리 리스트 / 삭제 / 공유는 본 phase 범위 외 (Plan C 이후).
+/// - 단일 사진 share entry (Plan D Batch D2): `session` + `sharePreparer`가 주입되면
+///   상단 toolbar에 `ShareEntryButton(photos: [photo])`를 노출. SessionDetailScreen 진입
+///   경로에서는 두 값 모두 전달, CameraScreen latest 진입 경로에서는 nil로 두어 share
+///   affordance를 숨긴다 (session context가 없는 진입은 v1.x에서 출시 보류).
 struct PhotoDetailView: View {
     let photo: Photo
     let data: Data
     let memoEditor: PhotoMemoEditor
     let onDismiss: () -> Void
+    let session: Session?
+    let sharePreparer: SharePreparer?
 
     /// 메모 sheet의 TextEditor 편집 버퍼.
     @State private var note: String
@@ -34,12 +39,16 @@ struct PhotoDetailView: View {
         photo: Photo,
         data: Data,
         memoEditor: PhotoMemoEditor,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        session: Session? = nil,
+        sharePreparer: SharePreparer? = nil
     ) {
         self.photo = photo
         self.data = data
         self.memoEditor = memoEditor
         self.onDismiss = onDismiss
+        self.session = session
+        self.sharePreparer = sharePreparer
         let initialNote = photo.note
         self._note = State(initialValue: initialNote ?? "")
         self._savedNote = State(initialValue: initialNote)
@@ -74,7 +83,7 @@ struct PhotoDetailView: View {
     // MARK: - Subviews
 
     private var topBar: some View {
-        HStack {
+        HStack(spacing: 0) {
             Button(action: onDismiss) {
                 Image(systemName: "chevron.down")
                     .font(.title3.weight(.semibold))
@@ -83,6 +92,16 @@ struct PhotoDetailView: View {
             .accessibilityLabel(Text("photo_detail_close_a11y"))
 
             Spacer()
+
+            if let session, let sharePreparer {
+                ShareEntryButton(
+                    session: session,
+                    photos: [photo],
+                    sharePreparer: sharePreparer
+                )
+                .font(.title3.weight(.semibold))
+                .padding(12)
+            }
 
             Button {
                 note = savedNote ?? ""
