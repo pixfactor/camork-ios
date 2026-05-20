@@ -101,9 +101,20 @@ struct ShareEntryButton: View {
                 includeLocation: includeLocation,
                 includeTime: includeTime
             )
+            // If the options sheet was dismissed during prepare (Cancel tap or
+            // swipe-down), do not resurrect the flow with a share sheet the user
+            // never asked for — clean up the prepared bundle instead.
+            guard case .options = presentation else {
+                await sharePreparer.cleanup(bundle)
+                return
+            }
             presentation = .share(bundle)
         } catch {
-            showPrepareError = true
+            // Same guard: only surface a prepare error while the originating
+            // options sheet is still on screen.
+            if case .options = presentation {
+                showPrepareError = true
+            }
         }
     }
 

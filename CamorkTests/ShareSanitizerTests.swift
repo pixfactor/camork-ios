@@ -64,6 +64,28 @@ struct ShareSanitizerTests {
         #expect(outputProps[kCGImagePropertyColorModel as String] as? String == inputProps[kCGImagePropertyColorModel as String] as? String)
         #expect(outputProps[kCGImagePropertyProfileName as String] as? String == inputProps[kCGImagePropertyProfileName as String] as? String)
     }
+
+    /// Production captures HEIC (`MediaStorage.saveCapture` writes
+    /// `<uuid>.heic`), so `CGImageSourceGetType(source)` returns `public.heic`
+    /// and `ShareSanitizer` re-encodes through the HEIC destination path.
+    /// JPEG-only fixtures left that branch unverified; this case pins:
+    /// - GPS dictionary is removed when `stripLocation == true`
+    /// - DateTimeOriginal and orientation survive the round trip
+    @Test("HEIC location OFF: GPS dict 제거 + DateTimeOriginal/orientation 보존")
+    func heicStripsGPSAndPreservesNonGPSMeta() throws {
+        let input = makeHEICData()
+        #expect(properties(of: input)[kCGImagePropertyGPSDictionary as String] != nil)
+        #expect(dateTimeOriginal(of: input) == "2026:05:19 14:30:00")
+        #expect(properties(of: input)[kCGImagePropertyOrientation as String] as? Int == 6)
+
+        let output = try ShareSanitizer.sanitize(data: input, stripLocation: true)
+        let outputProps = properties(of: output)
+
+        #expect(outputProps[kCGImagePropertyGPSDictionary as String] == nil)
+        #expect(!metadataContainsGPS(output))
+        #expect(dateTimeOriginal(of: output) == "2026:05:19 14:30:00")
+        #expect(outputProps[kCGImagePropertyOrientation as String] as? Int == 6)
+    }
 }
 
 // MARK: - Test helpers
@@ -104,6 +126,54 @@ private func makeJPEGData() -> Data {
         kCGImagePropertyExifDictionary: exif,
         kCGImagePropertyGPSDictionary: gps,
         kCGImageDestinationMetadata: metadata
+    ]
+
+    CGImageDestinationAddImage(destination, image.cgImage!, properties as CFDictionary)
+    precondition(CGImageDestinationFinalize(destination))
+    return output as Data
+}
+
+/// HEIC counterpart of `makeJPEGData`. Encodes a tiny image via the HEIC
+/// destination so `CGImageSourceGetType(source)` returns `public.heic` and
+/// `ShareSanitizer` exercises the HEIC re-encode path that production captures
+/// land on.
+private func makeHEICData() -> Data {
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = 1.0
+    format.preferredRange = .standard
+    let renderer = UIGraphicsImageRenderer(
+        size: CGSize(width: 16, height: 12),
+        format: format
+    )
+    let image = renderer.image { _ in
+        UIColor.systemOrange.setFill()
+        UIRectFill(CGRect(x: 0, y: 0, width: 16, height: 12))
+    }
+
+    let output = NSMutableData()
+    guard let destination = CGImageDestinationCreateWithData(
+        output,
+        UTType.heic.identifier as CFString,
+        1,
+        nil
+    ) else {
+        preconditionFailure("HEIC destination unavailable on this platform")
+    }
+
+    let exif: [String: Any] = [
+        kCGImagePropertyExifDateTimeOriginal as String: "2026:05:19 14:30:00"
+    ]
+    let gps: [String: Any] = [
+        kCGImagePropertyGPSLatitude as String: 37.3317,
+        kCGImagePropertyGPSLatitudeRef as String: "N",
+        kCGImagePropertyGPSLongitude as String: 122.0307,
+        kCGImagePropertyGPSLongitudeRef as String: "W"
+    ]
+    let properties: [CFString: Any] = [
+        kCGImagePropertyOrientation: 6,
+        kCGImagePropertyExifDictionary: exif,
+        kCGImagePropertyGPSDictionary: gps,
+        kCGImageDestinationMetadata: makeXMPGPSMetadata()
     ]
 
     CGImageDestinationAddImage(destination, image.cgImage!, properties as CFDictionary)
