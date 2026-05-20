@@ -397,6 +397,25 @@ actor MediaStorage {
         }
     }
 
+    /// 세션 이름 + 메모를 단일 GRDB transaction으로 commit. 두 UPDATE 사이에 부분 실패가
+    /// 끼어들 수 없으므로 호출자가 "이름은 갱신 / 메모는 미갱신" 같은 split state를
+    /// 보지 못한다. `deletedAt IS NULL` 필터로 deleted session은 `Error.sessionNotFound`.
+    ///
+    /// 정책 분리(`updateSessionName` / `updateSessionNote`)는 단일 필드 수정용 API로 유지
+    /// — 단순한 변경은 그쪽이 더 명료. 본 메서드는 "정보 편집" sheet처럼 두 값이 함께
+    /// 움직이는 진입점이 단일 transaction을 필요로 할 때 사용.
+    func updateSessionInfo(sessionId: UUID, name: String, note: String?) async throws {
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Session SET name = ?, note = ? WHERE id = ? AND deletedAt IS NULL",
+                arguments: [name, note, sessionId.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.sessionNotFound
+            }
+        }
+    }
+
     // MARK: - Trash (Plan E Batch E1.a — photo-level)
 
     /// 휴지통에 들어 있는 모든 사진 (deletedAt IS NOT NULL). 최근 삭제 순으로 정렬.

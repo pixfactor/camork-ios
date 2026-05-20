@@ -14,6 +14,7 @@
 		0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */; };
 		102F4B5B8A3E2D1D36C9C558 /* ShareSheetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81818A34D96A3AFAC9B8F8F6 /* ShareSheetController.swift */; };
 		15180F70E1BA4C15785E5970 /* ExifBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54AD5C852EA21CCC9EB059 /* ExifBuilder.swift */; };
+		15620BDD74AEB365394CB457 /* SessionInfoEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48AD1B2DF3CBB981248F0A2 /* SessionInfoEditor.swift */; };
 		1DA51EEBFBEFDE36127DFA4B /* CameraScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC5AAB226ED33D6CFC78C2F /* CameraScreen.swift */; };
 		1EA7A05186D76B980FB76848 /* MediaFileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */; };
 		238BB0C43C9CB171DAEA083F /* MediaStorageTestHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57A1F580AB460488E3FEF55 /* MediaStorageTestHooks.swift */; };
@@ -51,6 +52,7 @@
 		7607B0ADEE33372DA537EF17 /* PermissionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B888956B201EB0ED26CC34 /* PermissionsService.swift */; };
 		783089B6F039897643303D42 /* SessionNoteEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C8382767397212E867C33A /* SessionNoteEditor.swift */; };
 		7AE50E4A6965593F64CFDFBB /* PhotoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */; };
+		7B9130099B6A6AD35FCBBE56 /* SessionInfoEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C078AD0FFA38387D8294DDE /* SessionInfoEditorTests.swift */; };
 		826EA30B2A59E53732EB86BE /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0793057E915500151F00536A /* RootTabView.swift */; };
 		82E43053C6FA4681B8E1656D /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28976A486B5F969E3D7132BD /* CameraView.swift */; };
 		852F72BE39CAF8EBC332482C /* TrashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B8F220B91B8B822AF83106 /* TrashScreen.swift */; };
@@ -132,6 +134,7 @@
 		5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicyTests.swift; sourceTree = "<group>"; };
 		64E822718BB4E84C39AA5CE7 /* ShareSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSanitizer.swift; sourceTree = "<group>"; };
 		661C72790B8B0D9C11813E0A /* CameraSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSession.swift; sourceTree = "<group>"; };
+		6C078AD0FFA38387D8294DDE /* SessionInfoEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInfoEditorTests.swift; sourceTree = "<group>"; };
 		6C13B28107AE53591B28E00D /* CamorkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkApp.swift; sourceTree = "<group>"; };
 		6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSnapshot.swift; sourceTree = "<group>"; };
 		787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifBuilderTests.swift; sourceTree = "<group>"; };
@@ -176,6 +179,7 @@
 		D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorsTests.swift; sourceTree = "<group>"; };
 		DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPlaceholderView.swift; sourceTree = "<group>"; };
 		E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkBundleToken.swift; sourceTree = "<group>"; };
+		E48AD1B2DF3CBB981248F0A2 /* SessionInfoEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInfoEditor.swift; sourceTree = "<group>"; };
 		E53E92A1DDDDD46116AC0877 /* MigrationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationsTests.swift; sourceTree = "<group>"; };
 		EA977E72449CB74164D357A6 /* LocationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationServiceTests.swift; sourceTree = "<group>"; };
 		EB41480763FDF67C2603A832 /* PhotoMemoEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoMemoEditorTests.swift; sourceTree = "<group>"; };
@@ -218,6 +222,7 @@
 				F35A4A39F053511E7878E671 /* PhotoCapturePayload.swift */,
 				8A931643B8B1BD2A58F7A8D7 /* PhotoMemoEditor.swift */,
 				15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */,
+				E48AD1B2DF3CBB981248F0A2 /* SessionInfoEditor.swift */,
 				AAD356D2E9206B35CDE4E3C2 /* SessionNameEditor.swift */,
 				D5C8382767397212E867C33A /* SessionNoteEditor.swift */,
 				27D961C06607530A8BC0CDE6 /* ThumbnailCoordinator.swift */,
@@ -387,6 +392,7 @@
 				A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */,
 				EB41480763FDF67C2603A832 /* PhotoMemoEditorTests.swift */,
 				5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */,
+				6C078AD0FFA38387D8294DDE /* SessionInfoEditorTests.swift */,
 				11EA37EC593C52C6B57E60AE /* SessionNameEditorTests.swift */,
 				1ED2309B7A38D8B95C65553C /* SessionNoteEditorTests.swift */,
 				7EAACC9EF90B0378F71C1269 /* SharePreparerTests.swift */,
@@ -519,6 +525,7 @@
 				925CE1EE8BCAE6B0D42791C5 /* PermissionsServiceTests.swift in Sources */,
 				6F8EFEC1F504BD357CB944CD /* PhotoMemoEditorTests.swift in Sources */,
 				B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */,
+				7B9130099B6A6AD35FCBBE56 /* SessionInfoEditorTests.swift in Sources */,
 				C9657E5A0E90F9BFD85A16A0 /* SessionNameEditorTests.swift in Sources */,
 				94481241DC90A6DDBFFBE56E /* SessionNoteEditorTests.swift in Sources */,
 				3740BD15892EDD4BF1006AB6 /* SharePreparerTests.swift in Sources */,
@@ -573,6 +580,7 @@
 				5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */,
 				96C562002F463965117DFA92 /* SessionCardView.swift in Sources */,
 				A7C8D9BE0F391D659FDEFE4E /* SessionDetailScreen.swift in Sources */,
+				15620BDD74AEB365394CB457 /* SessionInfoEditor.swift in Sources */,
 				33636B69F3241E9CCDCE1C82 /* SessionNameEditSheet.swift in Sources */,
 				6CFDF4B17545B466151FB8A9 /* SessionNameEditor.swift in Sources */,
 				67A3EF2799F4D431B8D37681 /* SessionNoteEditSheet.swift in Sources */,
@@ -611,7 +619,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
@@ -651,7 +659,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
