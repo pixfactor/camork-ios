@@ -46,6 +46,30 @@ struct ShareEntryButton: View {
     private var optionsSheet: some View {
         NavigationStack {
             Form {
+                Section {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: Spacing.sm) {
+                            ForEach(photos, id: \.id) { photo in
+                                ThumbnailView(photo: photo)
+                                    .frame(width: 64, height: 64)
+                                    .clipShape(
+                                        RoundedRectangle(
+                                            cornerRadius: CornerRadius.sm,
+                                            style: .continuous
+                                        )
+                                    )
+                            }
+                        }
+                        .padding(.vertical, Spacing.xs)
+                    }
+                    .listRowInsets(EdgeInsets(
+                        top: Spacing.xs,
+                        leading: Spacing.md,
+                        bottom: Spacing.xs,
+                        trailing: Spacing.md
+                    ))
+                }
+
                 Section("share_options_text_label") {
                     TextEditor(text: $customText)
                         .frame(minHeight: 88)
