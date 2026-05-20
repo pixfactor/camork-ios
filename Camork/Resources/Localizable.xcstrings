@@ -179,6 +179,22 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영 시간 포함" } }
       }
     },
+    "share_auto_text_photo_count_one" : {
+      "extractionState" : "manual",
+      "comment" : "Share auto-text photo count when exactly one photo is shared.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 photo" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 1장" } }
+      }
+    },
+    "share_auto_text_photo_count_other_format" : {
+      "extractionState" : "manual",
+      "comment" : "Share auto-text photo count for zero or many photos. %d is the count.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%d photos" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 %d장" } }
+      }
+    },
     "share_options_title" : {
       "extractionState" : "manual",
       "comment" : "Share options sheet navigation title.",
@@ -315,14 +331,6 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
-      }
-    },
-    "session_card_more_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "Session card overflow menu placeholder VoiceOver label.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "More actions" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "더 많은 작업" } }
       }
     },
     "session_card_photo_count_one" : {

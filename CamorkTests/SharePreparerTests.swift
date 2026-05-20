@@ -11,6 +11,11 @@ struct SharePreparerTests {
     @Test("prepare: 단일 photo + location ON + time ON → tmp/Share/<UUID>/photo-0.heic + 자동 텍스트")
     func singlePhotoBothOn() async throws {
         let fixture = try await makeFixture()
+        let shareDate = formattedShareDate(
+            fixture.capturedAt,
+            locale: fixture.locale,
+            calendar: fixture.calendar
+        )
 
         let bundle = try await fixture.preparer.prepare(
             photos: [fixture.photo],
@@ -23,7 +28,7 @@ struct SharePreparerTests {
         #expect(bundle.fileURLs[0].lastPathComponent == "photo-0.heic")
         #expect(bundle.fileURLs[0].path.hasPrefix(bundle.tempDir.path))
         #expect(FileManager.default.fileExists(atPath: bundle.fileURLs[0].path))
-        #expect(bundle.autoText == "[현장 점검] · 2026-05-19 14:30 · 도산공원 — 사진 1장")
+        #expect(bundle.autoText == "[현장 점검] · \(shareDate) · 도산공원 — 사진 1장")
     }
 
     @Test("prepare: 다중 photo")
@@ -46,6 +51,11 @@ struct SharePreparerTests {
     @Test("자동 텍스트 형식: location/time 토글 조합 4종")
     func autoTextVariants() async throws {
         let fixture = try await makeFixture()
+        let shareDate = formattedShareDate(
+            fixture.capturedAt,
+            locale: fixture.locale,
+            calendar: fixture.calendar
+        )
 
         let both = try await fixture.preparer.prepare(
             photos: [fixture.photo],
@@ -72,10 +82,31 @@ struct SharePreparerTests {
             includeTime: false
         )
 
-        #expect(both.autoText == "[현장 점검] · 2026-05-19 14:30 · 도산공원 — 사진 1장")
-        #expect(noLocation.autoText == "[현장 점검] · 2026-05-19 14:30 — 사진 1장")
+        #expect(both.autoText == "[현장 점검] · \(shareDate) · 도산공원 — 사진 1장")
+        #expect(noLocation.autoText == "[현장 점검] · \(shareDate) — 사진 1장")
         #expect(noTime.autoText == "[현장 점검] · 도산공원 — 사진 1장")
         #expect(neither.autoText == "[현장 점검] — 사진 1장")
+    }
+
+    @Test("자동 텍스트는 주입 locale의 날짜/사진 수 표현을 사용")
+    func autoTextUsesInjectedLocale() async throws {
+        let fixture = try await makeFixture(locale: Locale(identifier: "en_US"))
+        let shareDate = formattedShareDate(
+            fixture.capturedAt,
+            locale: fixture.locale,
+            calendar: fixture.calendar
+        )
+
+        let bundle = try await fixture.preparer.prepare(
+            photos: [fixture.photo],
+            session: fixture.session,
+            includeLocation: true,
+            includeTime: true
+        )
+
+        #expect(bundle.autoText == "[현장 점검] · \(shareDate) · 도산공원 — 1 photo")
+        #expect(!bundle.autoText.contains("사진"))
+        #expect(!bundle.autoText.contains("2026-05-19"))
     }
 
     @Test("위치 OFF → ShareSanitizer가 GPS strip한 사본 작성")
@@ -151,6 +182,8 @@ private struct ShareFixture {
     let session: Session
     let photo: Photo
     let capturedAt: Date
+    let locale: Locale
+    let calendar: Calendar
 
     func savePhoto() async throws -> Photo {
         try await storage.saveCapture(
@@ -164,7 +197,10 @@ private struct ShareFixture {
     }
 }
 
-private func makeFixture() async throws -> ShareFixture {
+private func makeFixture(
+    locale: Locale = Locale(identifier: "ko_KR"),
+    calendar: Calendar = Calendar(identifier: .gregorian)
+) async throws -> ShareFixture {
     let capturedAt = localDate(year: 2026, month: 5, day: 19, hour: 14, minute: 30)
     let storage = try await makeStorage().storage
     let photo = try await storage.saveCapture(
@@ -181,13 +217,20 @@ private func makeFixture() async throws -> ShareFixture {
         createdAt: capturedAt,
         firstLocation: makeLocation()
     )
-    let preparer = SharePreparer(mediaStorage: storage, temporaryRoot: tempDir())
+    let preparer = SharePreparer(
+        mediaStorage: storage,
+        temporaryRoot: tempDir(),
+        locale: locale,
+        calendar: calendar
+    )
     return ShareFixture(
         storage: storage,
         preparer: preparer,
         session: session,
         photo: photo,
-        capturedAt: capturedAt
+        capturedAt: capturedAt,
+        locale: locale,
+        calendar: calendar
     )
 }
 
@@ -223,6 +266,18 @@ private func localDate(
     components.hour = hour
     components.minute = minute
     return components.date!
+}
+
+private func formattedShareDate(
+    _ date: Date,
+    locale: Locale,
+    calendar: Calendar = Calendar(identifier: .gregorian)
+) -> String {
+    let formatter = DateFormatter()
+    formatter.locale = locale
+    formatter.calendar = calendar
+    formatter.setLocalizedDateFormatFromTemplate("yMMMdjm")
+    return formatter.string(from: date)
 }
 
 private func tempDir() -> URL {

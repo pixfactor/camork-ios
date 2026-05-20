@@ -11,17 +11,23 @@ actor SharePreparer {
     private let temporaryRoot: URL
     private let now: @Sendable () -> Date
     private let expirationInterval: TimeInterval
+    private let locale: Locale
+    private let calendar: Calendar
 
     init(
         mediaStorage: MediaStorage,
         temporaryRoot: URL = FileManager.default.temporaryDirectory,
         now: @escaping @Sendable () -> Date = { Date() },
-        expirationInterval: TimeInterval = 24 * 60 * 60
+        expirationInterval: TimeInterval = 24 * 60 * 60,
+        locale: Locale = .current,
+        calendar: Calendar = .current
     ) {
         self.mediaStorage = mediaStorage
         self.temporaryRoot = temporaryRoot
         self.now = now
         self.expirationInterval = expirationInterval
+        self.locale = locale
+        self.calendar = calendar
     }
 
     func prepare(
@@ -105,14 +111,14 @@ actor SharePreparer {
         var parts = ["[\(session.name)]"]
 
         if includeTime {
-            parts.append(Self.formatShareDate(session.createdAt))
+            parts.append(formatShareDate(session.createdAt))
         }
 
         if includeLocation, let placeName = firstPlaceName(session: session, photos: photos) {
             parts.append(placeName)
         }
 
-        return "\(parts.joined(separator: " · ")) — 사진 \(photos.count)장"
+        return "\(parts.joined(separator: " · ")) — \(photoCountText(photos.count))"
     }
 
     private func firstPlaceName(session: Session, photos: [Photo]) -> String? {
@@ -123,10 +129,41 @@ actor SharePreparer {
         }.first
     }
 
-    private static func formatShareDate(_ date: Date) -> String {
+    private func photoCountText(_ count: Int) -> String {
+        if count == 1 {
+            return localizedString(
+                "share_auto_text_photo_count_one",
+                defaultValue: "1 photo"
+            )
+        }
+
+        let format = localizedString(
+            "share_auto_text_photo_count_other_format",
+            defaultValue: "%d photos"
+        )
+        return String(format: format, locale: locale, count)
+    }
+
+    private func localizedString(_ key: String, defaultValue: String) -> String {
+        let languageCode = locale.language.languageCode?.identifier
+        if let languageCode,
+           let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return bundle.localizedString(forKey: key, value: defaultValue, table: nil)
+        }
+
+        return Bundle.main.localizedString(
+            forKey: key,
+            value: defaultValue,
+            table: nil
+        )
+    }
+
+    private func formatShareDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        formatter.locale = locale
+        formatter.calendar = calendar
+        formatter.setLocalizedDateFormatFromTemplate("yMMMdjm")
         return formatter.string(from: date)
     }
 

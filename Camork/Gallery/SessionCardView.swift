@@ -4,7 +4,7 @@ import SwiftUI
 /// Gallery session card (Plan C Phase 3.2).
 ///
 /// Thumbnail slots delegate loading to `ThumbnailView`; this card owns only layout,
-/// metadata, and action affordances.
+/// and metadata.
 struct SessionCardView: View {
     let item: SessionWithPreview
 
@@ -17,11 +17,7 @@ struct SessionCardView: View {
         CamorkCard {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 previewGrid
-                HStack(alignment: .top, spacing: Spacing.md) {
-                    metadata
-                    Spacer(minLength: Spacing.sm)
-                    actionButtons
-                }
+                metadata
             }
         }
     }
@@ -59,26 +55,6 @@ struct SessionCardView: View {
             Label(photoCountText, systemImage: "photo")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-        }
-    }
-
-    private var actionButtons: some View {
-        HStack(spacing: Spacing.xs) {
-            Button {} label: {
-                Image(systemName: "square.and.arrow.up")
-                    .frame(width: 36, height: 36)
-            }
-            .buttonStyle(.borderless)
-            .disabled(true)
-            .accessibilityLabel(Text("button_share"))
-
-            Button {} label: {
-                Image(systemName: "ellipsis.circle")
-                    .frame(width: 36, height: 36)
-            }
-            .buttonStyle(.borderless)
-            .disabled(true)
-            .accessibilityLabel(Text("session_card_more_a11y"))
         }
     }
 

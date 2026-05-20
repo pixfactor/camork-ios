@@ -1,7 +1,7 @@
 # Plan C 완료 보고서 — Gallery + Share v1
 
 - **작성일:** 2026-05-20
-- **브랜치:** rebuild/v2 (본 보고서 커밋 포함 origin 대비 +57 commits, push 보류)
+- **브랜치:** rebuild/v2
 - **마스터 spec:** `docs/superpowers/specs/2026-05-19-camork-rebuild-design.md`
 - **Plan C spec:** `docs/superpowers/specs/2026-05-19-camork-v1-core-C-gallery-design.md`
 - **Plan C plan:** `docs/superpowers/plans/2026-05-19-camork-v1-core-C-gallery-share.md`
@@ -30,9 +30,11 @@
 | 4.3 | UIActivityViewController wrapper | `41f1093` |
 | 4.4 | ShareEntryButton + localization + toolbar wiring | `6fb08c2` |
 | 4.5 | DependencyContainer sharePreparer + startup cleanup | `0117ac9` |
+| 4.6 | ShareEntryButton dismiss hardening + HEIC sanitizer regression | `8381faa` |
+| 4.7 | Card affordance cleanup + localized share auto-text + report refresh | 본 보고서 refresh commit |
 
-**Plan C 구현 커밋:** 23개 (`87fe04e..0117ac9`).
-**누적 테스트:** Plan B 90 → Plan C 완료 135 tests / 20 suites.
+**Plan C 구현 커밋:** 25개 (`87fe04e..HEAD`, 본 보고서 refresh commit 포함).
+**누적 테스트:** Plan B 90 → Plan C 완료 137 tests / 20 suites.
 
 ---
 
@@ -52,9 +54,9 @@ xcodebuild test -project Camork.xcodeproj -scheme Camork \
 - `xcodegen generate` → SUCCEEDED
 - `xcodebuild clean` → **CLEAN SUCCEEDED**
 - `xcodebuild test` → **TEST SUCCEEDED**
-- **135 tests in 20 suites passed**
+- **137 tests in 20 suites passed**
 - 0 test failures / 0 compiler errors
-- xcresult: `/Users/jedel/Library/Developer/Xcode/DerivedData/Camork-aasektavvixxksceeiiyujbjwvcr/Logs/Test/Test-Camork-2026.05.20_13-44-17-+0900.xcresult`
+- xcresult: `/Users/jedel/Library/Developer/Xcode/DerivedData/Camork-aasektavvixxksceeiiyujbjwvcr/Logs/Test/Test-Camork-2026.05.20_14-14-11-+0900.xcresult`
 
 ### 2.2 Static / resource checks
 
@@ -73,6 +75,7 @@ Plan C에서 추가/확장된 주요 검증:
 - Session edit: `SessionNameEditor`, `SessionNoteEditor`
 - Thumbnail cache: `MediaFileSystem`, `ThumbnailGenerator`, `ThumbnailCoordinator`
 - Share metadata: `ShareSanitizer`, `SharePreparer`
+- Share text localization: `SharePreparer` locale/calendar injection
 
 ---
 
@@ -97,11 +100,19 @@ Plan C에서 추가/확장된 주요 검증:
 - EXIF GPS dictionary
 - XMP GPS metadata
 
+HEIC 보강:
+- `heicStripsGPSAndPreservesNonGPSMeta`가 production capture format(`public.heic`)으로 sanitizer 경로를 고정 검증.
+- location OFF에서 HEIC EXIF GPS dictionary / XMP GPS metadata 제거 확인.
+- HEIC DateTimeOriginal / orientation 보존 확인.
+
 ### 3.3 Share UI/DI 보강
 
 - share button은 세션 상세 화면의 이미 로드된 `photos`를 사용한다. 세션 카드는 preview photo만 보유하므로 card-level share는 아직 연결하지 않았다.
+- 세션 카드의 disabled share/more placeholder 버튼은 제거했다. Plan D 전까지 보이지 않는 기능을 affordance로 노출하지 않는다.
 - `SharePreparer`는 `DependencyContainer`가 보유한다. SwiftUI View가 actor를 임시 생성하지 않게 하여 lifecycle과 cleanup 책임을 앱 DI 경계에 고정했다.
 - 앱 시작 시 `cleanupExpired()`를 best-effort로 실행하고, share sheet completion에서 해당 bundle temp dir을 즉시 삭제한다.
+- 옵션 sheet dismiss 중 prepare가 완료되어도 share sheet를 되살리지 않고, 생성된 temp bundle은 즉시 cleanup한다.
+- share auto-text는 `Locale.current` / `Calendar.current` 기반 날짜 표현과 ko/en photo count localization을 사용한다.
 
 ---
 
@@ -160,7 +171,7 @@ Plan D에서 결정할 항목:
 - 사진별 메타 옵션을 개별 제어할지, 세션 단위 토글만 유지할지
 - Camork 자체 channel ranking/preselect를 둘지, 계속 iOS share sheet 위임으로 단순화할지
 - placeName fallback이 없을 때 좌표를 텍스트에 넣을지, 생략할지
-- share localization final copy
+- share localization final copy / editable composer copy
 
 ### 5.2 Plan E — Trash / AppLock / Settings
 
@@ -182,7 +193,7 @@ Plan E에서 결정할 항목:
 ## 6. 미해결 / gap
 
 - **실기기 manual 미완료:** 카메라 capture, 실제 share target 앱, filesystem inspection은 기기 필요.
-- **세션 카드 share 미연결:** card는 preview만 들고 있어 full session share를 위해 추가 fetch 정책이 필요. 현재는 SessionDetail toolbar에서 전체 사진 공유.
 - **PhotoDetail 개별 share 미연결:** Plan C lite는 세션 단위 공유만 닫았다. 개별 사진 공유는 Plan D에서 UX와 함께 결정.
 - **ShareEntryButton UI 테스트 없음:** SwiftUI sheet / `UIActivityViewController` interaction은 build + manual 검증 영역.
+- **Share auto-text final copy:** 현재 Locale 기반 ko/en 자동 문구는 구현. Plan D ShareComposer에서 사용자가 편집할 최종 copy/preview UX를 결정.
 - **Swift 6 전환 미수행:** 현재 `swift-version 5` 유지. Swift 6 strict concurrency 전환은 별도 작업.
