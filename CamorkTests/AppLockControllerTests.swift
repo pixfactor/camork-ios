@@ -131,13 +131,14 @@ struct AppLockControllerTests {
         #expect(await controller.isLocked == false)
     }
 
-    @Test("background timestamp 없이 active 복귀하면 grace를 넘은 것으로 간주 → lock")
-    func missingBackgroundStampLocks() async throws {
+    @Test("background timestamp 없이 active 복귀 → lock 트리거 안 함 (transient inactive→active 보호)")
+    func missingBackgroundStampDoesNotLock() async throws {
         let controller = makeController(policy: .oneMinute, startLocked: false)
 
         let locked = await controller.didBecomeActive(at: Date(timeIntervalSince1970: 1_000))
 
-        #expect(locked == true)
+        #expect(locked == false)
+        #expect(await controller.isLocked == false)
     }
 
     @Test("이미 isLocked=true면 didBecomeActive는 잠금 유지 (unlock 별도)")
@@ -152,20 +153,30 @@ struct AppLockControllerTests {
 
     // MARK: - unlock()
 
-    @Test("unlock(): isLocked=false + background timestamp clear")
-    func unlockClearsState() async throws {
+    @Test("unlock(): isLocked=false + background timestamp clear, 다음 active까지는 lock 안 됨")
+    func unlockClearsStateAndDoesNotReLockWithoutBackground() async throws {
         let controller = makeController(policy: .immediate, startLocked: true)
         await controller.didEnterBackground(at: Date(timeIntervalSince1970: 1_000))
 
         await controller.unlock()
 
         #expect(await controller.isLocked == false)
-        // unlock 후 즉시 active 복귀해도 lock 다시 걸리지 않아야 함 (background 들어간 적 없음으로 reset)
+        // unlock 직후 background 거치지 않고 active 들어와도 재잠금 금지 (Face ID prompt 등이
+        // 만드는 active→inactive→active 루프 차단 — Plan E E3.b).
         let lockedAfter = await controller.didBecomeActive(at: Date(timeIntervalSince1970: 2_000))
-        // .immediate는 background 진입 안 했어도 missingBackgroundStampLocks 정책에 따라 lock
-        // 그러나 unlock 직후 active 그대로 두면 background timestamp가 nil이므로 .infinity → lock
-        // 본 테스트는 unlock 자체가 isLocked만 풀고 timestamp도 clear한다는 검증.
-        #expect(lockedAfter == true)
+        #expect(lockedAfter == false)
+        #expect(await controller.isLocked == false)
+    }
+
+    @Test("unlock → background → active 정상 cycle은 grace 정책대로 다시 lock")
+    func unlockThenBackgroundLocksByPolicy() async throws {
+        let controller = makeController(policy: .immediate, startLocked: true)
+        await controller.unlock()
+        await controller.didEnterBackground(at: Date(timeIntervalSince1970: 1_000))
+
+        let locked = await controller.didBecomeActive(at: Date(timeIntervalSince1970: 1_000.5))
+
+        #expect(locked == true)
     }
 }
 

@@ -78,6 +78,10 @@ public actor AppLockController {
     /// `ScenePhase == .active`로 복귀. policy의 grace를 넘었으면 `isLocked = true`로 set.
     /// 이미 잠긴 상태면 그대로 유지(unlock은 별도 호출). 반환값은 호출자가 UI 분기에
     /// 사용하도록 현재 lock 여부.
+    ///
+    /// **Background 미경유 active 복귀는 lock 안 함** — unlock 직후 같은 foreground session
+    /// 안에서 inactive→active 등 transient 전환이 발생해도 재잠금되지 않도록 한다. 앱 cold
+    /// start의 "앱 시작 시 잠금"은 init의 `startLocked` 가 책임지므로 본 메서드와 분리.
     @discardableResult
     public func didBecomeActive(at: Date) -> Bool {
         guard let grace = policy.graceInterval else {
@@ -90,7 +94,12 @@ public actor AppLockController {
             lastBackgroundedAt = nil
             return true
         }
-        let elapsed = lastBackgroundedAt.map { at.timeIntervalSince($0) } ?? .infinity
+        guard let backgroundedAt = lastBackgroundedAt else {
+            // background 진입 기록이 없으면 lock 트리거 안 함 — caller가 background → active
+            // 전환에서만 호출한다는 계약을 강제하기 위함.
+            return false
+        }
+        let elapsed = at.timeIntervalSince(backgroundedAt)
         if elapsed >= grace {
             isLocked = true
         }

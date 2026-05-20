@@ -56,6 +56,7 @@
 		852F72BE39CAF8EBC332482C /* TrashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B8F220B91B8B822AF83106 /* TrashScreen.swift */; };
 		857F58097954C0F289DA7D3A /* FileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80A7C2E5BF1E243F855544 /* FileOps.swift */; };
 		8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E97C1EB09F8B6CFE74C30 /* LocationSnapshot.swift */; };
+		882EF0419F5EB16C27098C9C /* LockScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C835D1E8C66980FE2C951C51 /* LockScreen.swift */; };
 		925CE1EE8BCAE6B0D42791C5 /* PermissionsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7949544384DA8358A0924E4 /* PermissionsServiceTests.swift */; };
 		94481241DC90A6DDBFFBE56E /* SessionNoteEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED2309B7A38D8B95C65553C /* SessionNoteEditorTests.swift */; };
 		96C562002F463965117DFA92 /* SessionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F03241D9611547DAA1B731 /* SessionCardView.swift */; };
@@ -86,6 +87,7 @@
 		EE76E668847A5474E7CD8E28 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D9B7771CD3044CEC2329E0CE /* GRDB */; };
 		F20D0CC1DFF4AD084F47F535 /* SharePreparer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50400D2ECBD1D89A5904D35 /* SharePreparer.swift */; };
 		FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */; };
+		FD34E5DF3FDD1B749FDAABFE /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5733DB553011A80CBFE01A0 /* Authenticator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -163,8 +165,10 @@
 		BAEBA8FB0AD1A64BAFF6E873 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		BDDFC1D1B9B451D3F4DAA926 /* CamorkTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CamorkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5D86B7445F8235736D9E1DB /* Migrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migrations.swift; sourceTree = "<group>"; };
+		C835D1E8C66980FE2C951C51 /* LockScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreen.swift; sourceTree = "<group>"; };
 		C8BB5CBC6E53DD577674197F /* CameraScreenViewStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreenViewStateTests.swift; sourceTree = "<group>"; };
 		D174F2FDA24F471B4AE62E98 /* AppBackgroundShield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBackgroundShield.swift; sourceTree = "<group>"; };
+		D5733DB553011A80CBFE01A0 /* Authenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authenticator.swift; sourceTree = "<group>"; };
 		D57A1F580AB460488E3FEF55 /* MediaStorageTestHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageTestHooks.swift; sourceTree = "<group>"; };
 		D5C736A508723254B09D0D47 /* DependencyContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyContainer.swift; sourceTree = "<group>"; };
 		D5C8382767397212E867C33A /* SessionNoteEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNoteEditor.swift; sourceTree = "<group>"; };
@@ -200,6 +204,7 @@
 				D174F2FDA24F471B4AE62E98 /* AppBackgroundShield.swift */,
 				E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */,
 				D5C736A508723254B09D0D47 /* DependencyContainer.swift */,
+				C835D1E8C66980FE2C951C51 /* LockScreen.swift */,
 				9CE1680BB543934E6AD0E068 /* StorageInitErrorView.swift */,
 			);
 			path = AppShell;
@@ -357,6 +362,7 @@
 			isa = PBXGroup;
 			children = (
 				038C9692A09C23A3B38A8CD2 /* AppLockController.swift */,
+				D5733DB553011A80CBFE01A0 /* Authenticator.swift */,
 				AA140D0E346D56C7AA3628E2 /* LocationService.swift */,
 				14B888956B201EB0ED26CC34 /* PermissionsService.swift */,
 			);
@@ -529,6 +535,7 @@
 			files = (
 				6BA14EDA68E3D44BF32D733C /* AppBackgroundShield.swift in Sources */,
 				BA64891748EA915043EDC498 /* AppLockController.swift in Sources */,
+				FD34E5DF3FDD1B749FDAABFE /* Authenticator.swift in Sources */,
 				42EEF308903DC1C6B8F66B92 /* CameraPlaceholderView.swift in Sources */,
 				1DA51EEBFBEFDE36127DFA4B /* CameraScreen.swift in Sources */,
 				D42D64BD27743B8197CF9C4A /* CameraScreenViewState.swift in Sources */,
@@ -549,6 +556,7 @@
 				D984AB4C8CC6763DAE0699A0 /* GalleryScreen.swift in Sources */,
 				DC0532E20909F08A139C0D34 /* LocationService.swift in Sources */,
 				8779178B282469B716CF473E /* LocationSnapshot.swift in Sources */,
+				882EF0419F5EB16C27098C9C /* LockScreen.swift in Sources */,
 				7568D9FC2A05ABA3DB652F1F /* MediaCapture.swift in Sources */,
 				1EA7A05186D76B980FB76848 /* MediaFileSystem.swift in Sources */,
 				9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */,

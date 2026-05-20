@@ -449,6 +449,38 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동하지 못했습니다" } }
       }
     },
+    "lock_screen_failed" : {
+      "extractionState" : "manual",
+      "comment" : "Footnote shown under the Unlock button after authentication failed (Plan E E3.b).",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Authentication failed. Tap to try again." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "인증에 실패했습니다. 다시 시도해 주세요." } }
+      }
+    },
+    "lock_screen_reason" : {
+      "extractionState" : "manual",
+      "comment" : "Localized reason passed to LAContext.evaluatePolicy — shown by iOS in the biometric prompt.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock Camork to view your work photos." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "업무 사진 열람을 위해 Camork 잠금을 해제합니다." } }
+      }
+    },
+    "lock_screen_title" : {
+      "extractionState" : "manual",
+      "comment" : "LockScreen main title shown above the unlock button.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camork is locked" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Camork이 잠겨 있습니다" } }
+      }
+    },
+    "lock_screen_unlock_button" : {
+      "extractionState" : "manual",
+      "comment" : "LockScreen unlock button label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠금 해제" } }
+      }
+    },
     "settings_about_bundle_id" : {
       "extractionState" : "manual",
       "comment" : "Settings About row label for the bundle identifier.",
