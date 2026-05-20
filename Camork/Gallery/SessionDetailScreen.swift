@@ -57,7 +57,7 @@ struct SessionDetailScreen: View {
                     ShareEntryButton(
                         session: session,
                         photos: photos,
-                        mediaStorage: deps.mediaStorage
+                        sharePreparer: deps.sharePreparer
                     )
                 }
             }

@@ -3,17 +3,13 @@ import SwiftUI
 struct ShareEntryButton: View {
     let session: Session
     let photos: [Photo]
-    let mediaStorage: MediaStorage
+    let sharePreparer: SharePreparer
 
     @State private var includeLocation = true
     @State private var includeTime = true
     @State private var presentation: SharePresentation?
     @State private var isPreparing = false
     @State private var showPrepareError = false
-
-    private var sharePreparer: SharePreparer {
-        SharePreparer(mediaStorage: mediaStorage)
-    }
 
     var body: some View {
         Button {

@@ -15,14 +15,16 @@ import SwiftUI
 ///    부트스트랩. legacy Thumbnails는 Plan B 잔재 — Plan C 이후 사용처 없음
 ///    (cruft 정리는 후속 phase에서).
 /// 5. `MediaStorage(db:fs:)` — 단일 capture-save writer actor.
-/// 6. `LocationService()`, `PermissionsService()`.
-/// 7. `CameraSession(configuration: builder.makeConfiguration())` — 시뮬레이터에 카메라가
+/// 6. `SharePreparer(mediaStorage:)` — 공유용 sanitized temp copy 준비/정리 actor.
+/// 7. `LocationService()`, `PermissionsService()`.
+/// 8. `CameraSession(configuration: builder.makeConfiguration())` — 시뮬레이터에 카메라가
 ///    없으면 `.noDevice`로 throw하여 본 init도 throw. `CamorkApp.Bootstrap.failed`로
 ///    분기되어 `StorageInitErrorView`가 표시된다 (Phase 2c.1 임시 처리, 추후 카메라 선택적
 ///    개선 검토).
 @MainActor
 final class DependencyContainer: ObservableObject {
     let mediaStorage: MediaStorage
+    let sharePreparer: SharePreparer
     let locationService: LocationService
     let permissionsService: PermissionsService
     let cameraSession: CameraSession
@@ -32,12 +34,19 @@ final class DependencyContainer: ObservableObject {
         let cachesRoot = try Self.cachesRoot()
         let db = try CamorkDatabase.open()
         let fs = try MediaFileSystem(root: appRoot, cachesRoot: cachesRoot)
-        self.mediaStorage = MediaStorage(db: db, fs: fs)
+        let mediaStorage = MediaStorage(db: db, fs: fs)
+        let sharePreparer = SharePreparer(mediaStorage: mediaStorage)
+        self.mediaStorage = mediaStorage
+        self.sharePreparer = sharePreparer
         self.locationService = LocationService()
         self.permissionsService = PermissionsService()
 
         let cameraConfig = CameraSessionBuilder.makeConfiguration()
         self.cameraSession = try CameraSession(configuration: cameraConfig)
+
+        Task {
+            await sharePreparer.cleanupExpired()
+        }
     }
 
     /// `Library/Application Support/Camork/` — DB metadata와 primary media storage의 루트.
