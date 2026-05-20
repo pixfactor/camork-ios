@@ -600,6 +600,112 @@ struct MediaStorageTests {
             }
         }
     }
+
+    // MARK: - Trash (Plan E Batch E1.a — photo-level soft-delete / restore / purge)
+
+    @Test("Plan E E1: fetchDeletedPhotos empty trash → 빈 배열")
+    func trashEmpty() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let deleted = try await storage.fetchDeletedPhotos()
+        #expect(deleted.isEmpty)
+    }
+
+    @Test("Plan E E1: softDeletePhoto → fetchDeletedPhotos에 표시, fetchPhotos 결과에서 제거")
+    func softDeleteMovesPhotoToTrash() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload(at: Date(timeIntervalSince1970: 1_000)))
+
+        try await storage.softDeletePhoto(id: photo.id, at: Date(timeIntervalSince1970: 5_000))
+
+        let deleted = try await storage.fetchDeletedPhotos()
+        #expect(deleted.count == 1)
+        #expect(deleted[0].id == photo.id)
+        #expect(deleted[0].deletedAt == Date(timeIntervalSince1970: 5_000))
+
+        let active = try await storage.fetchPhotos(sessionId: photo.sessionId)
+        #expect(active.isEmpty)
+    }
+
+    @Test("Plan E E1: softDeletePhoto 중복 호출 → photoNotFound (이미 trash 상태)")
+    func softDeleteAlreadyDeletedThrows() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload())
+
+        try await storage.softDeletePhoto(id: photo.id, at: Date(timeIntervalSince1970: 5_000))
+
+        await #expect(throws: MediaStorage.Error.photoNotFound) {
+            try await storage.softDeletePhoto(id: photo.id, at: Date(timeIntervalSince1970: 6_000))
+        }
+    }
+
+    @Test("Plan E E1: softDeletePhoto on 미존재 id → photoNotFound")
+    func softDeleteMissingPhotoThrows() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        await #expect(throws: MediaStorage.Error.photoNotFound) {
+            try await storage.softDeletePhoto(id: UUID(), at: Date(timeIntervalSince1970: 5_000))
+        }
+    }
+
+    @Test("Plan E E1: restorePhoto → fetchPhotos에 복귀, fetchDeletedPhotos에서 제거")
+    func restoreFromTrash() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload())
+        try await storage.softDeletePhoto(id: photo.id, at: Date(timeIntervalSince1970: 5_000))
+
+        try await storage.restorePhoto(id: photo.id)
+
+        let active = try await storage.fetchPhotos(sessionId: photo.sessionId)
+        #expect(active.count == 1)
+        #expect(active[0].id == photo.id)
+        #expect(active[0].deletedAt == nil)
+
+        let trash = try await storage.fetchDeletedPhotos()
+        #expect(trash.isEmpty)
+    }
+
+    @Test("Plan E E1: restorePhoto on 정상 상태 photo → photoNotFound")
+    func restoreNotInTrashThrows() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        let photo = try await storage.saveCapture(makePayload())
+
+        await #expect(throws: MediaStorage.Error.photoNotFound) {
+            try await storage.restorePhoto(id: photo.id)
+        }
+    }
+
+    @Test("Plan E E1: purgePhoto → DB row 제거 + final + thumbnail unlink")
+    func purgeRemovesEverything() async throws {
+        let fakeFs = FakeFileOps()
+        let (storage, db) = try await makeStorage(fs: fakeFs)
+        let photo = try await storage.saveCapture(makePayload())
+        let thumbName = "\(photo.id.uuidString).jpg"
+        try fakeFs.writeThumb(fileName: thumbName, data: Data([0x01]))
+
+        try await storage.purgePhoto(id: photo.id)
+
+        let count = try await db.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM Photo WHERE id = ?", arguments: [photo.id.uuidString]) ?? 0
+        }
+        #expect(count == 0)
+        #expect(try !fakeFs.finalExists(fileName: photo.fileName))
+        #expect(throws: FakeFileOpsError.self) {
+            _ = try fakeFs.readThumb(fileName: thumbName)
+        }
+    }
+
+    @Test("Plan E E1: purgePhoto on 미존재 id → photoNotFound, 파일 시스템 무영향")
+    func purgeMissingPhotoThrows() async throws {
+        let fakeFs = FakeFileOps()
+        let (storage, _) = try await makeStorage(fs: fakeFs)
+        let photo = try await storage.saveCapture(makePayload())
+
+        await #expect(throws: MediaStorage.Error.photoNotFound) {
+            try await storage.purgePhoto(id: UUID())
+        }
+
+        // 무관한 photo의 final/thumb는 보존
+        #expect(try fakeFs.finalExists(fileName: photo.fileName))
+    }
 }
 
 // MARK: - File-scope helpers

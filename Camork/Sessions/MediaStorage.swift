@@ -50,9 +50,12 @@ actor MediaStorage {
     /// - `invalidFileName`: loadPhotoData가 canonical fileName invariant를 어긴 Photo를 거부.
     /// - `sessionNotFound`: updateSession* 의 UPDATE가 0 rows affected — sessionId가
     ///   존재하지 않거나 이미 deleted (deletedAt IS NULL 필터가 제외). Plan C Phase 1.3.
+    /// - `photoNotFound`: Plan E Batch E1 trash 조작 시 photoId가 DB에 없거나 이미 trash
+    ///   상태와 일치하지 않을 때. soft-delete/restore/purge 가드.
     enum Error: Swift.Error, Sendable, Equatable {
         case invalidFileName
         case sessionNotFound
+        case photoNotFound
     }
 
     private var pendingManualSessionStart: Bool = false
@@ -385,6 +388,68 @@ actor MediaStorage {
                 throw Error.sessionNotFound
             }
         }
+    }
+
+    // MARK: - Trash (Plan E Batch E1.a — photo-level)
+
+    /// 휴지통에 들어 있는 모든 사진 (deletedAt IS NOT NULL). 최근 삭제 순으로 정렬.
+    /// 30일 자동 영구삭제 후보를 식별하기 위한 query는 별도 cutoff variant로 도입할 예정.
+    func fetchDeletedPhotos() async throws -> [Photo] {
+        try await db.read { db in
+            try Photo
+                .filter(sql: "deletedAt IS NOT NULL")
+                .order(Column("deletedAt").desc)
+                .fetchAll(db)
+        }
+    }
+
+    /// Photo를 휴지통으로 이동 (soft-delete). 이미 trash 상태인 row는 `deletedAt`을
+    /// 새 시점으로 덮어쓰지 않고 `photoNotFound`로 alert — 동일 사진을 두 번 trash로
+    /// 보내는 흐름은 호출자 책임으로 막아야 함. `at` 파라미터 default `Date()`이지만
+    /// 테스트는 결정적 시점을 주입.
+    func softDeletePhoto(id: UUID, at: Date = Date()) async throws {
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = ? WHERE id = ? AND deletedAt IS NULL",
+                arguments: [Int64(at.timeIntervalSince1970), id.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.photoNotFound
+            }
+        }
+    }
+
+    /// 휴지통에서 복원. `deletedAt`을 nil로 되돌린다. 이미 정상 상태이면 photoNotFound.
+    func restorePhoto(id: UUID) async throws {
+        try await db.write { db in
+            try db.execute(
+                sql: "UPDATE Photo SET deletedAt = NULL WHERE id = ? AND deletedAt IS NOT NULL",
+                arguments: [id.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.photoNotFound
+            }
+        }
+    }
+
+    /// 영구 삭제. DB row 제거 + final media + thumbnail cache 둘 다 best-effort unlink.
+    /// ADR §3 4-bucket failure matrix 역방향 패턴: **DB 먼저 → 파일** 순. DB DELETE가 실패
+    /// 하면 파일에 손대지 않고 throw. DB가 성공하면 파일 unlink 실패는 reaper가 후속
+    /// orphan 청소를 통해 정리하므로 best-effort로 충분.
+    func purgePhoto(id: UUID) async throws {
+        try await db.write { db in
+            try db.execute(
+                sql: "DELETE FROM Photo WHERE id = ?",
+                arguments: [id.uuidString]
+            )
+            if db.changesCount == 0 {
+                throw Error.photoNotFound
+            }
+        }
+        let fileName = "\(id.uuidString).heic"
+        let thumbName = "\(id.uuidString).jpg"
+        try? fs.removeFinal(fileName: fileName)
+        try? fs.removeThumb(fileName: thumbName)
     }
 
     // MARK: - Test hooks (DEBUG only)
