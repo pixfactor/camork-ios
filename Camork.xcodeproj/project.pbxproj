@@ -54,6 +54,7 @@
 		A2574451B96BF30FC264A335 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E6B68E8E8F1C5D13005D96 /* Database.swift */; };
 		A553460CEEB3EBFB50B986EB /* CameraViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */; };
 		A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC19C01569B96793E8631B7 /* MediaStorage.swift */; };
+		A7C8D9BE0F391D659FDEFE4E /* SessionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D617F52812535550DBADD34 /* SessionDetailScreen.swift */; };
 		AED2F21A3054B8DA752AA6EA /* StorageInitErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE1680BB543934E6AD0E068 /* StorageInitErrorView.swift */; };
 		AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */; };
 		B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E16FBB8537135AEAA25D510 /* Assets.xcassets */; };
@@ -123,6 +124,7 @@
 		896A453377FAFC4AAF165144 /* CameraPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlaceholderView.swift; sourceTree = "<group>"; };
 		8A931643B8B1BD2A58F7A8D7 /* PhotoMemoEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoMemoEditor.swift; sourceTree = "<group>"; };
 		8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeTests.swift; sourceTree = "<group>"; };
+		8D617F52812535550DBADD34 /* SessionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailScreen.swift; sourceTree = "<group>"; };
 		8F73F1A7B610A55DC45C684E /* ThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailView.swift; sourceTree = "<group>"; };
 		991350B9E5716E0F43BF7BEC /* Camork.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Camork.entitlements; sourceTree = "<group>"; };
 		9A70731930ECAC8918007E82 /* GalleryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryScreen.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				9A70731930ECAC8918007E82 /* GalleryScreen.swift */,
 				F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */,
 				86F03241D9611547DAA1B731 /* SessionCardView.swift */,
+				8D617F52812535550DBADD34 /* SessionDetailScreen.swift */,
 				8F73F1A7B610A55DC45C684E /* ThumbnailView.swift */,
 			);
 			path = Gallery;
@@ -512,6 +515,7 @@
 				DAC864606CEE84270F9BF4AD /* Session.swift in Sources */,
 				5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */,
 				96C562002F463965117DFA92 /* SessionCardView.swift in Sources */,
+				A7C8D9BE0F391D659FDEFE4E /* SessionDetailScreen.swift in Sources */,
 				6CFDF4B17545B466151FB8A9 /* SessionNameEditor.swift in Sources */,
 				783089B6F039897643303D42 /* SessionNoteEditor.swift in Sources */,
 				C1DD0D41120A976F838C5AA2 /* SettingsPlaceholderView.swift in Sources */,

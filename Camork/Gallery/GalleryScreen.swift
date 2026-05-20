@@ -58,7 +58,12 @@ struct GalleryScreen: View {
             .appBackgroundShield()
         } else {
             List(sessions, id: \.session.id) { item in
-                SessionCardView(item: item)
+                NavigationLink {
+                    SessionDetailScreen(session: item.session)
+                } label: {
+                    SessionCardView(item: item)
+                }
+                .buttonStyle(.plain)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(

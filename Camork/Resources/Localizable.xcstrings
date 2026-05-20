@@ -301,6 +301,62 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 %d장" } }
       }
     },
+    "session_detail_edit_note_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail note edit toolbar button VoiceOver label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit site note" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 메모 편집" } }
+      }
+    },
+    "session_detail_empty_description" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail empty state body.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos captured for this site will appear here." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 현장에서 촬영한 사진이 여기에 표시됩니다." } }
+      }
+    },
+    "session_detail_empty_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail empty state title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No photos" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 없음" } }
+      }
+    },
+    "session_detail_load_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail photo list load failure title.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos couldn't load" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진을 불러올 수 없어요" } }
+      }
+    },
+    "session_detail_loading" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail initial loading label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading photos" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 불러오는 중" } }
+      }
+    },
+    "session_detail_photo_open_error_title" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail failure title when opening a photo detail.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photo couldn't open" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진을 열 수 없어요" } }
+      }
+    },
+    "session_detail_share_a11y" : {
+      "extractionState" : "manual",
+      "comment" : "Session detail share toolbar button VoiceOver label.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share site" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 공유" } }
+      }
+    },
     "storage_init_error_description" : {
       "extractionState" : "manual",
       "comment" : "DependencyContainer bootstrap failure body (StorageInitErrorView).",
