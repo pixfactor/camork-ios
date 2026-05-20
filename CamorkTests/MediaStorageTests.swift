@@ -430,6 +430,55 @@ struct MediaStorageTests {
         #expect(result[0].preview.previewPhotos.isEmpty)
     }
 
+    @Test("fetchSessionsWithPreview: 한 세션 preview의 photo id는 유니크 + 세션 경계를 넘지 않음")
+    func sessionsWithPreviewIdsAreUnique() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        // 세션 A: 5장 → preview cap 4
+        await storage.markPendingNewSession()
+        for i in 0..<5 {
+            _ = try await storage.saveCapture(
+                makePayload(at: Date(timeIntervalSince1970: Double(1_000 + i)))
+            )
+        }
+        // 세션 B: 6장 → preview cap 4
+        await storage.markPendingNewSession()
+        for i in 0..<6 {
+            _ = try await storage.saveCapture(
+                makePayload(at: Date(timeIntervalSince1970: Double(2_000 + i)))
+            )
+        }
+
+        let result = try await storage.fetchSessionsWithPreview()
+        #expect(result.count == 2)
+
+        for entry in result {
+            let ids = entry.preview.previewPhotos.map(\.id)
+            #expect(ids.count == 4)
+            #expect(Set(ids).count == ids.count, "previewPhotos는 한 세션 안에서 photo.id가 중복되면 안 됨")
+        }
+
+        let aIds = Set(result.first { $0.session.id == result[0].session.id }!.preview.previewPhotos.map(\.id))
+        let bIds = Set(result.first { $0.session.id == result[1].session.id }!.preview.previewPhotos.map(\.id))
+        #expect(aIds.isDisjoint(with: bIds), "세션 preview 사이에 같은 photo.id가 양쪽에 동시에 나타나면 안 됨")
+    }
+
+    @Test("fetchSessionsWithPreview: capturedAt 동률 4장 → previewPhotos id 중복 없음")
+    func sessionsWithPreviewIdsUniqueOnCapturedAtTie() async throws {
+        let (storage, _, _) = try await makeStorageReal()
+        // 동일 capturedAt 4장 — tie-break 비결정성이 photo 중복으로 새지 않는지 잠금.
+        let stamp = Date(timeIntervalSince1970: 5_000)
+        await storage.markPendingNewSession()
+        for _ in 0..<4 {
+            _ = try await storage.saveCapture(makePayload(at: stamp))
+        }
+
+        let result = try await storage.fetchSessionsWithPreview()
+        #expect(result.count == 1)
+        let ids = result[0].preview.previewPhotos.map(\.id)
+        #expect(ids.count == 4)
+        #expect(Set(ids).count == ids.count, "동률 capturedAt에서도 같은 photo.id가 두 번 들어가면 안 됨")
+    }
+
     // MARK: - fetchPhoto deletedAt strict filter (Phase 1.4, Plan C)
 
     @Test("fetchPhoto(id:): deletedAt non-null photo는 nil 반환 (caller에 검사 책임 분산 금지)")
