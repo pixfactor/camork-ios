@@ -3,9 +3,8 @@ import SwiftUI
 
 /// Gallery session card (Plan C Phase 3.2).
 ///
-/// Thumbnail slots intentionally render placeholders until `ThumbnailView` lands in
-/// Phase 3.3. The card structure, +N badge, metadata, and action affordances stay
-/// stable so the later swap is limited to `SessionPreviewTile`.
+/// Thumbnail slots delegate loading to `ThumbnailView`; this card owns only layout,
+/// metadata, and action affordances.
 struct SessionCardView: View {
     let item: SessionWithPreview
 
@@ -118,12 +117,11 @@ private struct SessionPreviewTile: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: CornerRadius.sm, style: .continuous)
-                .fill(photo == nil ? Color.camorkFill.opacity(0.4) : Color.camorkTertiaryBackground)
-            if photo != nil {
-                Image(systemName: "photo")
-                    .font(.title3)
-                    .foregroundStyle(.tertiary)
+            if let photo {
+                ThumbnailView(photo: photo)
+            } else {
+                RoundedRectangle(cornerRadius: CornerRadius.sm, style: .continuous)
+                    .fill(Color.camorkFill.opacity(0.4))
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.sm, style: .continuous))
