@@ -115,4 +115,9 @@ final class FakeFileOps: FileOps, @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         thumbContents.removeValue(forKey: fileName)
     }
+
+    func enumerateThumb() throws -> [String] {
+        lock.lock(); defer { lock.unlock() }
+        return Array(thumbContents.keys)
+    }
 }

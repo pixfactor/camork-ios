@@ -27,4 +27,5 @@ protocol FileOps: Sendable {
     func writeThumb(fileName: String, data: Data) throws
     func readThumb(fileName: String) throws -> Data
     func removeThumb(fileName: String) throws
+    func enumerateThumb() throws -> [String]
 }

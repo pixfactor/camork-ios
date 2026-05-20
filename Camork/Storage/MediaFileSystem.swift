@@ -119,6 +119,15 @@ struct MediaFileSystem: FileOps {
         try FileManager.default.removeItem(at: url)
     }
 
+    func enumerateThumb() throws -> [String] {
+        let urls = try FileManager.default.contentsOfDirectory(
+            at: cachesRoot.appendingPathComponent("Thumbnails", isDirectory: true),
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        )
+        return urls.map { $0.lastPathComponent }
+    }
+
     // MARK: - URL helpers
 
     private func stagingURL(for fileName: String) -> URL {

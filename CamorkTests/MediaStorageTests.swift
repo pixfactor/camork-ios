@@ -139,6 +139,29 @@ struct MediaStorageTests {
         #expect(try onDisk.finalExists(fileName: legit.fileName))
     }
 
+    @Test("Orphan reaper: Photo row 없는 thumbnail cache 파일 정리, legitimate thumb 보존")
+    func reaperThumbnailOrphan() async throws {
+        let fakeFs = FakeFileOps()
+        let (storage, _) = try await makeStorage(fs: fakeFs)
+        let legit = try await storage.saveCapture(makePayload())
+        let legitThumb = "\(legit.id.uuidString).jpg"
+        let orphanThumb = "\(UUID().uuidString).jpg"
+        let malformedThumb = "not-a-photo-id.jpg"
+        try fakeFs.writeThumb(fileName: legitThumb, data: Data([0x01]))
+        try fakeFs.writeThumb(fileName: orphanThumb, data: Data([0x02]))
+        try fakeFs.writeThumb(fileName: malformedThumb, data: Data([0x03]))
+
+        try await storage.runReaper()
+
+        #expect(try fakeFs.readThumb(fileName: legitThumb) == Data([0x01]))
+        #expect(throws: FakeFileOpsError.self) {
+            _ = try fakeFs.readThumb(fileName: orphanThumb)
+        }
+        #expect(throws: FakeFileOpsError.self) {
+            _ = try fakeFs.readThumb(fileName: malformedThumb)
+        }
+    }
+
     @Test("Failure matrix bucket #4: mv 후 commit 직전 crash 시뮬 — UUID-named final orphan을 reaper가 정리, legitimate 보존")
     func failureCrashAfterMv() async throws {
         let (storage, _, dir) = try await makeStorageReal()

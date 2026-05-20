@@ -153,13 +153,19 @@ actor MediaStorage {
 
     /// `Media/`에 있지만 Photo row가 없는 파일을 정리. 앱 시작 시 호출.
     func runReaper() async throws {
-        let dbFileNames: Set<String> = try await db.read { db in
-            let names = try String.fetchAll(db, sql: "SELECT fileName FROM Photo")
-            return Set(names)
+        let existing: (fileNames: Set<String>, thumbNames: Set<String>) = try await db.read { db in
+            let rows = try Row.fetchAll(db, sql: "SELECT id, fileName FROM Photo")
+            let fileNames = Set(rows.map { row in row["fileName"] as String })
+            let thumbNames = Set(rows.map { row in "\(row["id"] as String).jpg" })
+            return (fileNames, thumbNames)
         }
         let onDisk = try fs.enumerateFinal()
-        for fileName in onDisk where !dbFileNames.contains(fileName) {
+        for fileName in onDisk where !existing.fileNames.contains(fileName) {
             try? fs.removeFinal(fileName: fileName)
+        }
+        let thumbs = try fs.enumerateThumb()
+        for fileName in thumbs where !existing.thumbNames.contains(fileName) {
+            try? fs.removeThumb(fileName: fileName)
         }
     }
 
