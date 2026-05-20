@@ -195,6 +195,14 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 %d장" } }
       }
     },
+    "share_options_text_label" : {
+      "extractionState" : "manual",
+      "comment" : "Share composer editable body text section header. Plan D Batch D1.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share text" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유 텍스트" } }
+      }
+    },
     "share_options_title" : {
       "extractionState" : "manual",
       "comment" : "Share options sheet navigation title.",

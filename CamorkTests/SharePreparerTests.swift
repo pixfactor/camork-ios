@@ -124,6 +124,76 @@ struct SharePreparerTests {
         #expect(imageProperties(of: output)[kCGImagePropertyGPSDictionary as String] == nil)
     }
 
+    // MARK: - Plan D Batch D1 — overrideText composer hook
+
+    @Test("Plan D D1: overrideText nil이면 기존 autoText 합성 유지")
+    func overrideTextNilFallsBackToAutoText() async throws {
+        let fixture = try await makeFixture()
+        let shareDate = formattedShareDate(
+            fixture.capturedAt,
+            locale: fixture.locale,
+            calendar: fixture.calendar
+        )
+
+        let bundle = try await fixture.preparer.prepare(
+            photos: [fixture.photo],
+            session: fixture.session,
+            includeLocation: true,
+            includeTime: true,
+            overrideText: nil
+        )
+
+        #expect(bundle.autoText == "[현장 점검] · \(shareDate) · 도산공원 — 사진 1장")
+    }
+
+    @Test("Plan D D1: overrideText 빈 문자열도 사용자 의도로 보존")
+    func overrideTextEmptyStringPreserved() async throws {
+        let fixture = try await makeFixture()
+
+        let bundle = try await fixture.preparer.prepare(
+            photos: [fixture.photo],
+            session: fixture.session,
+            includeLocation: true,
+            includeTime: true,
+            overrideText: ""
+        )
+
+        #expect(bundle.autoText == "")
+    }
+
+    @Test("Plan D D1: overrideText custom 문자열은 그대로 ShareBundle.autoText로 흐름")
+    func overrideTextCustomPassthrough() async throws {
+        let fixture = try await makeFixture()
+        let custom = "사용자 메모 한 줄\n두 번째 줄 with English"
+
+        let bundle = try await fixture.preparer.prepare(
+            photos: [fixture.photo],
+            session: fixture.session,
+            includeLocation: true,
+            includeTime: true,
+            overrideText: custom
+        )
+
+        #expect(bundle.autoText == custom)
+    }
+
+    @Test("Plan D D1: overrideText 사용 시에도 location toggle은 sanitizer EXIF 정책에 그대로 반영")
+    func overrideTextDoesNotInfluenceSanitizer() async throws {
+        let fixture = try await makeFixture()
+
+        let bundle = try await fixture.preparer.prepare(
+            photos: [fixture.photo],
+            session: fixture.session,
+            includeLocation: false,
+            includeTime: true,
+            overrideText: "위치 빼고 공유합니다"
+        )
+        let output = try Data(contentsOf: bundle.fileURLs[0])
+
+        #expect(bundle.autoText == "위치 빼고 공유합니다")
+        #expect(imageProperties(of: output)[kCGImagePropertyGPSDictionary as String] == nil)
+    }
+
     @Test("cleanup: ShareBundle.tempDir 삭제 시 파일 사라짐")
     func cleanupRemoves() async throws {
         let fixture = try await makeFixture()

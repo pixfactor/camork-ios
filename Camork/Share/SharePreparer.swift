@@ -11,8 +11,11 @@ actor SharePreparer {
     private let temporaryRoot: URL
     private let now: @Sendable () -> Date
     private let expirationInterval: TimeInterval
-    private let locale: Locale
-    private let calendar: Calendar
+    /// Locale/Calendar are immutable + Sendable; exposed `nonisolated` so the
+    /// composer UI (Plan D Batch D1) can compute the same auto-text preview
+    /// synchronously without round-tripping through actor isolation.
+    nonisolated let locale: Locale
+    nonisolated let calendar: Calendar
 
     init(
         mediaStorage: MediaStorage,
@@ -30,11 +33,16 @@ actor SharePreparer {
         self.calendar = calendar
     }
 
+    /// Plan D Batch D1 — `overrideText`가 non-nil이면 사용자가 composer에서
+    /// 편집한 텍스트를 그대로 ShareBundle.autoText로 통과시킨다. nil이면 기존
+    /// `autoText(...)` 합성 결과를 사용한다. 빈 문자열도 사용자 의도로 보존
+    /// (자동 텍스트를 비우고 싶을 수 있음).
     func prepare(
         photos: [Photo],
         session: Session,
         includeLocation: Bool,
-        includeTime: Bool
+        includeTime: Bool,
+        overrideText: String? = nil
     ) async throws -> ShareBundle {
         let tempDir = shareRoot()
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -60,14 +68,15 @@ actor SharePreparer {
                 fileURLs.append(url)
             }
 
+            let resolvedText = overrideText ?? autoText(
+                session: session,
+                photos: photos,
+                includeLocation: includeLocation,
+                includeTime: includeTime
+            )
             return ShareBundle(
                 fileURLs: fileURLs,
-                autoText: autoText(
-                    session: session,
-                    photos: photos,
-                    includeLocation: includeLocation,
-                    includeTime: includeTime
-                ),
+                autoText: resolvedText,
                 tempDir: tempDir
             )
         } catch {
@@ -102,7 +111,10 @@ actor SharePreparer {
             .appendingPathComponent("Share", isDirectory: true)
     }
 
-    private func autoText(
+    /// Composer UI(Plan D Batch D1)가 동기로 미리보기 값을 얻을 수 있도록
+    /// `nonisolated`. `locale`/`calendar`가 이미 nonisolated let이고 본 함수가
+    /// actor 상태를 만지지 않으므로 안전하게 격리 외에서 호출 가능.
+    nonisolated func autoText(
         session: Session,
         photos: [Photo],
         includeLocation: Bool,
@@ -121,7 +133,7 @@ actor SharePreparer {
         return "\(parts.joined(separator: " · ")) — \(photoCountText(photos.count))"
     }
 
-    private func firstPlaceName(session: Session, photos: [Photo]) -> String? {
+    nonisolated private func firstPlaceName(session: Session, photos: [Photo]) -> String? {
         let candidates = [session.firstLocation?.placeName] + photos.map { $0.location?.placeName }
         return candidates.compactMap { name in
             let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -129,7 +141,7 @@ actor SharePreparer {
         }.first
     }
 
-    private func photoCountText(_ count: Int) -> String {
+    nonisolated private func photoCountText(_ count: Int) -> String {
         if count == 1 {
             return localizedString(
                 "share_auto_text_photo_count_one",
@@ -144,7 +156,7 @@ actor SharePreparer {
         return String(format: format, locale: locale, count)
     }
 
-    private func localizedString(_ key: String, defaultValue: String) -> String {
+    nonisolated private func localizedString(_ key: String, defaultValue: String) -> String {
         let languageCode = locale.language.languageCode?.identifier
         if let languageCode,
            let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
@@ -159,7 +171,7 @@ actor SharePreparer {
         )
     }
 
-    private func formatShareDate(_ date: Date) -> String {
+    nonisolated private func formatShareDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.calendar = calendar

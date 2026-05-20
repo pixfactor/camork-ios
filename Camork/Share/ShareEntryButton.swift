@@ -10,6 +10,10 @@ struct ShareEntryButton: View {
     @State private var presentation: SharePresentation?
     @State private var isPreparing = false
     @State private var showPrepareError = false
+    /// 사용자가 composer에서 편집하는 share 본문 텍스트. 옵션 sheet 진입 시
+    /// `sharePreparer.autoText(...)`로 초기화되어 사용자가 수정 가능. 빈 문자열
+    /// 도 의도된 선택으로 SharePreparer로 그대로 전달된다 (Plan D D1).
+    @State private var customText: String = ""
 
     var body: some View {
         Button {
@@ -42,6 +46,12 @@ struct ShareEntryButton: View {
     private var optionsSheet: some View {
         NavigationStack {
             Form {
+                Section("share_options_text_label") {
+                    TextEditor(text: $customText)
+                        .frame(minHeight: 88)
+                        .accessibilityLabel(Text("share_options_text_label"))
+                }
+
                 Section {
                     Toggle("share_include_location", isOn: $includeLocation)
                         .disabled(!hasLocation)
@@ -85,6 +95,15 @@ struct ShareEntryButton: View {
     private func openOptions() {
         includeLocation = hasLocation
         includeTime = true
+        // composer 진입 시 토글 기본값(includeLocation=hasLocation, includeTime=true)을
+        // 기준으로 자동 텍스트 합성. sharePreparer.autoText는 nonisolated라
+        // 동기 호출 안전 (Plan D Batch D1).
+        customText = sharePreparer.autoText(
+            session: session,
+            photos: photos,
+            includeLocation: includeLocation,
+            includeTime: includeTime
+        )
         presentation = .options
     }
 
@@ -99,7 +118,8 @@ struct ShareEntryButton: View {
                 photos: photos,
                 session: session,
                 includeLocation: includeLocation,
-                includeTime: includeTime
+                includeTime: includeTime,
+                overrideText: customText
             )
             // If the options sheet was dismissed during prepare (Cancel tap or
             // swipe-down), do not resurrect the flow with a share sheet the user
