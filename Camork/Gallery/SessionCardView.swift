@@ -67,7 +67,7 @@ struct SessionCardView: View {
 
     /// Session note의 첫 non-empty line만 추출. 다중 라인 메모 중 시각적으로 노출할
     /// "요약 한 줄"이 필요한 경우 (카드 미리보기) 사용. trim한 결과가 빈 줄이면 다음
-    /// 줄로 넘어가서 첫 non-empty 라인을 찾는다 (Plan F dogfood — 카드 식별성 보강).
+    /// 줄로 넘어가서 첫 non-empty 라인을 찾는다.
     private static func firstNonEmptyLine(_ note: String?) -> String? {
         guard let note else { return nil }
         for line in note.split(whereSeparator: { $0.isNewline }) {

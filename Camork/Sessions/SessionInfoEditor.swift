@@ -1,6 +1,6 @@
 import Foundation
 
-/// 세션의 이름 + 메모를 한 번에 편집하는 도메인 helper (Plan F — dogfood 1차 통합).
+/// 세션의 이름 + 메모를 한 번에 편집하는 도메인 helper.
 ///
 /// SessionNameEditor + SessionNoteEditor 패턴을 따르되, 본 helper는 두 값을
 /// 하나의 `MediaStorage.updateSessionInfo` 호출(단일 GRDB transaction)로 commit해

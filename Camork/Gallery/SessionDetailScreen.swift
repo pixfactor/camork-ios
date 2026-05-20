@@ -10,6 +10,9 @@ struct SessionDetailScreen: View {
     @Environment(\.dismiss) private var dismiss
 
     let session: Session
+    /// 저장 성공 시 호출. 호출자(GalleryScreen)가 자기 `sessions` 배열의 해당 row를
+    /// 즉시 새 값으로 교체해 카드가 stale하지 않게 한다 (nav pop 전 카드 갱신).
+    let onSessionInfoChanged: ((_ name: String, _ note: String?) -> Void)?
 
     @State private var sessionName: String
     @State private var sessionNote: String?
@@ -29,8 +32,12 @@ struct SessionDetailScreen: View {
         GridItem(.flexible(), spacing: Spacing.xs)
     ]
 
-    init(session: Session) {
+    init(
+        session: Session,
+        onSessionInfoChanged: ((_ name: String, _ note: String?) -> Void)? = nil
+    ) {
         self.session = session
+        self.onSessionInfoChanged = onSessionInfoChanged
         self._sessionName = State(initialValue: session.name)
         self._sessionNote = State(initialValue: session.note)
     }
@@ -107,6 +114,7 @@ struct SessionDetailScreen: View {
                     ) { savedName, savedNote in
                         sessionName = savedName
                         sessionNote = savedNote
+                        onSessionInfoChanged?(savedName, savedNote)
                     }
                 }
             }
@@ -308,7 +316,7 @@ struct SessionDetailScreen: View {
 }
 
 private enum SessionDetailSheet: Identifiable {
-    /// 이름/메모 통합 편집 시트 (Plan F). 기존 `.name` / `.note` 두 cases를 합쳤다.
+    /// 이름/메모 통합 편집 시트.
     case info
 
     var id: String {

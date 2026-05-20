@@ -36,11 +36,8 @@ struct GalleryScreen: View {
                     }
                 }
         }
-        // Plan F dogfood: SessionDetailScreen 편집 후 pop back / TrashScreen dismiss /
-        // 탭 재진입 등 모든 재출현 경로에서 최신 sessions를 보여주도록 .onAppear 사용.
-        // (.task는 NavigationLink 복귀에서 재실행을 보장하지 않음.)
-        .onAppear {
-            Task { await refresh() }
+        .task {
+            await refresh()
         }
         .sheet(isPresented: $showTrash, onDismiss: {
             Task { await refresh() }
@@ -77,7 +74,9 @@ struct GalleryScreen: View {
         } else {
             List(sessions, id: \.session.id) { item in
                 NavigationLink {
-                    SessionDetailScreen(session: item.session)
+                    SessionDetailScreen(session: item.session) { savedName, savedNote in
+                        applyInfoChange(sessionId: item.session.id, name: savedName, note: savedNote)
+                    }
                 } label: {
                     SessionCardView(item: item)
                 }
@@ -109,5 +108,24 @@ struct GalleryScreen: View {
             loadError = String(describing: error)
         }
         isLoading = false
+    }
+
+    /// SessionDetailScreen 저장 콜백 — 화면에 표시 중인 `sessions` 배열의 해당 row만
+    /// 새 name/note로 교체한다. 전체 fetch 없이 즉시 카드가 갱신되며, nav pop 전후의
+    /// stale 상태를 차단한다.
+    @MainActor
+    private func applyInfoChange(sessionId: UUID, name: String, note: String?) {
+        guard let index = sessions.firstIndex(where: { $0.session.id == sessionId }) else { return }
+        let old = sessions[index].session
+        let updated = Session(
+            id: old.id,
+            name: name,
+            note: note,
+            createdAt: old.createdAt,
+            endedAt: old.endedAt,
+            firstLocation: old.firstLocation,
+            deletedAt: old.deletedAt
+        )
+        sessions[index] = SessionWithPreview(session: updated, preview: sessions[index].preview)
     }
 }

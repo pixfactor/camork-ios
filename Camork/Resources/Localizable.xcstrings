@@ -443,7 +443,7 @@
     },
     "session_detail_edit_info_a11y" : {
       "extractionState" : "manual",
-      "comment" : "VoiceOver label for the unified name+note edit button on SessionDetailScreen (Plan F).",
+      "comment" : "VoiceOver label for the unified name+note edit button on SessionDetailScreen.",
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit session info" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보 편집" } }
@@ -459,7 +459,7 @@
     },
     "session_info_edit_title" : {
       "extractionState" : "manual",
-      "comment" : "Navigation title of the unified Session info edit sheet (Plan F).",
+      "comment" : "Navigation title of the unified Session info edit sheet.",
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Session info" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보" } }
@@ -467,7 +467,7 @@
     },
     "session_info_save_error_title" : {
       "extractionState" : "manual",
-      "comment" : "Alert title when SessionInfoEditSheet save fails (Plan F).",
+      "comment" : "Alert title when SessionInfoEditSheet save fails.",
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save session info" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보를 저장하지 못했습니다" } }

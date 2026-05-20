@@ -1,14 +1,13 @@
 import SwiftUI
 
-/// 세션의 이름 + 메모를 한 화면에서 동시에 편집하는 시트 (Plan F — dogfood 통합).
+/// 세션의 이름 + 메모를 한 화면에서 동시에 편집하는 시트.
 ///
-/// 기존 `SessionNameEditSheet` + `SessionNoteEditSheet` 두 진입점이 분리되어 있던 흐름을
-/// 한 sheet으로 합친다. 저장은 `SessionInfoEditor`가 단일 GRDB transaction으로 commit해
-/// 부분 실패가 사용자에게 노출되지 않는다.
+/// 저장은 `SessionInfoEditor`가 단일 GRDB transaction으로 commit하므로 사용자에게는 두
+/// 필드가 함께 적용되거나 함께 실패한다 — 부분 성공 상태가 노출되지 않는다.
 ///
 /// 검증 규칙은 editor와 동일:
 /// - 이름: trim 후 빈 문자열이면 저장 차단 (`Error.emptyName` → 안내 alert).
-/// - 메모: trim 없음. 빈 문자열은 nil로 normalize해서 column clear 의미로 처리.
+/// - 메모: trim 없음. 빈 문자열은 nil로 normalize해 column clear 의미로 처리.
 struct SessionInfoEditSheet: View {
     let sessionId: UUID
     let initialName: String
@@ -43,11 +42,12 @@ struct SessionInfoEditSheet: View {
             Form {
                 Section("session_name_field_label") {
                     TextField("session_name_field_label", text: $nameDraft)
-                        .textInputAutocapitalization(.sentences)
+                        .textInputAutocapitalization(.words)
                 }
                 Section("session_note_field_label") {
                     TextEditor(text: $noteDraft)
                         .frame(minHeight: 140)
+                        .accessibilityLabel(Text("session_note_field_label"))
                 }
             }
             .navigationTitle("session_info_edit_title")
