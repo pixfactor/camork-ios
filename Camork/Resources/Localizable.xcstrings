@@ -1,824 +1,1877 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "+%lld" : {
+
+    },
     "button_cancel" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "취소"
+          }
+        }
       }
     },
     "button_close" : {
-      "extractionState" : "manual",
       "comment" : "TrashScreen modal close button (Plan E E1.c).",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "닫기" } }
-      }
-    },
-    "button_ok" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "확인" } }
-      }
-    },
-    "button_retry" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 시도" } }
-      }
-    },
-    "button_save" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "저장" } }
-      }
-    },
-    "camera_init_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "CameraScreen.errorView 제목 — 카메라 라이프사이클 도중 재시도 실패.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera unavailable" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라를 사용할 수 없어요" } }
-      }
-    },
-    "camera_new_site_chip" : {
-      "extractionState" : "manual",
-      "comment" : "다음 촬영을 새 세션으로 묶도록 표시하는 chip.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "New site" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "새 현장" } }
-      }
-    },
-    "camera_permission_denied_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Settings > Camork and allow Camera access to start capturing." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정 > Camork에서 카메라 권한을 허용해 주세요. 권한이 없으면 촬영을 시작할 수 없어요." } }
-      }
-    },
-    "camera_permission_denied_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera access required" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 권한이 필요해요" } }
-      }
-    },
-    "camera_permission_request_button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Allow access" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "권한 허용하기" } }
-      }
-    },
-    "camera_permission_request_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camork needs camera and location access to log site visits with accurate metadata." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "정확한 메타데이터로 현장을 기록하려면 카메라와 위치 권한이 필요해요." } }
-      }
-    },
-    "camera_permission_request_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Get ready to capture" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영을 준비해요" } }
-      }
-    },
-    "camera_shutter_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "Shutter 버튼 VoiceOver 라벨.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Capture" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영" } }
-      }
-    },
-    "capture_error_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't capture" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영에 실패했어요" } }
-      }
-    },
-    "location_permission_denied_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Settings > Camork and allow Location while using the app to record where each photo was taken." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정 > Camork에서 위치 권한을 \"앱 사용 중\"으로 허용해 주세요. 위치는 사진에 함께 저장돼요." } }
-      }
-    },
-    "location_permission_denied_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Location access required" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "위치 권한이 필요해요" } }
-      }
-    },
-    "memo_save_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "PhotoDetailView 메모 저장 실패 alert 제목.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모를 저장하지 못했어요" } }
-      }
-    },
-    "photo_detail_close_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "PhotoDetailView 닫기 버튼 VoiceOver 라벨.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "닫기" } }
-      }
-    },
-    "photo_detail_edit_memo_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "PhotoDetailView 메모 편집 버튼 VoiceOver 라벨.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모 편집" } }
-      }
-    },
-    "photo_detail_image_unavailable" : {
-      "extractionState" : "manual",
-      "comment" : "이미지 데이터가 손상되어 디코드 실패했을 때 fallback 카피.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Image not available" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이미지를 표시할 수 없어요" } }
-      }
-    },
-    "photo_detail_memo_title" : {
-      "extractionState" : "manual",
-      "comment" : "PhotoDetailView 메모 편집 sheet navigation 제목.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닫기"
+          }
+        }
       }
     },
     "button_delete" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "삭제" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제"
+          }
+        }
+      }
+    },
+    "button_ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
+          }
+        }
+      }
+    },
+    "button_retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        }
+      }
+    },
+    "button_save" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장"
+          }
+        }
       }
     },
     "button_share" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유하기" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공유하기"
+          }
+        }
       }
     },
-    "share_include_location" : {
+    "camera_init_error_title" : {
+      "comment" : "CameraScreen.errorView 제목 — 카메라 라이프사이클 도중 재시도 실패.",
       "extractionState" : "manual",
-      "comment" : "Share options toggle for including location metadata and text.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Include location" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "위치 정보 포함" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera unavailable"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라를 사용할 수 없어요"
+          }
+        }
       }
     },
-    "share_include_time" : {
+    "camera_new_site_chip" : {
+      "comment" : "다음 촬영을 새 세션으로 묶도록 표시하는 chip.",
       "extractionState" : "manual",
-      "comment" : "Share options toggle for including capture time in share text.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Include capture time" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영 시간 포함" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New site"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 현장"
+          }
+        }
       }
     },
-    "share_auto_text_photo_count_one" : {
+    "camera_permission_denied_description" : {
       "extractionState" : "manual",
-      "comment" : "Share auto-text photo count when exactly one photo is shared.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 photo" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 1장" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings > Camork and allow Camera access to start capturing."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정 > Camork에서 카메라 권한을 허용해 주세요. 권한이 없으면 촬영을 시작할 수 없어요."
+          }
+        }
       }
     },
-    "share_auto_text_photo_count_other_format" : {
+    "camera_permission_denied_title" : {
       "extractionState" : "manual",
-      "comment" : "Share auto-text photo count for zero or many photos. %d is the count.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%d photos" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 %d장" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera access required"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라 권한이 필요해요"
+          }
+        }
       }
     },
-    "share_options_text_label" : {
+    "camera_permission_request_button" : {
       "extractionState" : "manual",
-      "comment" : "Share composer editable body text section header. Plan D Batch D1.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share text" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유 텍스트" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow access"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "권한 허용하기"
+          }
+        }
       }
     },
-    "share_options_title" : {
+    "camera_permission_request_description" : {
       "extractionState" : "manual",
-      "comment" : "Share options sheet navigation title.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share options" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유 옵션" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camork needs camera and location access to log site visits with accurate metadata."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정확한 메타데이터로 현장을 기록하려면 카메라와 위치 권한이 필요해요."
+          }
+        }
       }
     },
-    "share_prepare_error_message" : {
+    "camera_permission_request_title" : {
       "extractionState" : "manual",
-      "comment" : "Share preparation failure alert body.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reload the photos and try again." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진을 다시 불러온 뒤 시도해 주세요." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get ready to capture"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영을 준비해요"
+          }
+        }
       }
     },
-    "share_prepare_error_title" : {
+    "camera_shutter_a11y" : {
+      "comment" : "Shutter 버튼 VoiceOver 라벨.",
       "extractionState" : "manual",
-      "comment" : "Share preparation failure alert title.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't prepare share" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "공유를 준비할 수 없어요" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영"
+          }
+        }
       }
     },
     "camera_tab_label" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라"
+          }
+        }
+      }
+    },
+    "capture_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't capture"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영에 실패했어요"
+          }
+        }
+      }
+    },
+    "gallery_empty_description" : {
+      "comment" : "Gallery empty state body.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Captured photos will appear here by site."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영한 사진이 현장별로 여기에 모여요."
+          }
+        }
+      }
+    },
+    "gallery_empty_title" : {
+      "comment" : "Gallery empty state title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sites yet"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 현장이 없어요"
+          }
+        }
+      }
+    },
+    "gallery_load_error_title" : {
+      "comment" : "Gallery load failure title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장을 불러오지 못했어요"
+          }
+        }
+      }
+    },
+    "gallery_loading" : {
+      "comment" : "Gallery loading progress label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장을 불러오는 중"
+          }
+        }
+      }
+    },
+    "gallery_refresh_a11y" : {
+      "comment" : "Gallery refresh button VoiceOver label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 새로고침"
+          }
+        }
       }
     },
     "gallery_tab_label" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
-      }
-    },
-    "gallery_empty_description" : {
-      "extractionState" : "manual",
-      "comment" : "Gallery empty state body.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Captured photos will appear here by site." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "촬영한 사진이 현장별로 여기에 모여요." } }
-      }
-    },
-    "gallery_empty_title" : {
-      "extractionState" : "manual",
-      "comment" : "Gallery empty state title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No sites yet" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "아직 현장이 없어요" } }
-      }
-    },
-    "gallery_load_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "Gallery load failure title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't load sites" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장을 불러오지 못했어요" } }
-      }
-    },
-    "gallery_loading" : {
-      "extractionState" : "manual",
-      "comment" : "Gallery loading progress label.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading sites" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장을 불러오는 중" } }
-      }
-    },
-    "gallery_refresh_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "Gallery refresh button VoiceOver label.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Refresh sites" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 새로고침" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장"
+          }
+        }
       }
     },
     "gallery_title" : {
-      "extractionState" : "manual",
       "comment" : "Gallery navigation title.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장"
+          }
+        }
       }
     },
     "gallery_trash_a11y" : {
-      "extractionState" : "manual",
       "comment" : "Gallery toolbar trash button VoiceOver label (Plan E E1.c).",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통 열기" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통 열기"
+          }
+        }
       }
     },
-    "trash_action_error_title" : {
+    "location_permission_denied_description" : {
       "extractionState" : "manual",
-      "comment" : "Title of the alert shown when a trash restore or purge action fails.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't complete action" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "작업을 완료하지 못했습니다" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings > Camork and allow Location while using the app to record where each photo was taken."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정 > Camork에서 위치 권한을 \"앱 사용 중\"으로 허용해 주세요. 위치는 사진에 함께 저장돼요."
+          }
+        }
       }
     },
-    "trash_action_purge" : {
+    "location_permission_denied_title" : {
       "extractionState" : "manual",
-      "comment" : "Trash row swipe action: permanently delete the photo.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete forever" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "영구 삭제" } }
-      }
-    },
-    "trash_action_restore" : {
-      "extractionState" : "manual",
-      "comment" : "Trash row swipe action: restore item back into the gallery.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Restore" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "복원" } }
-      }
-    },
-    "trash_empty_description" : {
-      "extractionState" : "manual",
-      "comment" : "ContentUnavailableView description shown when both deleted sessions and deleted photos are empty.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Deleted sessions and photos will appear here for 30 days before being removed forever." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "삭제된 세션과 사진이 30일 동안 이곳에 보관되었다가 영구 삭제됩니다." } }
-      }
-    },
-    "trash_empty_title" : {
-      "extractionState" : "manual",
-      "comment" : "ContentUnavailableView title for an empty trash.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trash is empty" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통이 비었습니다" } }
-      }
-    },
-    "trash_load_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "ContentUnavailableView title when fetching trash contents fails.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't load trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통을 불러오지 못했습니다" } }
-      }
-    },
-    "trash_loading" : {
-      "extractionState" : "manual",
-      "comment" : "ProgressView label shown while trash contents load.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통을 불러오는 중" } }
-      }
-    },
-    "trash_purge_confirm_message" : {
-      "extractionState" : "manual",
-      "comment" : "Confirmation dialog body for permanent photo deletion.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This photo will be removed forever. It can't be restored." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 사진은 영구 삭제되어 복원할 수 없습니다." } }
-      }
-    },
-    "trash_purge_confirm_title" : {
-      "extractionState" : "manual",
-      "comment" : "Confirmation dialog title for permanent photo deletion.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete this photo forever?" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 사진을 영구 삭제할까요?" } }
-      }
-    },
-    "trash_section_photos" : {
-      "extractionState" : "manual",
-      "comment" : "Trash list section header for individual photo entries.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진" } }
-      }
-    },
-    "trash_section_sessions" : {
-      "extractionState" : "manual",
-      "comment" : "Trash list section header for session entries.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sessions" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션" } }
-      }
-    },
-    "trash_title" : {
-      "extractionState" : "manual",
-      "comment" : "TrashScreen navigation title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통" } }
-      }
-    },
-    "session_detail_delete_confirm_message" : {
-      "extractionState" : "manual",
-      "comment" : "Body of the confirmation dialog when deleting an entire session (Plan E E2).",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This session and all of its photos will move to Trash. You can restore them within 30 days." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 세션과 모든 사진을 휴지통으로 이동합니다. 30일 안에 복원할 수 있습니다." } }
-      }
-    },
-    "session_detail_delete_confirm_title" : {
-      "extractionState" : "manual",
-      "comment" : "Title of the confirmation dialog when deleting an entire session (Plan E E2).",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Move this session to Trash?" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 세션을 휴지통으로 이동할까요?" } }
-      }
-    },
-    "session_detail_delete_session" : {
-      "extractionState" : "manual",
-      "comment" : "Menu / confirmation action for moving a session to the trash.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete session" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 삭제" } }
-      }
-    },
-    "session_detail_move_to_trash" : {
-      "extractionState" : "manual",
-      "comment" : "Context menu action on a photo grid tile that soft-deletes a single photo.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Move to Trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동" } }
-      }
-    },
-    "session_detail_overflow_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "VoiceOver label for the SessionDetailScreen toolbar overflow menu (Plan E E2).",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "More options" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "추가 옵션" } }
-      }
-    },
-    "session_detail_edit_info_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "VoiceOver label for the unified name+note edit button on SessionDetailScreen.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit session info" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보 편집" } }
-      }
-    },
-    "session_detail_trash_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "Alert title when soft-deleting a photo or session fails on SessionDetailScreen.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't move to Trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통으로 이동하지 못했습니다" } }
-      }
-    },
-    "session_info_edit_title" : {
-      "extractionState" : "manual",
-      "comment" : "Navigation title of the unified Session info edit sheet.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Session info" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보" } }
-      }
-    },
-    "session_info_save_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "Alert title when SessionInfoEditSheet save fails.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save session info" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "세션 정보를 저장하지 못했습니다" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location access required"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치 권한이 필요해요"
+          }
+        }
       }
     },
     "lock_screen_failed" : {
-      "extractionState" : "manual",
       "comment" : "Footnote shown under the Unlock button after authentication failed (Plan E E3.b).",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Authentication failed. Tap to try again." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "인증에 실패했습니다. 다시 시도해 주세요." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication failed. Tap to try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인증에 실패했습니다. 다시 시도해 주세요."
+          }
+        }
       }
     },
     "lock_screen_reason" : {
-      "extractionState" : "manual",
       "comment" : "Localized reason passed to LAContext.evaluatePolicy — shown by iOS in the biometric prompt.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock Camork to view your work photos." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "업무 사진 열람을 위해 Camork 잠금을 해제합니다." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Camork to view your work photos."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업무 사진 열람을 위해 Camork 잠금을 해제합니다."
+          }
+        }
       }
     },
     "lock_screen_title" : {
-      "extractionState" : "manual",
       "comment" : "LockScreen main title shown above the unlock button.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camork is locked" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Camork이 잠겨 있습니다" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camork is locked"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camork이 잠겨 있습니다"
+          }
+        }
       }
     },
     "lock_screen_unlock_button" : {
-      "extractionState" : "manual",
       "comment" : "LockScreen unlock button label.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠금 해제" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠금 해제"
+          }
+        }
       }
     },
-    "settings_about_bundle_id" : {
+    "memo_save_error_title" : {
+      "comment" : "PhotoDetailView 메모 저장 실패 alert 제목.",
       "extractionState" : "manual",
-      "comment" : "Settings About row label for the bundle identifier.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bundle ID" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Bundle ID" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모를 저장하지 못했어요"
+          }
+        }
       }
     },
-    "settings_about_version" : {
+    "photo_detail_close_a11y" : {
+      "comment" : "PhotoDetailView 닫기 버튼 VoiceOver 라벨.",
       "extractionState" : "manual",
-      "comment" : "Settings About row label for the app version + build.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "버전" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닫기"
+          }
+        }
       }
     },
-    "settings_lock_policy_fifteen_minutes" : {
+    "photo_detail_edit_memo_a11y" : {
+      "comment" : "PhotoDetailView 메모 편집 버튼 VoiceOver 라벨.",
       "extractionState" : "manual",
-      "comment" : "AppLockPolicy.fifteenMinutes display name.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "After 15 minutes" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "15분 후" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 편집"
+          }
+        }
       }
     },
-    "settings_lock_policy_five_minutes" : {
+    "photo_detail_image_unavailable" : {
+      "comment" : "이미지 데이터가 손상되어 디코드 실패했을 때 fallback 카피.",
       "extractionState" : "manual",
-      "comment" : "AppLockPolicy.fiveMinutes display name.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "After 5 minutes" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "5분 후" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image not available"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지를 표시할 수 없어요"
+          }
+        }
       }
     },
-    "settings_lock_policy_immediate" : {
+    "photo_detail_memo_title" : {
+      "comment" : "PhotoDetailView 메모 편집 sheet navigation 제목.",
       "extractionState" : "manual",
-      "comment" : "AppLockPolicy.immediate display name.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Immediately" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "즉시" } }
-      }
-    },
-    "settings_lock_policy_label" : {
-      "extractionState" : "manual",
-      "comment" : "Picker label inside the App Lock settings section.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Lock app" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠금 시점" } }
-      }
-    },
-    "settings_lock_policy_off" : {
-      "extractionState" : "manual",
-      "comment" : "AppLockPolicy.off display name.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Off" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "끔" } }
-      }
-    },
-    "settings_lock_policy_one_minute" : {
-      "extractionState" : "manual",
-      "comment" : "AppLockPolicy.oneMinute display name.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "After 1 minute" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "1분 후" } }
-      }
-    },
-    "settings_open_trash" : {
-      "extractionState" : "manual",
-      "comment" : "Settings row that opens the Trash viewer.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통 열기" } }
-      }
-    },
-    "settings_section_about" : {
-      "extractionState" : "manual",
-      "comment" : "Settings section header for the About area.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱 정보" } }
-      }
-    },
-    "settings_section_app_lock" : {
-      "extractionState" : "manual",
-      "comment" : "Settings section header for App Lock policy controls.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "App Lock" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱 잠금" } }
-      }
-    },
-    "settings_section_trash" : {
-      "extractionState" : "manual",
-      "comment" : "Settings section header for the Trash entry point.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trash" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "휴지통" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모"
+          }
+        }
       }
     },
     "placeholder_camera_description" : {
-      "extractionState" : "manual",
       "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "준비 중" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming soon"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비 중"
+          }
+        }
       }
     },
     "placeholder_camera_title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라"
+          }
+        }
       }
     },
     "placeholder_gallery_description" : {
-      "extractionState" : "manual",
       "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "준비 중" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming soon"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비 중"
+          }
+        }
       }
     },
     "placeholder_gallery_title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sites" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장"
+          }
+        }
       }
     },
     "placeholder_settings_description" : {
-      "extractionState" : "manual",
       "comment" : "v1 Core 동안 사용. 출시 전 Plan E에서 최종 카피로 교체 또는 description 제거.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "준비 중" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming soon"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비 중"
+          }
+        }
       }
     },
     "placeholder_settings_title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
+      }
+    },
+    "session_card_photo_count_one" : {
+      "comment" : "Session card photo count when exactly one photo exists.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 photo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 1장"
+          }
+        }
+      }
+    },
+    "session_card_photo_count_other_format" : {
+      "comment" : "Session card photo count for zero or many photos. %d is the count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d photos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 %d장"
+          }
+        }
+      }
+    },
+    "session_detail_delete_confirm_message" : {
+      "comment" : "Body of the confirmation dialog when deleting an entire session (Plan E E2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This session and all of its photos will move to Trash. You can restore them within 30 days."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 세션과 모든 사진을 휴지통으로 이동합니다. 30일 안에 복원할 수 있습니다."
+          }
+        }
+      }
+    },
+    "session_detail_delete_confirm_title" : {
+      "comment" : "Title of the confirmation dialog when deleting an entire session (Plan E E2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move this session to Trash?"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 세션을 휴지통으로 이동할까요?"
+          }
+        }
+      }
+    },
+    "session_detail_delete_session" : {
+      "comment" : "Menu / confirmation action for moving a session to the trash.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete session"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션 삭제"
+          }
+        }
+      }
+    },
+    "session_detail_edit_info_a11y" : {
+      "comment" : "VoiceOver label for the unified name+note edit button on SessionDetailScreen.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit session info"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션 정보 편집"
+          }
+        }
+      }
+    },
+    "session_detail_edit_name_a11y" : {
+      "comment" : "Session detail name edit toolbar button VoiceOver label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit site name"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 이름 편집"
+          }
+        }
+      }
+    },
+    "session_detail_edit_note_a11y" : {
+      "comment" : "Session detail note edit toolbar button VoiceOver label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit site note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 메모 편집"
+          }
+        }
+      }
+    },
+    "session_detail_empty_description" : {
+      "comment" : "Session detail empty state body.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos captured for this site will appear here."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 현장에서 촬영한 사진이 여기에 표시됩니다."
+          }
+        }
+      }
+    },
+    "session_detail_empty_title" : {
+      "comment" : "Session detail empty state title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No photos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 없음"
+          }
+        }
+      }
+    },
+    "session_detail_load_error_title" : {
+      "comment" : "Session detail photo list load failure title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos couldn't load"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진을 불러올 수 없어요"
+          }
+        }
+      }
+    },
+    "session_detail_loading" : {
+      "comment" : "Session detail initial loading label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading photos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 불러오는 중"
+          }
+        }
+      }
+    },
+    "session_detail_move_to_trash" : {
+      "comment" : "Context menu action on a photo grid tile that soft-deletes a single photo.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통으로 이동"
+          }
+        }
+      }
+    },
+    "session_detail_overflow_a11y" : {
+      "comment" : "VoiceOver label for the SessionDetailScreen toolbar overflow menu (Plan E E2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More options"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가 옵션"
+          }
+        }
+      }
+    },
+    "session_detail_photo_open_error_title" : {
+      "comment" : "Session detail failure title when opening a photo detail.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo couldn't open"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진을 열 수 없어요"
+          }
+        }
+      }
+    },
+    "session_detail_share_a11y" : {
+      "comment" : "Session detail share toolbar button VoiceOver label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share site"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 공유"
+          }
+        }
+      }
+    },
+    "session_detail_trash_error_title" : {
+      "comment" : "Alert title when soft-deleting a photo or session fails on SessionDetailScreen.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't move to Trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통으로 이동하지 못했습니다"
+          }
+        }
+      }
+    },
+    "session_edit_not_found_error" : {
+      "comment" : "Session edit save error when the target session was deleted or cannot be found.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This site is no longer available."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 현장을 더 이상 사용할 수 없어요."
+          }
+        }
+      }
+    },
+    "session_info_edit_title" : {
+      "comment" : "Navigation title of the unified Session info edit sheet.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session info"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션 정보"
+          }
+        }
+      }
+    },
+    "session_info_save_error_title" : {
+      "comment" : "Alert title when SessionInfoEditSheet save fails.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save session info"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션 정보를 저장하지 못했습니다"
+          }
+        }
+      }
+    },
+    "session_name_edit_title" : {
+      "comment" : "Session name edit sheet title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site name"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 이름"
+          }
+        }
+      }
+    },
+    "session_name_empty_error" : {
+      "comment" : "Inline validation shown when a session name is empty.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a site name."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 이름을 입력해 주세요."
+          }
+        }
+      }
+    },
+    "session_name_field_label" : {
+      "comment" : "Session name text field placeholder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름"
+          }
+        }
+      }
+    },
+    "session_name_save_error_title" : {
+      "comment" : "Session name edit save failure alert title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save name"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름을 저장하지 못했어요"
+          }
+        }
+      }
+    },
+    "session_note_edit_title" : {
+      "comment" : "Session note edit sheet title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 메모"
+          }
+        }
+      }
+    },
+    "session_note_field_label" : {
+      "comment" : "Session note text editor VoiceOver label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모"
+          }
+        }
+      }
+    },
+    "session_note_save_error_title" : {
+      "comment" : "Session note edit save failure alert title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save note"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모를 저장하지 못했어요"
+          }
+        }
+      }
+    },
+    "settings_about_bundle_id" : {
+      "comment" : "Settings About row label for the bundle identifier.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bundle ID"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bundle ID"
+          }
+        }
+      }
+    },
+    "settings_about_version" : {
+      "comment" : "Settings About row label for the app version + build.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버전"
+          }
+        }
+      }
+    },
+    "settings_lock_policy_fifteen_minutes" : {
+      "comment" : "AppLockPolicy.fifteenMinutes display name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After 15 minutes"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15분 후"
+          }
+        }
+      }
+    },
+    "settings_lock_policy_five_minutes" : {
+      "comment" : "AppLockPolicy.fiveMinutes display name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After 5 minutes"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5분 후"
+          }
+        }
+      }
+    },
+    "settings_lock_policy_immediate" : {
+      "comment" : "AppLockPolicy.immediate display name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immediately"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "즉시"
+          }
+        }
+      }
+    },
+    "settings_lock_policy_label" : {
+      "comment" : "Picker label inside the App Lock settings section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock app"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠금 시점"
+          }
+        }
+      }
+    },
+    "settings_lock_policy_off" : {
+      "comment" : "AppLockPolicy.off display name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "끔"
+          }
+        }
+      }
+    },
+    "settings_lock_policy_one_minute" : {
+      "comment" : "AppLockPolicy.oneMinute display name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After 1 minute"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1분 후"
+          }
+        }
+      }
+    },
+    "settings_open_trash" : {
+      "comment" : "Settings row that opens the Trash viewer.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통 열기"
+          }
+        }
+      }
+    },
+    "settings_section_about" : {
+      "comment" : "Settings section header for the About area.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 정보"
+          }
+        }
+      }
+    },
+    "settings_section_app_lock" : {
+      "comment" : "Settings section header for App Lock policy controls.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Lock"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 잠금"
+          }
+        }
+      }
+    },
+    "settings_section_trash" : {
+      "comment" : "Settings section header for the Trash entry point.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통"
+          }
+        }
       }
     },
     "settings_tab_label" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
       }
     },
-    "session_card_photo_count_one" : {
+    "share_auto_text_photo_count_one" : {
+      "comment" : "Share auto-text photo count when exactly one photo is shared.",
       "extractionState" : "manual",
-      "comment" : "Session card photo count when exactly one photo exists.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 photo" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 1장" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 photo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 1장"
+          }
+        }
       }
     },
-    "session_card_photo_count_other_format" : {
+    "share_auto_text_photo_count_other_format" : {
+      "comment" : "Share auto-text photo count for zero or many photos. %d is the count.",
       "extractionState" : "manual",
-      "comment" : "Session card photo count for zero or many photos. %d is the count.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%d photos" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 %d장" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d photos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 %d장"
+          }
+        }
       }
     },
-    "session_detail_edit_note_a11y" : {
+    "share_include_location" : {
+      "comment" : "Share options toggle for including location metadata and text.",
       "extractionState" : "manual",
-      "comment" : "Session detail note edit toolbar button VoiceOver label.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit site note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 메모 편집" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include location"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치 정보 포함"
+          }
+        }
       }
     },
-    "session_detail_edit_name_a11y" : {
+    "share_include_time" : {
+      "comment" : "Share options toggle for including capture time in share text.",
       "extractionState" : "manual",
-      "comment" : "Session detail name edit toolbar button VoiceOver label.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit site name" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 이름 편집" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include capture time"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영 시간 포함"
+          }
+        }
       }
     },
-    "session_detail_empty_description" : {
+    "share_options_text_label" : {
+      "comment" : "Share composer editable body text section header. Plan D Batch D1.",
       "extractionState" : "manual",
-      "comment" : "Session detail empty state body.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos captured for this site will appear here." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 현장에서 촬영한 사진이 여기에 표시됩니다." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share text"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공유 텍스트"
+          }
+        }
       }
     },
-    "session_detail_empty_title" : {
+    "share_options_title" : {
+      "comment" : "Share options sheet navigation title.",
       "extractionState" : "manual",
-      "comment" : "Session detail empty state title.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No photos" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 없음" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share options"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공유 옵션"
+          }
+        }
       }
     },
-    "session_detail_load_error_title" : {
+    "share_prepare_error_message" : {
+      "comment" : "Share preparation failure alert body.",
       "extractionState" : "manual",
-      "comment" : "Session detail photo list load failure title.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos couldn't load" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진을 불러올 수 없어요" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload the photos and try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진을 다시 불러온 뒤 시도해 주세요."
+          }
+        }
       }
     },
-    "session_detail_loading" : {
+    "share_prepare_error_title" : {
+      "comment" : "Share preparation failure alert title.",
       "extractionState" : "manual",
-      "comment" : "Session detail initial loading label.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading photos" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 불러오는 중" } }
-      }
-    },
-    "session_detail_photo_open_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "Session detail failure title when opening a photo detail.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photo couldn't open" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진을 열 수 없어요" } }
-      }
-    },
-    "session_detail_share_a11y" : {
-      "extractionState" : "manual",
-      "comment" : "Session detail share toolbar button VoiceOver label.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share site" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 공유" } }
-      }
-    },
-    "session_edit_not_found_error" : {
-      "extractionState" : "manual",
-      "comment" : "Session edit save error when the target session was deleted or cannot be found.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This site is no longer available." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 현장을 더 이상 사용할 수 없어요." } }
-      }
-    },
-    "session_name_edit_title" : {
-      "extractionState" : "manual",
-      "comment" : "Session name edit sheet title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Site name" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 이름" } }
-      }
-    },
-    "session_name_empty_error" : {
-      "extractionState" : "manual",
-      "comment" : "Inline validation shown when a session name is empty.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter a site name." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 이름을 입력해 주세요." } }
-      }
-    },
-    "session_name_field_label" : {
-      "extractionState" : "manual",
-      "comment" : "Session name text field placeholder.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Name" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이름" } }
-      }
-    },
-    "session_name_save_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "Session name edit save failure alert title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save name" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이름을 저장하지 못했어요" } }
-      }
-    },
-    "session_note_edit_title" : {
-      "extractionState" : "manual",
-      "comment" : "Session note edit sheet title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Site note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현장 메모" } }
-      }
-    },
-    "session_note_field_label" : {
-      "extractionState" : "manual",
-      "comment" : "Session note text editor VoiceOver label.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모" } }
-      }
-    },
-    "session_note_save_error_title" : {
-      "extractionState" : "manual",
-      "comment" : "Session note edit save failure alert title.",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save note" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메모를 저장하지 못했어요" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't prepare share"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공유를 준비할 수 없어요"
+          }
+        }
       }
     },
     "storage_init_error_description" : {
-      "extractionState" : "manual",
       "comment" : "DependencyContainer bootstrap failure body (StorageInitErrorView).",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Storage or camera initialization failed. Please try again in a moment." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "저장소 또는 카메라 초기화 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storage or camera initialization failed. Please try again in a moment."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장소 또는 카메라 초기화 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요."
+          }
+        }
       }
     },
     "storage_init_error_retry" : {
-      "extractionState" : "manual",
       "comment" : "StorageInitErrorView retry button label.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try again" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 시도" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        }
       }
     },
     "storage_init_error_title" : {
-      "extractionState" : "manual",
       "comment" : "StorageInitErrorView heading shown when DependencyContainer init throws.",
+      "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camork can't start" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Camork를 시작할 수 없어요" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camork can't start"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camork를 시작할 수 없어요"
+          }
+        }
+      }
+    },
+    "trash_action_error_title" : {
+      "comment" : "Title of the alert shown when a trash restore or purge action fails.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't complete action"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작업을 완료하지 못했습니다"
+          }
+        }
+      }
+    },
+    "trash_action_purge" : {
+      "comment" : "Trash row swipe action: permanently delete the photo.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete forever"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "영구 삭제"
+          }
+        }
+      }
+    },
+    "trash_action_restore" : {
+      "comment" : "Trash row swipe action: restore item back into the gallery.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복원"
+          }
+        }
+      }
+    },
+    "trash_empty_description" : {
+      "comment" : "ContentUnavailableView description shown when both deleted sessions and deleted photos are empty.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted sessions and photos will appear here for 30 days before being removed forever."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제된 세션과 사진이 30일 동안 이곳에 보관되었다가 영구 삭제됩니다."
+          }
+        }
+      }
+    },
+    "trash_empty_title" : {
+      "comment" : "ContentUnavailableView title for an empty trash.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trash is empty"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통이 비었습니다"
+          }
+        }
+      }
+    },
+    "trash_load_error_title" : {
+      "comment" : "ContentUnavailableView title when fetching trash contents fails.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통을 불러오지 못했습니다"
+          }
+        }
+      }
+    },
+    "trash_loading" : {
+      "comment" : "ProgressView label shown while trash contents load.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통을 불러오는 중"
+          }
+        }
+      }
+    },
+    "trash_purge_confirm_message" : {
+      "comment" : "Confirmation dialog body for permanent photo deletion.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This photo will be removed forever. It can't be restored."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 사진은 영구 삭제되어 복원할 수 없습니다."
+          }
+        }
+      }
+    },
+    "trash_purge_confirm_title" : {
+      "comment" : "Confirmation dialog title for permanent photo deletion.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this photo forever?"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 사진을 영구 삭제할까요?"
+          }
+        }
+      }
+    },
+    "trash_section_photos" : {
+      "comment" : "Trash list section header for individual photo entries.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진"
+          }
+        }
+      }
+    },
+    "trash_section_sessions" : {
+      "comment" : "Trash list section header for session entries.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessions"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션"
+          }
+        }
+      }
+    },
+    "trash_title" : {
+      "comment" : "TrashScreen navigation title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trash"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴지통"
+          }
+        }
       }
     }
   },

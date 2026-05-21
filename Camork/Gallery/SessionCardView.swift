@@ -12,6 +12,7 @@ struct SessionCardView: View {
         GridItem(.flexible(), spacing: Spacing.xs),
         GridItem(.flexible(), spacing: Spacing.xs)
     ]
+    private let metadataIconTextSpacing = Spacing.xs
 
     var body: some View {
         CamorkCard {
@@ -52,17 +53,22 @@ struct SessionCardView: View {
             .font(.subheadline)
             .foregroundStyle(.secondary)
 
-            Label(photoCountText, systemImage: "photo")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            metadataRow(systemImage: "photo", text: photoCountText)
 
             if let noteFirstLine = Self.firstNonEmptyLine(item.session.note) {
-                Label(noteFirstLine, systemImage: "text.bubble")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                metadataRow(systemImage: "text.bubble", text: noteFirstLine)
                     .lineLimit(1)
             }
         }
+    }
+
+    private func metadataRow(systemImage: String, text: String) -> some View {
+        HStack(spacing: metadataIconTextSpacing) {
+            Image(systemName: systemImage)
+            Text(text)
+        }
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
     }
 
     /// Session note의 첫 non-empty line만 추출. 다중 라인 메모 중 시각적으로 노출할

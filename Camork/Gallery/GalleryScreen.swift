@@ -11,9 +11,10 @@ struct GalleryScreen: View {
     @State private var isLoading = true
     @State private var loadError: String?
     @State private var showTrash = false
+    @State private var navigationPath: [UUID] = []
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             content
                 .navigationTitle("gallery_title")
                 .toolbar {
@@ -34,6 +35,9 @@ struct GalleryScreen: View {
                         .disabled(isLoading)
                         .accessibilityLabel(Text("gallery_refresh_a11y"))
                     }
+                }
+                .navigationDestination(for: UUID.self) { sessionId in
+                    sessionDetailDestination(sessionId: sessionId)
                 }
         }
         .task {
@@ -73,28 +77,40 @@ struct GalleryScreen: View {
             .appBackgroundShield()
         } else {
             List(sessions, id: \.session.id) { item in
-                NavigationLink {
-                    SessionDetailScreen(session: item.session) { savedName, savedNote in
-                        applyInfoChange(sessionId: item.session.id, name: savedName, note: savedNote)
-                    }
+                Button {
+                    navigationPath.append(item.session.id)
                 } label: {
                     SessionCardView(item: item)
                 }
                 .buttonStyle(.plain)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(
-                        top: Spacing.sm,
-                        leading: Spacing.md,
-                        bottom: Spacing.sm,
-                        trailing: Spacing.md
-                    ))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(
+                    top: Spacing.sm,
+                    leading: Spacing.md,
+                    bottom: Spacing.sm,
+                    trailing: Spacing.md
+                ))
             }
             .listStyle(.plain)
             .refreshable {
                 await refresh()
             }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: Spacing.md)
+            }
             .appBackgroundShield()
+        }
+    }
+
+    @ViewBuilder
+    private func sessionDetailDestination(sessionId: UUID) -> some View {
+        if let session = sessions.first(where: { $0.session.id == sessionId })?.session {
+            SessionDetailScreen(session: session) { savedName, savedNote in
+                applyInfoChange(sessionId: session.id, name: savedName, note: savedNote)
+            }
+        } else {
+            ContentUnavailableView("gallery_load_error_title", systemImage: "exclamationmark.triangle")
         }
     }
 

@@ -71,23 +71,26 @@ struct SessionDetailScreen: View {
                     .accessibilityLabel(Text("session_detail_edit_info_a11y"))
                 }
 
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    ShareEntryButton(
-                        session: liveSession,
-                        photos: photos,
-                        sharePreparer: deps.sharePreparer
-                    )
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: Spacing.md) {
+                        ShareEntryButton(
+                            session: liveSession,
+                            photos: photos,
+                            sharePreparer: deps.sharePreparer
+                        )
 
-                    Menu {
-                        Button(role: .destructive) {
-                            confirmSessionDelete = true
+                        Menu {
+                            Button(role: .destructive) {
+                                confirmSessionDelete = true
+                            } label: {
+                                Label("session_detail_delete_session", systemImage: "trash")
+                            }
                         } label: {
-                            Label("session_detail_delete_session", systemImage: "trash")
+                            Image(systemName: "ellipsis.circle")
                         }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
+                        .accessibilityLabel(Text("session_detail_overflow_a11y"))
                     }
-                    .accessibilityLabel(Text("session_detail_overflow_a11y"))
+                    .padding(.horizontal, Spacing.sm)
                 }
             }
             .task {
@@ -331,3 +334,47 @@ private struct SessionPhotoDetailItem: Identifiable {
     let data: Data
     var id: UUID { photo.id }
 }
+
+#if DEBUG
+private struct SessionDetailScreenPreview: View {
+    @EnvironmentObject private var deps: DependencyContainer
+    @State private var session: Session?
+
+    var body: some View {
+        NavigationStack {
+            if let session {
+                SessionDetailScreen(session: session)
+            } else {
+                ProgressView("session_detail_loading")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .appBackgroundShield()
+                    .task {
+                        await loadPreviewSession()
+                    }
+            }
+        }
+    }
+
+    @MainActor
+    private func loadPreviewSession() async {
+        guard session == nil else { return }
+        do {
+            session = try await deps.mediaStorage.fetchSessionsWithPreview().first?.session
+        } catch {
+            session = nil
+        }
+    }
+}
+
+#Preview("Session Detail — Dark") {
+    SessionDetailScreenPreview()
+        .environmentObject(DependencyContainer.previewStub())
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Session Detail — Light") {
+    SessionDetailScreenPreview()
+        .environmentObject(DependencyContainer.previewStub())
+        .preferredColorScheme(.light)
+}
+#endif
