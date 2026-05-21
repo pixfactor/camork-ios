@@ -664,12 +664,5 @@ private func canonicalMediaFileName(for photo: Photo) throws -> String {
 }
 
 private func defaultSessionName(at date: Date, placeName: String?) -> String {
-    let formatter = DateFormatter()
-    formatter.locale = Locale(identifier: "ko_KR")
-    formatter.dateFormat = "yyyy-MM-dd HH:mm"
-    let dateStr = formatter.string(from: date)
-    if let placeName, !placeName.isEmpty {
-        return "\(placeName) · \(dateStr)"
-    }
-    return dateStr
+    SessionTitlePolicy.automaticName(at: date, placeName: placeName)
 }

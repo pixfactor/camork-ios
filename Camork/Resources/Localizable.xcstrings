@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "+%lld" : {
-
-    },
     "button_cancel" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -156,6 +153,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "새 현장"
+          }
+        }
+      }
+    },
+    "camera_flash_auto_a11y" : {
+      "comment" : "Camera flash mode button VoiceOver label for auto mode.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flash auto"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "플래시 자동"
+          }
+        }
+      }
+    },
+    "camera_flash_off_a11y" : {
+      "comment" : "Camera flash mode button VoiceOver label for off mode.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flash off"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "플래시 꺼짐"
+          }
+        }
+      }
+    },
+    "camera_flash_on_a11y" : {
+      "comment" : "Camera flash mode button VoiceOver label for on mode.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flash on"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "플래시 켜짐"
           }
         }
       }
@@ -773,6 +824,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "사진 %d장"
+          }
+        }
+      }
+    },
+    "session_title_fallback" : {
+      "comment" : "Displayed title for automatically named sessions without a place name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New site"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 현장"
           }
         }
       }

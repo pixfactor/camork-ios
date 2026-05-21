@@ -36,8 +36,12 @@ final class MediaCapture: NSObject, AVCapturePhotoCaptureDelegate, @unchecked Se
     /// strong reference로 보유.
     func capture(
         with photoOutput: AVCapturePhotoOutput,
-        settings: AVCapturePhotoSettings = AVCapturePhotoSettings()
+        flashMode: AVCaptureDevice.FlashMode? = nil
     ) {
+        let settings = AVCapturePhotoSettings()
+        if let flashMode {
+            settings.flashMode = flashMode
+        }
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
 

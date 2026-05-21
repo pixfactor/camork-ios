@@ -26,15 +26,6 @@ struct GalleryScreen: View {
                         }
                         .accessibilityLabel(Text("gallery_trash_a11y"))
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            Task { await refresh() }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        .disabled(isLoading)
-                        .accessibilityLabel(Text("gallery_refresh_a11y"))
-                    }
                 }
                 .navigationDestination(for: UUID.self) { sessionId in
                     sessionDetailDestination(sessionId: sessionId)

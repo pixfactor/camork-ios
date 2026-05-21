@@ -32,6 +32,7 @@ struct CameraScreen: View {
     @State private var latestPhoto: Photo?
     @State private var latestThumbnailData: Data?
     @State private var detailItem: PhotoDetailItem?
+    @State private var flashMode: CameraFlashMode = .off
 
     var body: some View {
         let viewState = CameraScreenViewState.compute(
@@ -105,7 +106,7 @@ struct CameraScreen: View {
                     Spacer()
                     shutterButton(chip: chip)
                     Spacer()
-                    Color.clear.frame(width: 56, height: 56)
+                    flashButton
                 }
                 .padding(.horizontal, 24)
             }
@@ -168,6 +169,31 @@ struct CameraScreen: View {
         }
         .disabled(chip == .disabled)
         .accessibilityLabel(Text("camera_shutter_a11y"))
+    }
+
+    private var flashButton: some View {
+        Button {
+            flashMode = flashMode.next
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: flashMode.systemImageName)
+                    .font(.title3.weight(.semibold))
+
+                if flashMode == .auto {
+                    Text(verbatim: "A")
+                        .font(.caption2.weight(.bold))
+                        .padding(2)
+                        .background(.ultraThinMaterial, in: Circle())
+                        .offset(x: 8, y: -8)
+                }
+            }
+            .frame(width: 56, height: 56)
+            .foregroundStyle(Color.primary)
+            .background(.ultraThinMaterial, in: Circle())
+        }
+        .disabled(isInFlight)
+        .opacity(isInFlight ? 0.6 : 1.0)
+        .accessibilityLabel(Text(flashMode.accessibilityLabelKey))
     }
 
     @ViewBuilder
@@ -324,7 +350,16 @@ struct CameraScreen: View {
             }
         }
         mediaCapture = capture
-        capture.capture(with: deps.cameraSession.photoOutput)
+        capture.capture(
+            with: deps.cameraSession.photoOutput,
+            flashMode: supportedFlashMode()
+        )
+    }
+
+    private func supportedFlashMode() -> AVCaptureDevice.FlashMode? {
+        let mode = flashMode.avFlashMode
+        let supported = deps.cameraSession.photoOutput.supportedFlashModes.contains(mode)
+        return supported ? mode : nil
     }
 
     @MainActor

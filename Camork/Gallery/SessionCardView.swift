@@ -8,7 +8,7 @@ import SwiftUI
 struct SessionCardView: View {
     let item: SessionWithPreview
 
-    private let columns = [
+    private let compactColumns = [
         GridItem(.flexible(), spacing: Spacing.xs),
         GridItem(.flexible(), spacing: Spacing.xs)
     ]
@@ -23,29 +23,61 @@ struct SessionCardView: View {
         }
     }
 
+    @ViewBuilder
     private var previewGrid: some View {
-        LazyVGrid(columns: columns, spacing: Spacing.xs) {
-            ForEach(0..<4, id: \.self) { index in
-                ZStack {
-                    SessionPreviewTile(photo: photo(at: index))
-                    if index == 3, hiddenPhotoCount > 0 {
-                        hiddenCountBadge
+        switch visibleTileCount {
+        case 0, 1:
+            previewTile(at: 0)
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
+        case 2:
+            LazyVGrid(columns: compactColumns, spacing: Spacing.xs) {
+                ForEach(0..<2, id: \.self) { index in
+                    previewTile(at: index)
+                        .aspectRatio(1, contentMode: .fit)
+                }
+            }
+        case 3:
+            VStack(spacing: Spacing.xs) {
+                previewTile(at: 0)
+                    .aspectRatio(2, contentMode: .fit)
+
+                LazyVGrid(columns: compactColumns, spacing: Spacing.xs) {
+                    ForEach(1..<3, id: \.self) { index in
+                        previewTile(at: index)
+                            .aspectRatio(1, contentMode: .fit)
                     }
                 }
-                .aspectRatio(1, contentMode: .fit)
+            }
+        default:
+            LazyVGrid(columns: compactColumns, spacing: Spacing.xs) {
+                ForEach(0..<4, id: \.self) { index in
+                    previewTile(at: index)
+                        .aspectRatio(1, contentMode: .fit)
+                }
+            }
+        }
+    }
+
+    private func previewTile(at index: Int) -> some View {
+        ZStack {
+            SessionPreviewTile(photo: photo(at: index))
+            if index == visibleTileCount - 1, hiddenPhotoCount > 0 {
+                hiddenCountBadge
             }
         }
     }
 
     private var metadata: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(item.session.name)
+            Text(SessionTitlePolicy.displayTitle(for: item.session))
                 .font(.headline)
                 .lineLimit(2)
 
             HStack(spacing: Spacing.sm) {
                 Text(item.session.createdAt.formatted(date: .numeric, time: .shortened))
-                if let placeName = item.session.firstLocation?.placeName, !placeName.isEmpty {
+                if shouldShowPlaceInMetadata,
+                   let placeName = item.session.firstLocation?.placeName,
+                   !placeName.isEmpty {
                     Text(placeName)
                         .lineLimit(1)
                 }
@@ -84,7 +116,7 @@ struct SessionCardView: View {
     }
 
     private var hiddenCountBadge: some View {
-        Text("+\(hiddenPhotoCount)")
+        Text(verbatim: "+\(hiddenPhotoCount)")
             .font(.headline.weight(.semibold))
             .foregroundStyle(.primary)
             .padding(.horizontal, Spacing.sm)
@@ -94,6 +126,17 @@ struct SessionCardView: View {
 
     private var hiddenPhotoCount: Int {
         max(item.preview.totalPhotoCount - item.preview.previewPhotos.count, 0)
+    }
+
+    private var shouldShowPlaceInMetadata: Bool {
+        guard let placeName = item.session.firstLocation?.placeName, !placeName.isEmpty else {
+            return false
+        }
+        return SessionTitlePolicy.displayTitle(for: item.session) != placeName
+    }
+
+    private var visibleTileCount: Int {
+        min(max(item.preview.totalPhotoCount, 1), 4)
     }
 
     private var photoCountText: String {
