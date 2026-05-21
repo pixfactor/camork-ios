@@ -12,11 +12,16 @@ struct GalleryScreen: View {
     @State private var loadError: String?
     @State private var showTrash = false
     @State private var navigationPath: [UUID] = []
+    @State private var chromeTopFadeHeight: CGFloat = 0
+    @State private var scrollRestingTopY: CGFloat?
+
+    private let scrollCoordinateSpaceName = "gallery-scroll"
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
             content
-                .navigationTitle("gallery_title")
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -27,8 +32,6 @@ struct GalleryScreen: View {
                         .accessibilityLabel(Text("gallery_trash_a11y"))
                     }
                 }
-                .toolbarBackground(.ultraThinMaterial, for: .tabBar)
-                .toolbarBackground(.visible, for: .tabBar)
                 .navigationDestination(for: UUID.self) { sessionId in
                     sessionDetailDestination(sessionId: sessionId)
                 }
@@ -69,31 +72,48 @@ struct GalleryScreen: View {
             )
             .appBackgroundShield()
         } else {
-            List(sessions, id: \.session.id) { item in
-                Button {
-                    navigationPath.append(item.session.id)
-                } label: {
-                    SessionCardView(item: item)
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ChromeFadeTopProbe(coordinateSpaceName: scrollCoordinateSpaceName)
+
+                    Text("gallery_title")
+                        .font(.largeTitle.weight(.bold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.top, Spacing.sm)
+                        .padding(.bottom, Spacing.md)
+
+                    ForEach(sessions, id: \.session.id) { item in
+                        Button {
+                            navigationPath.append(item.session.id)
+                        } label: {
+                            SessionCardView(item: item)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.vertical, Spacing.sm)
+                        .padding(.horizontal, Spacing.md)
+                    }
+
+                    Color.clear
+                    .frame(height: ChromeFadeMask.scrollReserve)
                 }
-                .buttonStyle(.plain)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(
-                    top: Spacing.sm,
-                    leading: Spacing.md,
-                    bottom: Spacing.sm,
-                    trailing: Spacing.md
-                ))
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
+            .coordinateSpace(name: scrollCoordinateSpaceName)
+            .scrollIndicators(.hidden)
+            .contentMargins(.bottom, 0, for: .scrollContent)
             .refreshable {
                 await refresh()
             }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: Spacing.md)
+            .onPreferenceChange(ChromeFadeTopPreferenceKey.self) { topY in
+                let restingTopY = max(scrollRestingTopY ?? topY, topY)
+                scrollRestingTopY = restingTopY
+                chromeTopFadeHeight = ChromeFadeMask.topHeight(
+                    forScrolledDistance: max(restingTopY - topY, 0)
+                )
             }
-            .preference(key: GalleryBottomChromeFadePreferenceKey.self, value: true)
+            .ignoresSafeArea(edges: .bottom)
+            .camorkChromeFadeMask()
+            .camorkTopChromeFadeOverlay(height: chromeTopFadeHeight)
             .appBackgroundShield()
         }
     }
@@ -138,14 +158,6 @@ struct GalleryScreen: View {
             deletedAt: old.deletedAt
         )
         sessions[index] = SessionWithPreview(session: updated, preview: sessions[index].preview)
-    }
-}
-
-struct GalleryBottomChromeFadePreferenceKey: PreferenceKey {
-    static let defaultValue = false
-
-    static func reduce(value: inout Bool, nextValue: () -> Bool) {
-        value = value || nextValue()
     }
 }
 

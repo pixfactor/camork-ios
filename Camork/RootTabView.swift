@@ -23,7 +23,6 @@ struct RootTabView: View {
 
     @State private var selectedTab: RootTab = RootTab.initialSelection
     @State private var isLocked: Bool = false
-    @State private var showsGalleryChromeFade = false
     /// `.background` 진입을 거친 active 복귀일 때만 lock 판정을 트리거. LAContext / Face ID
     /// prompt 자체가 active → inactive → active를 만들어 이 플래그가 없으면 unlock 직후
     /// 즉시 재잠금 루프가 형성된다 (Plan E E3.b 사용자 critic).
@@ -49,14 +48,9 @@ struct RootTabView: View {
                     .tabItem { Label("settings_tab_label", systemImage: "gearshape") }
                     .tag(RootTab.settings)
             }
-            .onPreferenceChange(GalleryBottomChromeFadePreferenceKey.self) { showsGalleryChromeFade = $0 }
             .appBackgroundShield()
             // 잠금 상태에서는 탭 인터랙션을 차단 (visual은 overlay가 가리지만 hit-test도 막아 보안).
             .disabled(isLocked)
-
-            if selectedTab == .gallery && showsGalleryChromeFade {
-                bottomChromeFade
-            }
 
             if isLocked {
                 LockScreen(
@@ -115,26 +109,6 @@ struct RootTabView: View {
             await deps.appLockController.unlock()
             await MainActor.run { isLocked = false }
         }
-    }
-
-    /// Visual-only fade that lets gallery cards recede beneath the tab bar capsule.
-    /// It lives at the tab root so it can extend into the bottom safe area.
-    private var bottomChromeFade: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            LinearGradient(
-                colors: [
-                    Color.camorkBackground.opacity(0.65),
-                    Color.camorkBackground.opacity(0)
-                ],
-                startPoint: .bottom,
-                endPoint: .top
-            )
-            .frame(height: 144)
-        }
-        .ignoresSafeArea(edges: .bottom)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 
     private enum RootTab: Hashable {

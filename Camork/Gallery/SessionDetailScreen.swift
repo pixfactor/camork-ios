@@ -25,6 +25,10 @@ struct SessionDetailScreen: View {
     @State private var sheet: SessionDetailSheet?
     @State private var trashError: String?
     @State private var confirmSessionDelete: Bool = false
+    @State private var chromeTopFadeHeight: CGFloat = 0
+    @State private var scrollRestingTopY: CGFloat?
+
+    private let scrollCoordinateSpaceName = "session-detail-scroll"
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.xs),
@@ -98,8 +102,10 @@ struct SessionDetailScreen: View {
             }
             .fullScreenCover(item: $detailItem) { item in
                 PhotoDetailView(
-                    photo: item.photo,
-                    data: item.data,
+                    photos: photos,
+                    initialPhotoId: item.photo.id,
+                    initialData: item.data,
+                    dataLoader: { try await deps.mediaStorage.loadPhotoData(for: $0) },
                     memoEditor: PhotoMemoEditor(mediaStorage: deps.mediaStorage),
                     onDismiss: { detailItem = nil },
                     session: liveSession,
@@ -180,14 +186,30 @@ struct SessionDetailScreen: View {
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
+                    ChromeFadeTopProbe(coordinateSpaceName: scrollCoordinateSpaceName)
                     header
                     photoGrid
+                    Color.clear
+                        .frame(height: ChromeFadeMask.scrollReserve)
                 }
                 .padding(Spacing.md)
             }
+            .coordinateSpace(name: scrollCoordinateSpaceName)
+            .scrollIndicators(.hidden)
+            .contentMargins(.bottom, 0, for: .scrollContent)
             .refreshable {
                 await refresh()
             }
+            .onPreferenceChange(ChromeFadeTopPreferenceKey.self) { topY in
+                let restingTopY = max(scrollRestingTopY ?? topY, topY)
+                scrollRestingTopY = restingTopY
+                chromeTopFadeHeight = ChromeFadeMask.topHeight(
+                    forScrolledDistance: max(restingTopY - topY, 0)
+                )
+            }
+            .ignoresSafeArea(edges: .bottom)
+            .camorkChromeFadeMask()
+            .camorkTopChromeFadeOverlay(height: chromeTopFadeHeight)
             .appBackgroundShield()
         }
     }

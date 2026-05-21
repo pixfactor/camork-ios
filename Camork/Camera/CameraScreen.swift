@@ -83,8 +83,10 @@ struct CameraScreen: View {
             Task { await refreshLatestPhoto() }
         }) { item in
             PhotoDetailView(
-                photo: item.photo,
-                data: item.data,
+                photos: [item.photo],
+                initialPhotoId: item.photo.id,
+                initialData: item.data,
+                dataLoader: { try await deps.mediaStorage.loadPhotoData(for: $0) },
                 memoEditor: PhotoMemoEditor(mediaStorage: deps.mediaStorage),
                 onDismiss: { detailItem = nil }
             )

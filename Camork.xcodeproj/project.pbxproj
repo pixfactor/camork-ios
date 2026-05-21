@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		00ED29F9FE9139AF4188F9C1 /* ShareEntryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31F5475D3D092213CDF9172F /* ShareEntryButton.swift */; };
 		03B73C2C45EB80D96D61EEB5 /* LocationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA977E72449CB74164D357A6 /* LocationServiceTests.swift */; };
+		03B952405FAC4276A496631D /* ChromeFadeMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB784FBC30D02D8E5840005D /* ChromeFadeMask.swift */; };
 		09C750A7E15A94B6599FB1E3 /* CamorkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6964EA516629442CFF13685 /* CamorkButton.swift */; };
 		0D2E1D87394C839B6218EE15 /* FakeFileOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */; };
 		0D47568153AED973C0FC29B2 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC256ACE3DBEF7B04AF92E9 /* ThemeTests.swift */; };
@@ -199,6 +200,7 @@
 		F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeFileOps.swift; sourceTree = "<group>"; };
 		F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoDetailView.swift; sourceTree = "<group>"; };
 		F8F647C564FEFC7F0700A4B6 /* CameraScreenViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreenViewState.swift; sourceTree = "<group>"; };
+		FB784FBC30D02D8E5840005D /* ChromeFadeMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChromeFadeMask.swift; sourceTree = "<group>"; };
 		FE3036722ED0BC5AF9A0CA10 /* CameraFlashMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFlashMode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -256,6 +258,7 @@
 		41930C4998DF3E3394F0469C /* Gallery */ = {
 			isa = PBXGroup;
 			children = (
+				FB784FBC30D02D8E5840005D /* ChromeFadeMask.swift */,
 				9A70731930ECAC8918007E82 /* GalleryScreen.swift */,
 				F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */,
 				86F03241D9611547DAA1B731 /* SessionCardView.swift */,
@@ -582,6 +585,7 @@
 				736638AEDA70D44F5E4E2A29 /* CamorkBundleToken.swift in Sources */,
 				09C750A7E15A94B6599FB1E3 /* CamorkButton.swift in Sources */,
 				BD254E1236CDC71DA1B02956 /* CamorkCard.swift in Sources */,
+				03B952405FAC4276A496631D /* ChromeFadeMask.swift in Sources */,
 				256B247318CA41F0E5F3833D /* Colors.swift in Sources */,
 				A2574451B96BF30FC264A335 /* Database.swift in Sources */,
 				6EC549FB622FB4C0CB2602DE /* DependencyContainer.swift in Sources */,
@@ -651,7 +655,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
@@ -691,7 +695,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;

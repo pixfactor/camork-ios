@@ -1,58 +1,84 @@
 import SwiftUI
 import UIKit
 
-/// 풀스크린 사진 디테일. CameraScreen의 latest thumbnail / SessionDetailScreen의 grid 탭 진입점.
+/// 풀스크린 사진 디테일. 단일 또는 여러 사진을 좌우 스와이프로 전환. 아래 드래그로 dismiss.
 ///
 /// 책임:
-/// - 받은 `Data`를 `UIImage(data:)`로 디코드 시도. 실패하면
-///   `photo_detail_image_unavailable` 안내로 fallback (테스트 환경의 4-byte fake JPEG에
-///   안전).
-/// - 디코드 성공 시 `ZoomableImageView` (UIScrollView 기반)로 pinch zoom + double-tap
-///   zoom + pan 지원 (spec 7.2 / 10.4 / Plan B Phase 3.2 Step 2).
-/// - 메모 편집은 sheet에서 `PhotoMemoEditor.update` 호출. notFound / IO 에러는 alert로
-///   표시 후 화면 유지 (사용자 입력 유실 방지).
-/// - metaBar의 note indicator는 init parameter `photo.note`가 아닌 로컬 `savedNote`
-///   @State를 사용 — 사용자가 sheet에서 저장한 즉시 반영 (dismiss/reopen 기다리지 않음).
-/// - 단일 사진 share entry (Plan D Batch D2): `session` + `sharePreparer`가 주입되면
-///   상단 toolbar에 `ShareEntryButton(photos: [photo])`를 노출. SessionDetailScreen 진입
-///   경로에서는 두 값 모두 전달, CameraScreen latest 진입 경로에서는 nil로 두어 share
-///   affordance를 숨긴다 (session context가 없는 진입은 v1.x에서 출시 보류).
+/// - `photos` 배열을 받아 `initialPhotoId`에서 시작하는 페이저 표시 (TabView .page style).
+/// - 인접 사진 data는 `dataLoader` closure로 lazy load 후 `imageDataCache`에 보관.
+///   현재 인덱스 변경 시 인접(±1) 사진을 prefetch.
+/// - `ZoomableImageView`로 각 페이지에 pinch zoom + double-tap zoom + pan 지원.
+/// - 메모 편집은 sheet에서 `PhotoMemoEditor.update` 호출. 저장 후 `savedNotes` 갱신.
+/// - 아래 vertical drag로 dismiss. zoom > 1.0이면 UIScrollView가 pan을 가로채 자연스럽게
+///   비활성. horizontal drag는 TabView swipe에 양보 (vertical-dominant downward만 reaction).
+/// - 단일 사진 share entry: `session` + `sharePreparer`가 주입되면 상단 toolbar에
+///   `ShareEntryButton(photos: [currentPhoto])`를 노출. CameraScreen latest 진입 경로에서는
+///   nil로 두어 share affordance를 숨긴다.
 struct PhotoDetailView: View {
-    let photo: Photo
-    let data: Data
+    let photos: [Photo]
+    let initialPhotoId: UUID
+    let initialData: Data
+    let dataLoader: (Photo) async throws -> Data
     let memoEditor: PhotoMemoEditor
     let onDismiss: () -> Void
     let session: Session?
     let sharePreparer: SharePreparer?
 
+    @State private var currentIndex: Int
+    @State private var imageDataCache: [UUID: Data]
+    @State private var decodedImageCache: [UUID: UIImage]
     /// 메모 sheet의 TextEditor 편집 버퍼.
     @State private var note: String
-    /// 실제로 저장된 메모 상태. metaBar의 note.text 아이콘 표시에 사용. 저장 성공 시
-    /// 즉시 갱신되어 photo (let) parameter의 stale 값을 덮어쓰기.
-    @State private var savedNote: String?
+    /// 실제로 저장된 메모 상태. metaBar 표시에 사용. photo (let) parameter의 stale 값을 덮어쓰기.
+    @State private var savedNotes: [UUID: String?]
     @State private var showMemoSheet: Bool = false
     @State private var memoError: String?
-    /// data를 init에서 한 번 디코드. body 재평가마다 UIImage(data:)를 재호출하지 않음.
-    @State private var decodedImage: UIImage?
+    @State private var dismissOffset: CGFloat = 0
 
     init(
-        photo: Photo,
-        data: Data,
+        photos: [Photo],
+        initialPhotoId: UUID,
+        initialData: Data,
+        dataLoader: @escaping (Photo) async throws -> Data,
         memoEditor: PhotoMemoEditor,
         onDismiss: @escaping () -> Void,
         session: Session? = nil,
         sharePreparer: SharePreparer? = nil
     ) {
-        self.photo = photo
-        self.data = data
+        self.photos = photos
+        self.initialPhotoId = initialPhotoId
+        self.initialData = initialData
+        self.dataLoader = dataLoader
         self.memoEditor = memoEditor
         self.onDismiss = onDismiss
         self.session = session
         self.sharePreparer = sharePreparer
-        let initialNote = photo.note
-        self._note = State(initialValue: initialNote ?? "")
-        self._savedNote = State(initialValue: initialNote)
-        self._decodedImage = State(initialValue: UIImage(data: data))
+
+        let initialIndex = photos.firstIndex(where: { $0.id == initialPhotoId }) ?? 0
+        self._currentIndex = State(initialValue: initialIndex)
+        self._imageDataCache = State(initialValue: [initialPhotoId: initialData])
+        var initialDecoded: [UUID: UIImage] = [:]
+        if let img = UIImage(data: initialData) {
+            initialDecoded[initialPhotoId] = img
+        }
+        self._decodedImageCache = State(initialValue: initialDecoded)
+
+        let startingNote = photos.indices.contains(initialIndex) ? photos[initialIndex].note : nil
+        self._note = State(initialValue: startingNote ?? "")
+        var noteDict: [UUID: String?] = [:]
+        for p in photos {
+            noteDict[p.id] = p.note
+        }
+        self._savedNotes = State(initialValue: noteDict)
+    }
+
+    private var currentPhoto: Photo {
+        photos[currentIndex]
+    }
+
+    private var currentSavedNote: String? {
+        // [UUID: String?] 의 lookup은 String?? — outer nil(키 없음)/inner nil(메모 없음) 평탄화.
+        savedNotes[currentPhoto.id] ?? nil
     }
 
     var body: some View {
@@ -61,11 +87,21 @@ struct PhotoDetailView: View {
 
             VStack(spacing: 0) {
                 topBar
-                imageView
+                pager
                 metaBar
             }
+            .offset(y: dismissOffset)
         }
         .preferredColorScheme(.dark)
+        .simultaneousGesture(dismissDragGesture)
+        .task {
+            await prefetchAdjacent(from: currentIndex)
+        }
+        .onChange(of: currentIndex) { _, newIndex in
+            let photo = photos[newIndex]
+            note = (savedNotes[photo.id] ?? nil) ?? ""
+            Task { await prefetchAdjacent(from: newIndex) }
+        }
         .sheet(isPresented: $showMemoSheet) {
             memoSheet
         }
@@ -94,15 +130,16 @@ struct PhotoDetailView: View {
             if let session, let sharePreparer {
                 ShareEntryButton(
                     session: session,
-                    photos: [photo],
+                    photos: [currentPhoto],
                     sharePreparer: sharePreparer
                 )
                 .font(.title3.weight(.semibold))
                 .padding(12)
+                .id(currentPhoto.id)
             }
 
             Button {
-                note = savedNote ?? ""
+                note = currentSavedNote ?? ""
                 showMemoSheet = true
             } label: {
                 Image(systemName: "square.and.pencil")
@@ -115,12 +152,23 @@ struct PhotoDetailView: View {
         .padding(.horizontal, 8)
     }
 
+    private var pager: some View {
+        TabView(selection: $currentIndex) {
+            ForEach(Array(photos.enumerated()), id: \.element.id) { index, photo in
+                photoPage(photo: photo)
+                    .tag(index)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     @ViewBuilder
-    private var imageView: some View {
-        if let image = decodedImage {
+    private func photoPage(photo: Photo) -> some View {
+        if let image = decodedImageCache[photo.id] {
             ZoomableImageView(image: image)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
+        } else if imageDataCache[photo.id] != nil {
             VStack(spacing: 12) {
                 Image(systemName: "photo")
                     .font(.largeTitle)
@@ -129,27 +177,33 @@ struct PhotoDetailView: View {
             }
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .task { await ensureData(for: photo) }
         }
     }
 
     private var metaBar: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(photo.capturedAt.formatted(date: .numeric, time: .shortened))
+        VStack(alignment: .leading, spacing: 6) {
+            Text(currentPhoto.capturedAt.formatted(date: .numeric, time: .shortened))
+                .font(.caption)
+                .foregroundStyle(.white)
+            if let placeName = currentPhoto.location?.placeName, !placeName.isEmpty {
+                Text(placeName)
                     .font(.caption)
-                    .foregroundStyle(.white)
-                if let placeName = photo.location?.placeName, !placeName.isEmpty {
-                    Text(placeName)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-            }
-            Spacer()
-            if let saved = savedNote, !saved.isEmpty {
-                Image(systemName: "note.text")
                     .foregroundStyle(.white.opacity(0.7))
             }
+            if let saved = currentSavedNote, !saved.isEmpty {
+                Text(saved)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.85))
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 2)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.black.opacity(0.5))
     }
@@ -163,7 +217,7 @@ struct PhotoDetailView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("button_cancel") {
-                            note = savedNote ?? ""
+                            note = currentSavedNote ?? ""
                             showMemoSheet = false
                         }
                     }
@@ -176,18 +230,67 @@ struct PhotoDetailView: View {
         }
     }
 
+    // MARK: - Drag dismiss
+
+    /// vertical-dominant downward drag만 따라가며 dismissOffset 갱신. horizontal은 TabView swipe에
+    /// 양보. zoom > 1.0인 페이지에서는 ZoomableImageView의 UIScrollView pan이 우선이라 본 gesture가
+    /// 거의 트리거되지 않음.
+    private var dismissDragGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onChanged { value in
+                guard value.translation.height > 0,
+                      abs(value.translation.height) > abs(value.translation.width) else {
+                    return
+                }
+                dismissOffset = value.translation.height
+            }
+            .onEnded { value in
+                let isVerticalDown = value.translation.height > 0 &&
+                    abs(value.translation.height) > abs(value.translation.width)
+                if isVerticalDown && value.translation.height > 120 {
+                    onDismiss()
+                } else {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                        dismissOffset = 0
+                    }
+                }
+            }
+    }
+
     // MARK: - Memo save
 
     @MainActor
     private func saveMemo() async {
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedNote: String? = trimmed.isEmpty ? nil : trimmed
+        let photoId = currentPhoto.id
         do {
-            try await memoEditor.update(photoId: photo.id, note: resolvedNote)
-            savedNote = resolvedNote
+            try await memoEditor.update(photoId: photoId, note: resolvedNote)
+            savedNotes[photoId] = resolvedNote
             showMemoSheet = false
         } catch {
             memoError = String(describing: error)
+        }
+    }
+
+    // MARK: - Data load
+
+    @MainActor
+    private func ensureData(for photo: Photo) async {
+        if decodedImageCache[photo.id] != nil { return }
+        do {
+            let data = try await dataLoader(photo)
+            imageDataCache[photo.id] = data
+            decodedImageCache[photo.id] = UIImage(data: data)
+        } catch {
+            // 무시 — placeholder가 표시됨
+        }
+    }
+
+    private func prefetchAdjacent(from index: Int) async {
+        let candidates = [index, index - 1, index + 1]
+        for i in candidates where i >= 0 && i < photos.count {
+            await ensureData(for: photos[i])
         }
     }
 
@@ -223,9 +326,14 @@ struct ZoomableImageView: UIViewRepresentable {
         scrollView.minimumZoomScale = 1.0
         scrollView.maximumZoomScale = 4.0
         scrollView.bouncesZoom = true
+        scrollView.bounces = false
+        scrollView.isDirectionalLockEnabled = true
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.decelerationRate = .fast
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.backgroundColor = .clear
+        scrollView.panGestureRecognizer.isEnabled = false
 
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFit
@@ -258,6 +366,7 @@ struct ZoomableImageView: UIViewRepresentable {
         if context.coordinator.imageView?.image !== image {
             context.coordinator.imageView?.image = image
             scrollView.setZoomScale(scrollView.minimumZoomScale, animated: false)
+            context.coordinator.updatePanAvailability(in: scrollView)
         }
     }
 
@@ -266,6 +375,10 @@ struct ZoomableImageView: UIViewRepresentable {
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             imageView
+        }
+
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            updatePanAvailability(in: scrollView)
         }
 
         @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
@@ -277,6 +390,11 @@ struct ZoomableImageView: UIViewRepresentable {
                 let zoomRect = Self.makeZoomRect(scrollView: scrollView, scale: 2.0, center: location)
                 scrollView.zoom(to: zoomRect, animated: true)
             }
+        }
+
+        func updatePanAvailability(in scrollView: UIScrollView) {
+            scrollView.panGestureRecognizer.isEnabled =
+                scrollView.zoomScale > scrollView.minimumZoomScale + 0.01
         }
 
         private static func makeZoomRect(scrollView: UIScrollView, scale: CGFloat, center: CGPoint) -> CGRect {
