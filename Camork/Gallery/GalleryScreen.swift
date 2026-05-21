@@ -27,6 +27,8 @@ struct GalleryScreen: View {
                         .accessibilityLabel(Text("gallery_trash_a11y"))
                     }
                 }
+                .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+                .toolbarBackground(.visible, for: .tabBar)
                 .navigationDestination(for: UUID.self) { sessionId in
                     sessionDetailDestination(sessionId: sessionId)
                 }
@@ -84,14 +86,35 @@ struct GalleryScreen: View {
                 ))
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .refreshable {
                 await refresh()
             }
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: Spacing.md)
             }
+            .overlay(alignment: .bottom) {
+                bottomChromeFade
+            }
             .appBackgroundShield()
         }
+    }
+
+    /// Visual-only fade that lets gallery cards recede beneath the tab bar capsule.
+    /// Uses the semantic app background so dark and light mode resolve naturally.
+    private var bottomChromeFade: some View {
+        LinearGradient(
+            colors: [
+                Color.camorkBackground.opacity(0.65),
+                Color.camorkBackground.opacity(0)
+            ],
+            startPoint: .bottom,
+            endPoint: .top
+        )
+        .frame(height: 144)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .ignoresSafeArea(edges: .bottom)
     }
 
     @ViewBuilder
