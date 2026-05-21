@@ -81,6 +81,19 @@ final class CameraSession: @unchecked Sendable {
         }
     }
 
+    #if DEBUG
+    /// SwiftUI Canvas / `#Preview`에서만 사용. AVCaptureDevice 룩업을 우회해 빈
+    /// `AVCaptureSession` + `AVCapturePhotoOutput`을 들고 있는 인스턴스를 만든다.
+    /// `start()`/`stop()`은 안전하게 noop처럼 동작하지만 (`session.isRunning`이 false에서
+    /// 변하지 않음) 실제 카메라 입력은 없으므로 preview는 검정 frame을 표시한다.
+    /// production 바이너리에는 들어가지 않는다 (#if DEBUG gate).
+    init(previewStubConfiguration: CameraConfiguration) {
+        self.configuration = previewStubConfiguration
+        self.session = AVCaptureSession()
+        self.photoOutput = AVCapturePhotoOutput()
+    }
+    #endif
+
     /// AVFoundation 권장사항: background queue에서 호출.
     func start() {
         guard !session.isRunning else { return }

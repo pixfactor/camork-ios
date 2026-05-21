@@ -122,3 +122,98 @@ private struct SessionPreviewTile: View {
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.sm, style: .continuous))
     }
 }
+
+#if DEBUG
+private func previewSessionCardSample(
+    name: String,
+    note: String?,
+    placeName: String?,
+    photoCount: Int,
+    previewCount: Int
+) -> SessionWithPreview {
+    let location = placeName.map {
+        LocationSnapshot(latitude: 37.5, longitude: 127.0, horizontalAccuracy: 10, placeName: $0)
+    }
+    let session = Session(
+        id: UUID(),
+        name: name,
+        note: note,
+        createdAt: Date(),
+        firstLocation: location
+    )
+    let photos = (0..<previewCount).map { i in
+        Photo(
+            id: UUID(),
+            sessionId: session.id,
+            fileName: "\(UUID().uuidString).heic",
+            kind: .photo,
+            capturedAt: Date().addingTimeInterval(TimeInterval(-i * 60))
+        )
+    }
+    return SessionWithPreview(
+        session: session,
+        preview: SessionPreview(
+            sessionId: session.id,
+            totalPhotoCount: photoCount,
+            previewPhotos: photos
+        )
+    )
+}
+
+#Preview("Cards — Dark") {
+    ScrollView {
+        VStack(spacing: Spacing.md) {
+            SessionCardView(item: previewSessionCardSample(
+                name: "성수동 사무실 외관 점검",
+                note: "1층 외벽 균열 사진 위주",
+                placeName: "성수동, 서울",
+                photoCount: 12,
+                previewCount: 4
+            ))
+            SessionCardView(item: previewSessionCardSample(
+                name: "판교 현장 배전반",
+                note: nil,
+                placeName: "판교, 성남",
+                photoCount: 3,
+                previewCount: 3
+            ))
+            SessionCardView(item: previewSessionCardSample(
+                name: "강남 카페 인테리어 변경",
+                note: "벽지 색상 후보 비교\n2026-05-22 미팅 자료",
+                placeName: nil,
+                photoCount: 1,
+                previewCount: 1
+            ))
+        }
+        .padding(Spacing.md)
+    }
+    .background(Color.camorkBackground)
+    .environmentObject(DependencyContainer.previewStub())
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Cards — Light") {
+    ScrollView {
+        VStack(spacing: Spacing.md) {
+            SessionCardView(item: previewSessionCardSample(
+                name: "성수동 사무실 외관 점검",
+                note: "1층 외벽 균열 사진 위주",
+                placeName: "성수동, 서울",
+                photoCount: 12,
+                previewCount: 4
+            ))
+            SessionCardView(item: previewSessionCardSample(
+                name: "판교 현장 배전반",
+                note: nil,
+                placeName: "판교, 성남",
+                photoCount: 3,
+                previewCount: 3
+            ))
+        }
+        .padding(Spacing.md)
+    }
+    .background(Color.camorkBackground)
+    .environmentObject(DependencyContainer.previewStub())
+    .preferredColorScheme(.light)
+}
+#endif

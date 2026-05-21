@@ -129,3 +129,17 @@ struct GalleryScreen: View {
         sessions[index] = SessionWithPreview(session: updated, preview: sessions[index].preview)
     }
 }
+
+#if DEBUG
+#Preview("Gallery — Dark") {
+    GalleryScreen()
+        .environmentObject(DependencyContainer.previewStub())
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Gallery — Light") {
+    GalleryScreen()
+        .environmentObject(DependencyContainer.previewStub())
+        .preferredColorScheme(.light)
+}
+#endif

@@ -61,6 +61,28 @@ final class DependencyContainer: ObservableObject {
         }
     }
 
+    #if DEBUG
+    /// SwiftUI Canvas / `#Preview` 전용 memberwise seam. `PreviewSupport.swift`가
+    /// in-memory DB + stub CameraSession 등을 사전에 구성한 뒤 본 init으로 주입한다.
+    /// 정식 init과 달리 side-effect Task를 띄우지 않는다 (preview 환경에서 30일 purge
+    /// sweep / share temp cleanup이 돌 필요 없음).
+    init(
+        previewMediaStorage: MediaStorage,
+        previewSharePreparer: SharePreparer,
+        previewLocationService: LocationService,
+        previewPermissionsService: PermissionsService,
+        previewCameraSession: CameraSession,
+        previewAppLockController: AppLockController
+    ) {
+        self.mediaStorage = previewMediaStorage
+        self.sharePreparer = previewSharePreparer
+        self.locationService = previewLocationService
+        self.permissionsService = previewPermissionsService
+        self.cameraSession = previewCameraSession
+        self.appLockController = previewAppLockController
+    }
+    #endif
+
     /// `Library/Application Support/Camork/` — DB metadata와 primary media storage의 루트.
     /// DB(Metadata/camork.sqlite) + MediaFileSystem(Media/, Media/.staging/, 그리고 Plan B
     /// 잔재인 legacy Thumbnails/)를 보유. 실제 thumbnail cache는 본 루트가 아닌
