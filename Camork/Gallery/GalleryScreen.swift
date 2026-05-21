@@ -93,28 +93,9 @@ struct GalleryScreen: View {
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: Spacing.md)
             }
-            .overlay(alignment: .bottom) {
-                bottomChromeFade
-            }
+            .preference(key: GalleryBottomChromeFadePreferenceKey.self, value: true)
             .appBackgroundShield()
         }
-    }
-
-    /// Visual-only fade that lets gallery cards recede beneath the tab bar capsule.
-    /// Uses the semantic app background so dark and light mode resolve naturally.
-    private var bottomChromeFade: some View {
-        LinearGradient(
-            colors: [
-                Color.camorkBackground.opacity(0.65),
-                Color.camorkBackground.opacity(0)
-            ],
-            startPoint: .bottom,
-            endPoint: .top
-        )
-        .frame(height: 144)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-        .ignoresSafeArea(edges: .bottom)
     }
 
     @ViewBuilder
@@ -157,6 +138,14 @@ struct GalleryScreen: View {
             deletedAt: old.deletedAt
         )
         sessions[index] = SessionWithPreview(session: updated, preview: sessions[index].preview)
+    }
+}
+
+struct GalleryBottomChromeFadePreferenceKey: PreferenceKey {
+    static let defaultValue = false
+
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
     }
 }
 

@@ -38,6 +38,12 @@ struct CamorkApp: App {
     @MainActor
     private func load() async {
         do {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--camork-preview-stub") {
+                bootstrap = .ready(DependencyContainer.previewStub())
+                return
+            }
+            #endif
             bootstrap = .ready(try DependencyContainer())
         } catch {
             bootstrap = .failed(error)
