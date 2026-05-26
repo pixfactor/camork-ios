@@ -655,7 +655,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
@@ -695,7 +695,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
