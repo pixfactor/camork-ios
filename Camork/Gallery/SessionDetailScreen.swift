@@ -25,10 +25,11 @@ struct SessionDetailScreen: View {
     @State private var sheet: SessionDetailSheet?
     @State private var trashError: String?
     @State private var confirmSessionDelete: Bool = false
-    @State private var chromeTopFadeHeight: CGFloat = 0
-    @State private var scrollRestingTopY: CGFloat?
+    @State private var showFullNote: Bool = false
 
-    private let scrollCoordinateSpaceName = "session-detail-scroll"
+    /// 세션 헤더에서 메모를 기본 노출할 줄 수. 초과분은 "더보기" sheet로 분리해
+    /// 사진 그리드가 메모 길이에 따라 아래로 밀리지 않게 한다.
+    private static let sessionNoteCollapsedLineLimit = 8
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.xs),
@@ -127,6 +128,11 @@ struct SessionDetailScreen: View {
                     }
                 }
             }
+            .sheet(isPresented: $showFullNote) {
+                if let note = sessionNote, !note.isEmpty {
+                    SessionNoteReadSheet(note: note)
+                }
+            }
             .alert(
                 "session_detail_photo_open_error_title",
                 isPresented: photoOpenErrorBinding,
@@ -186,7 +192,6 @@ struct SessionDetailScreen: View {
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
-                    ChromeFadeTopProbe(coordinateSpaceName: scrollCoordinateSpaceName)
                     header
                     photoGrid
                     Color.clear
@@ -194,22 +199,13 @@ struct SessionDetailScreen: View {
                 }
                 .padding(Spacing.md)
             }
-            .coordinateSpace(name: scrollCoordinateSpaceName)
             .scrollIndicators(.hidden)
             .contentMargins(.bottom, 0, for: .scrollContent)
             .refreshable {
                 await refresh()
             }
-            .onPreferenceChange(ChromeFadeTopPreferenceKey.self) { topY in
-                let restingTopY = max(scrollRestingTopY ?? topY, topY)
-                scrollRestingTopY = restingTopY
-                chromeTopFadeHeight = ChromeFadeMask.topHeight(
-                    forScrolledDistance: max(restingTopY - topY, 0)
-                )
-            }
             .ignoresSafeArea(edges: .bottom)
-            .camorkChromeFadeMask()
-            .camorkTopChromeFadeOverlay(height: chromeTopFadeHeight)
+            .camorkScrollEdgeEffects()
             .appBackgroundShield()
         }
     }
@@ -222,14 +218,52 @@ struct SessionDetailScreen: View {
             }
             Label(photoCountText, systemImage: "photo.on.rectangle")
             if let sessionNote, !sessionNote.isEmpty {
-                Text(sessionNote)
-                    .font(.body)
-                    .foregroundStyle(.primary)
+                sessionNoteSummary(sessionNote)
                     .padding(.top, Spacing.xs)
             }
         }
         .font(.subheadline)
         .foregroundStyle(.secondary)
+    }
+
+    /// 세션 메모는 기본 8줄까지만 노출. 8줄을 초과하면 truncate + "더보기" 버튼을
+    /// 보여주고, 누르면 read-only sheet에서 전체 메모를 표시한다 — 사진 그리드가
+    /// 메모 길이에 따라 끝없이 아래로 밀리지 않게 하는 핵심 안전망.
+    @ViewBuilder
+    private func sessionNoteSummary(_ note: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(note)
+                .font(.body)
+                .foregroundStyle(.primary)
+                .lineLimit(Self.sessionNoteCollapsedLineLimit)
+                .multilineTextAlignment(.leading)
+
+            if Self.exceedsCollapsedLineLimit(note) {
+                Button("session_detail_note_more") {
+                    showFullNote = true
+                }
+                .font(.subheadline.weight(.medium))
+                .buttonStyle(.borderless)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// 줄바꿈 개수로 8줄 초과 여부를 가늠. UIKit `TextLayoutManager`를 거치지 않고도
+    /// "사용자가 직접 줄바꿈을 8회 이상 넣었다" 시그널을 잡아낸다. wrap된 긴 한 줄은
+    /// 본 함수 기준 1줄이지만 SwiftUI `lineLimit(8)`이 시각적 truncation을 처리.
+    /// 두 검사를 함께 두면 "사용자 줄바꿈 많은 메모" + "한 줄로 매우 긴 메모" 모두
+    /// 더보기 버튼이 노출된다.
+    private static func exceedsCollapsedLineLimit(_ note: String) -> Bool {
+        let newlineCount = note.reduce(into: 0) { count, character in
+            if character.isNewline { count += 1 }
+        }
+        if newlineCount >= sessionNoteCollapsedLineLimit { return true }
+
+        // 폭이 좁은 화면에서 한 줄이 줄바꿈 없이 매우 길면 wrap 추정치로 추가 보호.
+        // 보수적으로 한국어/영문 혼합 평균 가독 행폭(40 char) 기준 8행 분량.
+        let approximateCharsPerLine = 40
+        return note.count > sessionNoteCollapsedLineLimit * approximateCharsPerLine
     }
 
     private var photoGrid: some View {
@@ -355,6 +389,34 @@ private struct SessionPhotoDetailItem: Identifiable {
     let photo: Photo
     let data: Data
     var id: UUID { photo.id }
+}
+
+/// Read-only sheet for the full session note. Mirrors `SessionInfoEditSheet`의
+/// NavigationStack chrome 패턴이라 사용자에게 시각적으로 연속되어 보이며,
+/// 헤더의 lineLimit(8) cap에 의해 잘린 부분까지 자유롭게 스크롤로 읽을 수 있다.
+private struct SessionNoteReadSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let note: String
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Text(note)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+                    .padding(Spacing.md)
+            }
+            .navigationTitle(Text("session_detail_note_read_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("button_close") { dismiss() }
+                }
+            }
+        }
+    }
 }
 
 #if DEBUG

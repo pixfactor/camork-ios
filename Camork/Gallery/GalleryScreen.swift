@@ -12,10 +12,6 @@ struct GalleryScreen: View {
     @State private var loadError: String?
     @State private var showTrash = false
     @State private var navigationPath: [UUID] = []
-    @State private var chromeTopFadeHeight: CGFloat = 0
-    @State private var scrollRestingTopY: CGFloat?
-
-    private let scrollCoordinateSpaceName = "gallery-scroll"
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -74,8 +70,6 @@ struct GalleryScreen: View {
         } else {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ChromeFadeTopProbe(coordinateSpaceName: scrollCoordinateSpaceName)
-
                     Text("gallery_title")
                         .font(.largeTitle.weight(.bold))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -95,25 +89,16 @@ struct GalleryScreen: View {
                     }
 
                     Color.clear
-                    .frame(height: ChromeFadeMask.scrollReserve)
+                        .frame(height: ChromeFadeMask.scrollReserve)
                 }
             }
-            .coordinateSpace(name: scrollCoordinateSpaceName)
             .scrollIndicators(.hidden)
             .contentMargins(.bottom, 0, for: .scrollContent)
             .refreshable {
                 await refresh()
             }
-            .onPreferenceChange(ChromeFadeTopPreferenceKey.self) { topY in
-                let restingTopY = max(scrollRestingTopY ?? topY, topY)
-                scrollRestingTopY = restingTopY
-                chromeTopFadeHeight = ChromeFadeMask.topHeight(
-                    forScrolledDistance: max(restingTopY - topY, 0)
-                )
-            }
             .ignoresSafeArea(edges: .bottom)
-            .camorkChromeFadeMask()
-            .camorkTopChromeFadeOverlay(height: chromeTopFadeHeight)
+            .camorkScrollEdgeEffects()
             .appBackgroundShield()
         }
     }
