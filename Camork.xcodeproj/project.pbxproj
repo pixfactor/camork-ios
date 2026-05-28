@@ -39,6 +39,7 @@
 		4E12AC69BC0ECE687EE344B5 /* ThumbnailCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D961C06607530A8BC0CDE6 /* ThumbnailCoordinator.swift */; };
 		52A3E8CB0CC86C07B88E4C19 /* CameraSessionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799C103081B5005405E05A45 /* CameraSessionBuilder.swift */; };
 		5785FA4B3289DE094819C769 /* ShareSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F7A812953C127A3A3CE54 /* ShareSanitizerTests.swift */; };
+		5A8DA64D104B80434CE8CF34 /* CloudSyncErrorPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE98FE364ABC0BAD1B29961 /* CloudSyncErrorPresentation.swift */; };
 		5B5703AC7C6483B93DB293BA /* SessionAssignmentPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */; };
 		64A84F599216BA18D6D9DAA2 /* ExifBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */; };
 		66CB2DC0230556B6112B7DC7 /* PhotoMemoEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A931643B8B1BD2A58F7A8D7 /* PhotoMemoEditor.swift */; };
@@ -77,12 +78,14 @@
 		9D3CD57FEE57940FE92A7CFA /* MediaKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4060BBD50C4F4F506321101D /* MediaKind.swift */; };
 		A2574451B96BF30FC264A335 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E6B68E8E8F1C5D13005D96 /* Database.swift */; };
 		A553460CEEB3EBFB50B986EB /* CameraViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */; };
+		A5FF882C3AC33CC99BE5DFBE /* GalleryCalendarMonthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE9615FAF8BFB2499AFF5C6 /* GalleryCalendarMonthTests.swift */; };
 		A7BE864ECAF18B32CF323A29 /* MediaStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC19C01569B96793E8631B7 /* MediaStorage.swift */; };
 		A7C8D9BE0F391D659FDEFE4E /* SessionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D617F52812535550DBADD34 /* SessionDetailScreen.swift */; };
 		AED2F21A3054B8DA752AA6EA /* StorageInitErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE1680BB543934E6AD0E068 /* StorageInitErrorView.swift */; };
 		AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */; };
 		B0953678A79E7DFE47009668 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA39AC0443497D9FA05B1033 /* SettingsScreen.swift */; };
 		B149BC05A10B749E9B5DA641 /* SessionDateFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68EAD78EF2C40C963BCF48A2 /* SessionDateFilter.swift */; };
+		B5DAC894536E943410B50DE6 /* GalleryCalendarMonth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD419B45950A9F6499DF3F1 /* GalleryCalendarMonth.swift */; };
 		B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E16FBB8537135AEAA25D510 /* Assets.xcassets */; };
 		B84BB8098D7C6AA3B9E30BB1 /* ThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F73F1A7B610A55DC45C684E /* ThumbnailView.swift */; };
 		B857F7690248E93756CB3E4B /* SessionAssignmentPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */; };
@@ -98,6 +101,7 @@
 		D9A8DD8CE35568073272E4F1 /* MediaStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 018C78605008CB210A51B479 /* MediaStorageTests.swift */; };
 		DAC864606CEE84270F9BF4AD /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D586B2ABCEDC23AB14D4EA /* Session.swift */; };
 		DC0532E20909F08A139C0D34 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA140D0E346D56C7AA3628E2 /* LocationService.swift */; };
+		DFA88D5A0386BFBE4CA131B1 /* GalleryCalendarFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1027D546F2A0F99829E35225 /* GalleryCalendarFilterSheet.swift */; };
 		E070F4C8163015B126AE78D6 /* CloudRecordMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10901ECBBE5EE96FF3F0874 /* CloudRecordMapper.swift */; };
 		E5BEB9E21A834C67818EDAD2 /* ThumbnailCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C2A137B5A5A6EEE6D07249 /* ThumbnailCoordinatorTests.swift */; };
 		E927C8141548CC79235ABA1D /* CloudSyncController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C2B144EBE2015BE75EB0D40 /* CloudSyncController.swift */; };
@@ -107,6 +111,7 @@
 		F3DD7F5F2FBB8F246F6B0373 /* SessionTitlePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BDBA28D954D7277FEB0DC1 /* SessionTitlePolicyTests.swift */; };
 		FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */; };
 		FB84812C79BD3AB5B8F01E09 /* MediaStorageCloudRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 705055ED5898216C7ED688D9 /* MediaStorageCloudRestoreTests.swift */; };
+		FBF6D867A8B90B2C230AC77C /* CloudSyncErrorPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18AA70AADB2CC689898A62C6 /* CloudSyncErrorPresentationTests.swift */; };
 		FD34E5DF3FDD1B749FDAABFE /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5733DB553011A80CBFE01A0 /* Authenticator.swift */; };
 /* End PBXBuildFile section */
 
@@ -128,11 +133,14 @@
 		05E2B442B1216EF630B4CD86 /* SessionTitlePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTitlePolicy.swift; sourceTree = "<group>"; };
 		0793057E915500151F00536A /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		07BF291EFDB937EF96114901 /* SessionInfoEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInfoEditSheet.swift; sourceTree = "<group>"; };
+		0FE98FE364ABC0BAD1B29961 /* CloudSyncErrorPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncErrorPresentation.swift; sourceTree = "<group>"; };
 		1006E819E3F9B16AFCE48B22 /* PreviewSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSupport.swift; sourceTree = "<group>"; };
+		1027D546F2A0F99829E35225 /* GalleryCalendarFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryCalendarFilterSheet.swift; sourceTree = "<group>"; };
 		1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileSystem.swift; sourceTree = "<group>"; };
 		11EA37EC593C52C6B57E60AE /* SessionNameEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNameEditorTests.swift; sourceTree = "<group>"; };
 		14B888956B201EB0ED26CC34 /* PermissionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsService.swift; sourceTree = "<group>"; };
 		15365BFC4128B29ABB9D9EE1 /* SessionAssignmentPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicy.swift; sourceTree = "<group>"; };
+		18AA70AADB2CC689898A62C6 /* CloudSyncErrorPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncErrorPresentationTests.swift; sourceTree = "<group>"; };
 		1A46DF06212CDABA175AA039 /* CameraFlashModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFlashModeTests.swift; sourceTree = "<group>"; };
 		1D80A7C2E5BF1E243F855544 /* FileOps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOps.swift; sourceTree = "<group>"; };
 		1ED2309B7A38D8B95C65553C /* SessionNoteEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNoteEditorTests.swift; sourceTree = "<group>"; };
@@ -153,6 +161,7 @@
 		4EF68029697FFE4F2C27ABD8 /* Camork.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Camork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52C80ED1C0028BD1D84F4358 /* SessionNoteEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNoteEditSheet.swift; sourceTree = "<group>"; };
 		5A54AD5C852EA21CCC9EB059 /* ExifBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifBuilder.swift; sourceTree = "<group>"; };
+		5BD419B45950A9F6499DF3F1 /* GalleryCalendarMonth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryCalendarMonth.swift; sourceTree = "<group>"; };
 		5BD835FD946EBD3E7DE1CE14 /* CamorkCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkCard.swift; sourceTree = "<group>"; };
 		5D9F1F9DDEB786AF738C20C3 /* SessionAssignmentPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAssignmentPolicyTests.swift; sourceTree = "<group>"; };
 		614F953CF8C86CDC9CE40F06 /* SessionDateFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDateFilterTests.swift; sourceTree = "<group>"; };
@@ -209,6 +218,7 @@
 		D6964EA516629442CFF13685 /* CamorkButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkButton.swift; sourceTree = "<group>"; };
 		D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorsTests.swift; sourceTree = "<group>"; };
 		DA5551989CAD799D55F626B9 /* SettingsPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPlaceholderView.swift; sourceTree = "<group>"; };
+		DCE9615FAF8BFB2499AFF5C6 /* GalleryCalendarMonthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryCalendarMonthTests.swift; sourceTree = "<group>"; };
 		E02283BCB302917BF6C93593 /* CamorkBundleToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkBundleToken.swift; sourceTree = "<group>"; };
 		E48AD1B2DF3CBB981248F0A2 /* SessionInfoEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInfoEditor.swift; sourceTree = "<group>"; };
 		E4BDBA28D954D7277FEB0DC1 /* SessionTitlePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTitlePolicyTests.swift; sourceTree = "<group>"; };
@@ -290,6 +300,8 @@
 			isa = PBXGroup;
 			children = (
 				FB784FBC30D02D8E5840005D /* ChromeFadeMask.swift */,
+				1027D546F2A0F99829E35225 /* GalleryCalendarFilterSheet.swift */,
+				5BD419B45950A9F6499DF3F1 /* GalleryCalendarMonth.swift */,
 				90B2D2C213951F15F727206D /* GalleryMapView.swift */,
 				9A70731930ECAC8918007E82 /* GalleryScreen.swift */,
 				F76FA386DB3DC189FACB4BD8 /* PhotoDetailView.swift */,
@@ -401,6 +413,7 @@
 			children = (
 				C10901ECBBE5EE96FF3F0874 /* CloudRecordMapper.swift */,
 				6C2B144EBE2015BE75EB0D40 /* CloudSyncController.swift */,
+				0FE98FE364ABC0BAD1B29961 /* CloudSyncErrorPresentation.swift */,
 				94DFD42503E042702E17837E /* CloudSyncModels.swift */,
 			);
 			path = CloudSync;
@@ -456,9 +469,11 @@
 				2E5A5A387F0FBEC936117F30 /* CameraViewTests.swift */,
 				37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */,
 				94B231FB9AC66B5548421922 /* CloudRecordMapperTests.swift */,
+				18AA70AADB2CC689898A62C6 /* CloudSyncErrorPresentationTests.swift */,
 				D8DD1F9FE7FEA975A76A23C8 /* ColorsTests.swift */,
 				787351D0F6236E4F0838CE92 /* ExifBuilderTests.swift */,
 				F3C38F7008B7B0410BC3F53C /* FakeFileOps.swift */,
+				DCE9615FAF8BFB2499AFF5C6 /* GalleryCalendarMonthTests.swift */,
 				EA977E72449CB74164D357A6 /* LocationServiceTests.swift */,
 				EC53699FF9CDADE34A36098F /* MediaFileSystemTests.swift */,
 				705055ED5898216C7ED688D9 /* MediaStorageCloudRestoreTests.swift */,
@@ -595,9 +610,11 @@
 				A553460CEEB3EBFB50B986EB /* CameraViewTests.swift in Sources */,
 				AF420CFC8DB57C9A3E40088E /* CamorkButtonStyleTests.swift in Sources */,
 				4548EC55F3593AC938B4E768 /* CloudRecordMapperTests.swift in Sources */,
+				FBF6D867A8B90B2C230AC77C /* CloudSyncErrorPresentationTests.swift in Sources */,
 				4751C8016E6E90472FACE3BA /* ColorsTests.swift in Sources */,
 				64A84F599216BA18D6D9DAA2 /* ExifBuilderTests.swift in Sources */,
 				0D2E1D87394C839B6218EE15 /* FakeFileOps.swift in Sources */,
+				A5FF882C3AC33CC99BE5DFBE /* GalleryCalendarMonthTests.swift in Sources */,
 				03B73C2C45EB80D96D61EEB5 /* LocationServiceTests.swift in Sources */,
 				FAA11EC9E3147768B352D3C7 /* MediaFileSystemTests.swift in Sources */,
 				FB84812C79BD3AB5B8F01E09 /* MediaStorageCloudRestoreTests.swift in Sources */,
@@ -642,6 +659,7 @@
 				03B952405FAC4276A496631D /* ChromeFadeMask.swift in Sources */,
 				E070F4C8163015B126AE78D6 /* CloudRecordMapper.swift in Sources */,
 				E927C8141548CC79235ABA1D /* CloudSyncController.swift in Sources */,
+				5A8DA64D104B80434CE8CF34 /* CloudSyncErrorPresentation.swift in Sources */,
 				78AAE8A959D9E3F08CC5A264 /* CloudSyncModels.swift in Sources */,
 				256B247318CA41F0E5F3833D /* Colors.swift in Sources */,
 				A2574451B96BF30FC264A335 /* Database.swift in Sources */,
@@ -649,6 +667,8 @@
 				15180F70E1BA4C15785E5970 /* ExifBuilder.swift in Sources */,
 				6F87E648BDFF6D4EFEDC2E92 /* ExifData.swift in Sources */,
 				857F58097954C0F289DA7D3A /* FileOps.swift in Sources */,
+				DFA88D5A0386BFBE4CA131B1 /* GalleryCalendarFilterSheet.swift in Sources */,
+				B5DAC894536E943410B50DE6 /* GalleryCalendarMonth.swift in Sources */,
 				D3439467C8FE129359EFE1BF /* GalleryMapView.swift in Sources */,
 				3AC4108BB10CA62BB0A23D68 /* GalleryPlaceholderView.swift in Sources */,
 				D984AB4C8CC6763DAE0699A0 /* GalleryScreen.swift in Sources */,
@@ -715,7 +735,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
@@ -735,6 +755,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -755,7 +776,7 @@
 				CODE_SIGN_ENTITLEMENTS = Camork/Camork.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = RCNZ7N94S3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Camork/Info.plist;
@@ -840,6 +861,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

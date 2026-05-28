@@ -194,7 +194,7 @@ struct SettingsScreen: View {
             cloudSyncEnabled = enabled
             await refreshCloudSyncState()
         } catch {
-            cloudSyncError = String(describing: error)
+            cloudSyncError = CloudSyncErrorPresentation.message(for: error)
         }
     }
 
@@ -205,8 +205,9 @@ struct SettingsScreen: View {
             let summary = try await deps.cloudSyncController.syncNow()
             cloudSyncStatus = .synced(summary)
         } catch {
-            cloudSyncStatus = .failed(String(describing: error))
-            cloudSyncError = String(describing: error)
+            let message = CloudSyncErrorPresentation.message(for: error)
+            cloudSyncStatus = .failed(message)
+            cloudSyncError = message
         }
     }
 
@@ -217,8 +218,9 @@ struct SettingsScreen: View {
             let summary = try await deps.cloudSyncController.restoreFromCloud()
             cloudSyncStatus = .restored(summary)
         } catch {
-            cloudSyncStatus = .failed(String(describing: error))
-            cloudSyncError = String(describing: error)
+            let message = CloudSyncErrorPresentation.message(for: error)
+            cloudSyncStatus = .failed(message)
+            cloudSyncError = message
         }
     }
 

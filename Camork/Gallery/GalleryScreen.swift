@@ -96,32 +96,7 @@ struct GalleryScreen: View {
             Group {
                 switch viewMode {
                 case .list:
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            galleryHeader
-
-                            ForEach(filteredSessions, id: \.session.id) { item in
-                                Button {
-                                    navigationPath.append(item.session.id)
-                                } label: {
-                                    SessionCardView(item: item)
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.vertical, Spacing.sm)
-                                .padding(.horizontal, Spacing.md)
-                            }
-
-                            Color.clear
-                                .frame(height: ChromeFadeMask.scrollReserve)
-                        }
-                    }
-                    .scrollIndicators(.hidden)
-                    .contentMargins(.bottom, 0, for: .scrollContent)
-                    .refreshable {
-                        await refresh()
-                    }
-                    .ignoresSafeArea(edges: .bottom)
-                    .camorkScrollEdgeEffects()
+                    galleryList
                 case .map:
                     VStack(spacing: 0) {
                         galleryHeader
@@ -178,7 +153,7 @@ struct GalleryScreen: View {
                 Label("gallery_filter_this_month", systemImage: "calendar.circle")
             }
             Button {
-                showCustomDateFilter = true
+                openCustomDateFilter()
             } label: {
                 Label("gallery_filter_custom", systemImage: "calendar.badge.plus")
             }
@@ -189,34 +164,61 @@ struct GalleryScreen: View {
     }
 
     private var customDateFilterSheet: some View {
-        NavigationStack {
-            Form {
-                DatePicker(
-                    "gallery_filter_start_date",
-                    selection: $customStartDate,
-                    displayedComponents: .date
-                )
-                DatePicker(
-                    "gallery_filter_end_date",
-                    selection: $customEndDate,
-                    displayedComponents: .date
-                )
-            }
-            .navigationTitle("gallery_filter_custom")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("button_cancel") {
-                        showCustomDateFilter = false
+        GalleryCalendarFilterSheet(
+            sessions: sessions,
+            startDate: $customStartDate,
+            endDate: $customEndDate
+        ) {
+            dateFilter = .custom(start: customStartDate, end: customEndDate)
+            showCustomDateFilter = false
+        }
+    }
+
+    private func openCustomDateFilter() {
+        if case .custom(let start, let end) = dateFilter {
+            customStartDate = start
+            customEndDate = end
+        } else {
+            let anchor = sessions.first?.session.createdAt ?? Date()
+            customStartDate = anchor
+            customEndDate = anchor
+        }
+        showCustomDateFilter = true
+    }
+
+    private var galleryList: some View {
+        ZStack(alignment: .top) {
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: GalleryChromeLayout.headerReserve)
+
+                    ForEach(filteredSessions, id: \.session.id) { item in
+                        Button {
+                            navigationPath.append(item.session.id)
+                        } label: {
+                            SessionCardView(item: item)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.vertical, Spacing.sm)
+                        .padding(.horizontal, Spacing.md)
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("button_save") {
-                        dateFilter = .custom(start: customStartDate, end: customEndDate)
-                        showCustomDateFilter = false
-                    }
-                }
             }
+            .scrollIndicators(.hidden)
+            .refreshable {
+                await refresh()
+            }
+            .ignoresSafeArea(edges: .bottom)
+            .camorkScrollEdgeEffects(
+                topEdgeHeight: GalleryChromeLayout.topEdgeEffectHeight,
+                bottomEdgeHeight: GalleryChromeLayout.bottomEdgeEffectHeight
+            )
+
+            galleryHeader
+                .background(alignment: .top) {
+                    GalleryHeaderMaterial()
+                }
         }
     }
 
@@ -266,6 +268,32 @@ struct GalleryScreen: View {
 private enum GalleryViewMode: Hashable {
     case list
     case map
+}
+
+private enum GalleryChromeLayout {
+    static let headerReserve: CGFloat = 122
+    static let topEdgeEffectHeight: CGFloat = 132
+    static let bottomEdgeEffectHeight: CGFloat = 124
+}
+
+private struct GalleryHeaderMaterial: View {
+    var body: some View {
+        Rectangle()
+            .fill(.ultraThinMaterial)
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .black, location: 0),
+                        .init(color: .black, location: 0.72),
+                        .init(color: .black.opacity(0), location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .padding(.bottom, -Spacing.lg)
+            .allowsHitTesting(false)
+    }
 }
 
 #if DEBUG

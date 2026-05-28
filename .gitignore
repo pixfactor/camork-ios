@@ -33,6 +33,7 @@ Camork/Info.plist
 .sisyphus/
 .team-os/
 .superpowers/
+.omx/
 
 # Environment
 .env

@@ -147,13 +147,12 @@ actor CloudSyncController {
 
     private func save(_ record: CKRecord, in database: CKDatabase) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Swift.Error>) in
-            database.save(record) { _, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                }
+            let operation = CKModifyRecordsOperation(recordsToSave: [record])
+            operation.savePolicy = .allKeys
+            operation.modifyRecordsResultBlock = { result in
+                continuation.resume(with: result)
             }
+            database.add(operation)
         }
     }
 

@@ -561,6 +561,78 @@
         }
       }
     },
+    "gallery_calendar_next_month" : {
+      "comment" : "VoiceOver label for moving the custom calendar filter to the next month.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next month"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 달"
+          }
+        }
+      }
+    },
+    "gallery_calendar_previous_month" : {
+      "comment" : "VoiceOver label for moving the custom calendar filter to the previous month.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous month"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 달"
+          }
+        }
+      }
+    },
+    "gallery_calendar_recorded_day" : {
+      "comment" : "VoiceOver value for a calendar date that has one or more recorded photos.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has photos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 있음"
+          }
+        }
+      }
+    },
+    "gallery_calendar_selected_range_format" : {
+      "comment" : "Selected custom calendar range. First argument is start date, second is end date.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ – %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ – %@"
+          }
+        }
+      }
+    },
     "gallery_filter_empty_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1944,6 +2016,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "iCloud 작업 실패"
+          }
+        }
+      }
+    },
+    "settings_icloud_error_asset_read_failed" : {
+      "comment" : "iCloud error message when a local original file cannot be read before upload.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One original photo could not be read. Check local storage and try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본 사진 하나를 읽을 수 없습니다. 로컬 저장공간을 확인한 뒤 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_conflict" : {
+      "comment" : "iCloud error message when CloudKit reports a server record conflict.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud has a newer copy of some records. Try syncing again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud에 더 최신 기록이 있습니다. 다시 동기화해 주세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_feature_hidden" : {
+      "comment" : "iCloud error message when the feature is hidden by configuration.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud backup is not available in this build."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 빌드에서는 iCloud 백업을 사용할 수 없습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_generic" : {
+      "comment" : "Generic iCloud error message that avoids exposing raw CloudKit diagnostics.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The iCloud operation failed. Try again after a moment."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 작업이 실패했습니다. 잠시 후 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_network" : {
+      "comment" : "iCloud error message for network failures.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The network is unavailable. Check the connection and try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크를 사용할 수 없습니다. 연결을 확인한 뒤 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_not_authenticated" : {
+      "comment" : "iCloud error message when the user is not authenticated to iCloud.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to iCloud on this iPhone, then try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 iPhone에서 iCloud에 로그인한 뒤 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_quota" : {
+      "comment" : "iCloud error message when the user's iCloud quota is exceeded.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud storage is full. Free up iCloud storage and try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 저장 공간이 부족합니다. 공간을 확보한 뒤 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_schema_unavailable" : {
+      "comment" : "iCloud error message when the production CloudKit record schema is not deployed yet.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud backup is not ready for this build yet. The developer needs to deploy the CloudKit production schema, then you can try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 빌드의 iCloud 백업 준비가 아직 끝나지 않았습니다. 개발자가 CloudKit Production 스키마를 배포한 뒤 다시 시도할 수 있습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_sync_disabled" : {
+      "comment" : "iCloud error message when sync is disabled before an operation.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on iCloud backup first."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "먼저 iCloud 백업을 켜세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_error_temporarily_unavailable" : {
+      "comment" : "iCloud error message for temporary CloudKit service unavailability.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud is temporarily unavailable. Try again later."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요."
           }
         }
       }
