@@ -2,9 +2,31 @@
 
 - **Date:** 2026-05-21
 - **Branch:** `rebuild/v2`
-- **Release candidate:** `1.0.0 (11)`
-- **Status:** feature freeze
+- **Latest internal build:** `1.0.0 (17)`
+- **Status:** Build 17 internal TestFlight; Build 18-21 planning baseline added
 - **Related report:** `docs/superpowers/reports/2026-05-21-release-candidate-build-11.md`
+- **Current next-phase plan:** `docs/superpowers/plans/2026-05-28-camork-build-18-21-location-map-icloud.md`
+
+## 2026-05-28 Update — Build 17 이후 방향
+
+Build 11 release-freeze plan is superseded for implementation sequencing by the Build 18-21 plan above.
+
+Current strategic order:
+
+1. **Build 18:** full-bleed hardening, location-first capture behavior, reverse geocoding, and export-all backup safety.
+2. **Gate:** real-device validation, then decide App Store/external TestFlight timing without making iCloud safety claims.
+3. **Build 19:** MapKit session pins and shared calendar/date filtering.
+4. **Build 20:** CloudKit ADR plus metadata-only internal sync foundation.
+5. **Build 21:** CKAsset original media sync, restore behavior, and user-facing iCloud settings.
+6. **Build 22:** search/sort/organization follow-up.
+
+Rules added by this update:
+
+- Do not add external SSO.
+- Do not request location at first launch.
+- Do not claim backup/restore/device-migration safety until Build 21 is implemented and privacy answers are updated.
+- Before Build 20 CloudKit work, tell the user Apple Developer access is needed for iCloud capability/container setup.
+- Before any App Review submission, get explicit user approval.
 
 ## Phase R0 — Release Candidate Freeze
 
@@ -12,17 +34,15 @@ Status: complete.
 
 Exit evidence:
 
-- `a58e7c6` pushed to `origin/rebuild/v2`.
-- Build `1.0.0 (11)` archived and uploaded.
-- App Store Connect shows build 11 as processed / ready for submission.
-- Build 11 is assigned to internal testing.
+- Build `1.0.0 (17)` is the current internal TestFlight build.
+- Build 17 is assigned to internal testing.
 - Unit/regression suite passes: 188 tests / 24 suites.
 
 Rules while frozen:
 
 - Do not add features.
 - Keep new code changes tiny, local, and directly tied to an App Review, crash, data-loss, or screenshot-blocking issue.
-- If a blocker requires code, bump to build 12 in a dedicated commit before archive/upload.
+- If a blocker requires code, bump the build number in a dedicated commit before archive/upload.
 
 ## Phase R1 — Screenshot And Metadata
 
@@ -30,7 +50,7 @@ Owner: user for screenshots; agent assists with text, review notes, and validati
 
 Checklist:
 
-- Capture App Store screenshots from build 11 on real device.
+- Capture App Store screenshots from the latest intended release build on real device.
 - Prepare final screenshot artwork.
 - Confirm app name, subtitle, promotional text, description, keywords, support URL, marketing URL if used.
 - Confirm privacy policy URL is reachable.
@@ -50,11 +70,11 @@ Exit criteria:
 - Screenshots uploaded.
 - Metadata complete.
 - Privacy answers complete.
-- Build 11 selected for version `1.0.0`.
+- Latest intended release build selected for version `1.0.0`.
 
 ## Phase R2 — Final Device Smoke Test
 
-Run on the exact TestFlight build intended for review: `1.0.0 (11)`.
+Run on the exact TestFlight build intended for review.
 
 Must-pass flows:
 
@@ -99,7 +119,7 @@ Submission should be a deliberate final action, not an automatic continuation.
 Before submission:
 
 - Confirm screenshots are final.
-- Confirm build selected: `1.0.0 (11)` unless a blocker forced build 12.
+- Confirm the exact build selected for version `1.0.0`.
 - Confirm privacy answers.
 - Confirm review notes.
 - Confirm support/privacy URLs.
@@ -128,6 +148,8 @@ Avoid:
 
 ## Phase 1.1 — Search And Organization
 
+Status: deferred behind Build 18-21 plan.
+
 Candidate scope:
 
 - Session search by name, note, date, and place.
@@ -141,6 +163,8 @@ Prerequisite:
 - Current storage indexes reviewed before adding query-heavy UI.
 
 ## Phase 1.2 — Cloud/Synchronization Exploration
+
+Status: superseded by Build 20-21 in `docs/superpowers/plans/2026-05-28-camork-build-18-21-location-map-icloud.md`.
 
 Candidate scope:
 
