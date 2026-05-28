@@ -25,8 +25,8 @@ struct GalleryScreen: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             content
-                .navigationTitle("")
-                .navigationBarTitleDisplayMode(.inline)
+                .navigationTitle("gallery_title")
+                .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -84,7 +84,7 @@ struct GalleryScreen: View {
             .appBackgroundShield()
         } else if filteredSessions.isEmpty {
             VStack(spacing: 16) {
-                galleryHeader
+                viewModePicker
                 ContentUnavailableView(
                     "gallery_filter_empty_title",
                     systemImage: "calendar.badge.exclamationmark",
@@ -93,41 +93,34 @@ struct GalleryScreen: View {
             }
             .appBackgroundShield()
         } else {
-            Group {
+            VStack(spacing: 0) {
+                viewModePicker
+
                 switch viewMode {
                 case .list:
                     galleryList
                 case .map:
-                    VStack(spacing: 0) {
-                        galleryHeader
-                        GalleryMapView(sessions: filteredSessions) { sessionId in
-                            navigationPath.append(sessionId)
-                        }
-                        .ignoresSafeArea(edges: .bottom)
+                    GalleryMapView(sessions: filteredSessions) { sessionId in
+                        navigationPath.append(sessionId)
                     }
+                    .ignoresSafeArea(edges: .bottom)
                 }
             }
             .appBackgroundShield()
         }
     }
 
-    private var galleryHeader: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("gallery_title")
-                .font(.largeTitle.weight(.bold))
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Picker("gallery_view_mode_picker", selection: $viewMode) {
-                Label("gallery_view_mode_list", systemImage: "square.grid.2x2")
-                    .tag(GalleryViewMode.list)
-                Label("gallery_view_mode_map", systemImage: "map")
-                    .tag(GalleryViewMode.map)
-            }
-            .pickerStyle(.segmented)
+    private var viewModePicker: some View {
+        Picker("gallery_view_mode_picker", selection: $viewMode) {
+            Label("gallery_view_mode_list", systemImage: "square.grid.2x2")
+                .tag(GalleryViewMode.list)
+            Label("gallery_view_mode_map", systemImage: "map")
+                .tag(GalleryViewMode.map)
         }
+        .pickerStyle(.segmented)
         .padding(.horizontal, Spacing.md)
         .padding(.top, Spacing.sm)
-        .padding(.bottom, Spacing.md)
+        .padding(.bottom, Spacing.sm)
     }
 
     private var dateFilterMenu: some View {
@@ -187,39 +180,28 @@ struct GalleryScreen: View {
     }
 
     private var galleryList: some View {
-        ZStack(alignment: .top) {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    Color.clear
-                        .frame(height: GalleryChromeLayout.headerReserve)
-
-                    ForEach(filteredSessions, id: \.session.id) { item in
-                        Button {
-                            navigationPath.append(item.session.id)
-                        } label: {
-                            SessionCardView(item: item)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, Spacing.sm)
-                        .padding(.horizontal, Spacing.md)
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(filteredSessions, id: \.session.id) { item in
+                    Button {
+                        navigationPath.append(item.session.id)
+                    } label: {
+                        SessionCardView(item: item)
                     }
+                    .buttonStyle(.plain)
+                    .padding(.vertical, Spacing.sm)
+                    .padding(.horizontal, Spacing.md)
                 }
-            }
-            .scrollIndicators(.hidden)
-            .refreshable {
-                await refresh()
-            }
-            .ignoresSafeArea(edges: .bottom)
-            .camorkScrollEdgeEffects(
-                topEdgeHeight: GalleryChromeLayout.topEdgeEffectHeight,
-                bottomEdgeHeight: GalleryChromeLayout.bottomEdgeEffectHeight
-            )
 
-            galleryHeader
-                .background(alignment: .top) {
-                    GalleryHeaderMaterial()
-                }
+                Color.clear
+                    .frame(height: GalleryChromeLayout.bottomContentReserve)
+            }
         }
+        .scrollIndicators(.hidden)
+        .refreshable {
+            await refresh()
+        }
+        .ignoresSafeArea(edges: .bottom)
     }
 
     @ViewBuilder
@@ -271,29 +253,7 @@ private enum GalleryViewMode: Hashable {
 }
 
 private enum GalleryChromeLayout {
-    static let headerReserve: CGFloat = 122
-    static let topEdgeEffectHeight: CGFloat = 132
-    static let bottomEdgeEffectHeight: CGFloat = 124
-}
-
-private struct GalleryHeaderMaterial: View {
-    var body: some View {
-        Rectangle()
-            .fill(.ultraThinMaterial)
-            .mask {
-                LinearGradient(
-                    stops: [
-                        .init(color: .black, location: 0),
-                        .init(color: .black, location: 0.72),
-                        .init(color: .black.opacity(0), location: 1)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            }
-            .padding(.bottom, -Spacing.lg)
-            .allowsHitTesting(false)
-    }
+    static let bottomContentReserve: CGFloat = 112
 }
 
 #if DEBUG

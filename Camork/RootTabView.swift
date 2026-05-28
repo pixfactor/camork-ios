@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 앱 root 탭 컨테이너. `CamorkApp.Bootstrap.ready`에서 `DependencyContainer`를
 /// `.environmentObject(_:)`로 받아 자식 화면에 전파.
@@ -33,6 +34,10 @@ struct RootTabView: View {
     /// 본 state로 ordering을 결정적으로 묶는다 (Plan E E3.b 추가 critic).
     @State private var lastBackgroundedAt: Date?
 
+    init() {
+        Self.configureTabBarAppearance()
+    }
+
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
@@ -49,6 +54,8 @@ struct RootTabView: View {
                     .tag(RootTab.settings)
             }
             .appBackgroundShield()
+            .toolbarBackground(.bar, for: .tabBar)
+            .toolbarBackground(.visible, for: .tabBar)
             // 잠금 상태에서는 탭 인터랙션을 차단 (visual은 overlay가 가리지만 hit-test도 막아 보안).
             .disabled(isLocked)
 
@@ -109,6 +116,17 @@ struct RootTabView: View {
             await deps.appLockController.unlock()
             await MainActor.run { isLocked = false }
         }
+    }
+
+    private static func configureTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemMaterial)
+        appearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.72)
+        appearance.shadowColor = UIColor.separator.withAlphaComponent(0.18)
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
     private enum RootTab: Hashable {
