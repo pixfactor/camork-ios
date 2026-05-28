@@ -25,6 +25,8 @@ import SwiftUI
 final class DependencyContainer: ObservableObject {
     let mediaStorage: MediaStorage
     let sharePreparer: SharePreparer
+    let exportService: CamorkExportService
+    let cloudSyncController: CloudSyncController
     let locationService: LocationService
     let permissionsService: PermissionsService
     let cameraSession: CameraSession
@@ -41,6 +43,8 @@ final class DependencyContainer: ObservableObject {
         let sharePreparer = SharePreparer(mediaStorage: mediaStorage)
         self.mediaStorage = mediaStorage
         self.sharePreparer = sharePreparer
+        self.exportService = CamorkExportService(mediaStorage: mediaStorage)
+        self.cloudSyncController = CloudSyncController(mediaStorage: mediaStorage)
         self.locationService = LocationService()
         self.permissionsService = PermissionsService()
         self.appLockController = AppLockController()
@@ -69,6 +73,8 @@ final class DependencyContainer: ObservableObject {
     init(
         previewMediaStorage: MediaStorage,
         previewSharePreparer: SharePreparer,
+        previewExportService: CamorkExportService,
+        previewCloudSyncController: CloudSyncController,
         previewLocationService: LocationService,
         previewPermissionsService: PermissionsService,
         previewCameraSession: CameraSession,
@@ -76,6 +82,8 @@ final class DependencyContainer: ObservableObject {
     ) {
         self.mediaStorage = previewMediaStorage
         self.sharePreparer = previewSharePreparer
+        self.exportService = previewExportService
+        self.cloudSyncController = previewCloudSyncController
         self.locationService = previewLocationService
         self.permissionsService = previewPermissionsService
         self.cameraSession = previewCameraSession

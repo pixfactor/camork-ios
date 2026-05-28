@@ -11,7 +11,16 @@ struct GalleryScreen: View {
     @State private var isLoading = true
     @State private var loadError: String?
     @State private var showTrash = false
+    @State private var viewMode: GalleryViewMode = .list
+    @State private var dateFilter: SessionDateFilter = .all
+    @State private var showCustomDateFilter = false
+    @State private var customStartDate = Date()
+    @State private var customEndDate = Date()
     @State private var navigationPath: [UUID] = []
+
+    private var filteredSessions: [SessionWithPreview] {
+        sessions.filter { dateFilter.contains($0.session.createdAt) }
+    }
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -27,6 +36,9 @@ struct GalleryScreen: View {
                         }
                         .accessibilityLabel(Text("gallery_trash_a11y"))
                     }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        dateFilterMenu
+                    }
                 }
                 .navigationDestination(for: UUID.self) { sessionId in
                     sessionDetailDestination(sessionId: sessionId)
@@ -40,6 +52,9 @@ struct GalleryScreen: View {
         }) {
             TrashScreen()
                 .environmentObject(deps)
+        }
+        .sheet(isPresented: $showCustomDateFilter) {
+            customDateFilterSheet
         }
     }
 
@@ -67,39 +82,141 @@ struct GalleryScreen: View {
                 description: Text("gallery_empty_description")
             )
             .appBackgroundShield()
+        } else if filteredSessions.isEmpty {
+            VStack(spacing: 16) {
+                galleryHeader
+                ContentUnavailableView(
+                    "gallery_filter_empty_title",
+                    systemImage: "calendar.badge.exclamationmark",
+                    description: Text("gallery_filter_empty_description")
+                )
+            }
+            .appBackgroundShield()
         } else {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    Text("gallery_title")
-                        .font(.largeTitle.weight(.bold))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, Spacing.md)
-                        .padding(.top, Spacing.sm)
-                        .padding(.bottom, Spacing.md)
+            Group {
+                switch viewMode {
+                case .list:
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            galleryHeader
 
-                    ForEach(sessions, id: \.session.id) { item in
-                        Button {
-                            navigationPath.append(item.session.id)
-                        } label: {
-                            SessionCardView(item: item)
+                            ForEach(filteredSessions, id: \.session.id) { item in
+                                Button {
+                                    navigationPath.append(item.session.id)
+                                } label: {
+                                    SessionCardView(item: item)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.vertical, Spacing.sm)
+                                .padding(.horizontal, Spacing.md)
+                            }
+
+                            Color.clear
+                                .frame(height: ChromeFadeMask.scrollReserve)
                         }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, Spacing.sm)
-                        .padding(.horizontal, Spacing.md)
                     }
-
-                    Color.clear
-                        .frame(height: ChromeFadeMask.scrollReserve)
+                    .scrollIndicators(.hidden)
+                    .contentMargins(.bottom, 0, for: .scrollContent)
+                    .refreshable {
+                        await refresh()
+                    }
+                    .ignoresSafeArea(edges: .bottom)
+                    .camorkScrollEdgeEffects()
+                case .map:
+                    VStack(spacing: 0) {
+                        galleryHeader
+                        GalleryMapView(sessions: filteredSessions) { sessionId in
+                            navigationPath.append(sessionId)
+                        }
+                        .ignoresSafeArea(edges: .bottom)
+                    }
                 }
             }
-            .scrollIndicators(.hidden)
-            .contentMargins(.bottom, 0, for: .scrollContent)
-            .refreshable {
-                await refresh()
-            }
-            .ignoresSafeArea(edges: .bottom)
-            .camorkScrollEdgeEffects()
             .appBackgroundShield()
+        }
+    }
+
+    private var galleryHeader: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("gallery_title")
+                .font(.largeTitle.weight(.bold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Picker("gallery_view_mode_picker", selection: $viewMode) {
+                Label("gallery_view_mode_list", systemImage: "square.grid.2x2")
+                    .tag(GalleryViewMode.list)
+                Label("gallery_view_mode_map", systemImage: "map")
+                    .tag(GalleryViewMode.map)
+            }
+            .pickerStyle(.segmented)
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.sm)
+        .padding(.bottom, Spacing.md)
+    }
+
+    private var dateFilterMenu: some View {
+        Menu {
+            Button {
+                dateFilter = .all
+            } label: {
+                Label("gallery_filter_all", systemImage: "tray.full")
+            }
+            Button {
+                dateFilter = .today
+            } label: {
+                Label("gallery_filter_today", systemImage: "calendar")
+            }
+            Button {
+                dateFilter = .thisWeek
+            } label: {
+                Label("gallery_filter_this_week", systemImage: "calendar.badge.clock")
+            }
+            Button {
+                dateFilter = .thisMonth
+            } label: {
+                Label("gallery_filter_this_month", systemImage: "calendar.circle")
+            }
+            Button {
+                showCustomDateFilter = true
+            } label: {
+                Label("gallery_filter_custom", systemImage: "calendar.badge.plus")
+            }
+        } label: {
+            Image(systemName: "calendar")
+        }
+        .accessibilityLabel(Text("gallery_filter_a11y"))
+    }
+
+    private var customDateFilterSheet: some View {
+        NavigationStack {
+            Form {
+                DatePicker(
+                    "gallery_filter_start_date",
+                    selection: $customStartDate,
+                    displayedComponents: .date
+                )
+                DatePicker(
+                    "gallery_filter_end_date",
+                    selection: $customEndDate,
+                    displayedComponents: .date
+                )
+            }
+            .navigationTitle("gallery_filter_custom")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("button_cancel") {
+                        showCustomDateFilter = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("button_save") {
+                        dateFilter = .custom(start: customStartDate, end: customEndDate)
+                        showCustomDateFilter = false
+                    }
+                }
+            }
         }
     }
 
@@ -144,6 +261,11 @@ struct GalleryScreen: View {
         )
         sessions[index] = SessionWithPreview(session: updated, preview: sessions[index].preview)
     }
+}
+
+private enum GalleryViewMode: Hashable {
+    case list
+    case map
 }
 
 #if DEBUG

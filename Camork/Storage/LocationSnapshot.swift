@@ -9,4 +9,13 @@ struct LocationSnapshot: Codable, Sendable, Equatable {
     let longitude: Double
     let horizontalAccuracy: Double
     let placeName: String?
+
+    func withPlaceName(_ placeName: String?) -> LocationSnapshot {
+        LocationSnapshot(
+            latitude: latitude,
+            longitude: longitude,
+            horizontalAccuracy: horizontalAccuracy,
+            placeName: placeName
+        )
+    }
 }

@@ -36,6 +36,30 @@ struct LocationServiceTests {
         #expect(snapshot?.placeName == nil)
     }
 
+    @Test("placeName formatter: locality + thoroughfare를 우선 조합")
+    func placeNameFormatterUsesLocalityAndThoroughfare() {
+        let name = LocationPlaceNameFormatter.displayName(
+            name: "Fallback",
+            thoroughfare: "테헤란로",
+            locality: "강남구",
+            administrativeArea: "서울특별시",
+            country: "대한민국"
+        )
+        #expect(name == "강남구 테헤란로")
+    }
+
+    @Test("placeName formatter: 빈 문자열은 건너뛰고 행정구역 fallback")
+    func placeNameFormatterSkipsEmptyValues() {
+        let name = LocationPlaceNameFormatter.displayName(
+            name: "   ",
+            thoroughfare: nil,
+            locality: nil,
+            administrativeArea: "Seoul",
+            country: "Korea"
+        )
+        #expect(name == "Seoul")
+    }
+
     // MARK: - latestKnown gated by authorization
 
     @Test("latestKnown: status=.denied → ingested 후에도 nil")

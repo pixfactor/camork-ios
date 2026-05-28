@@ -25,6 +25,8 @@ extension DependencyContainer {
 
         let mediaStorage = MediaStorage(db: db, fs: fs)
         let sharePreparer = SharePreparer(mediaStorage: mediaStorage)
+        let exportService = CamorkExportService(mediaStorage: mediaStorage)
+        let cloudSyncController = CloudSyncController(mediaStorage: mediaStorage)
         let cameraSession = CameraSession(
             previewStubConfiguration: CameraSessionBuilder.makeConfiguration()
         )
@@ -32,6 +34,8 @@ extension DependencyContainer {
         return DependencyContainer(
             previewMediaStorage: mediaStorage,
             previewSharePreparer: sharePreparer,
+            previewExportService: exportService,
+            previewCloudSyncController: cloudSyncController,
             previewLocationService: LocationService(),
             previewPermissionsService: PermissionsService(),
             previewCameraSession: cameraSession,

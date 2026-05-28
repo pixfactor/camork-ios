@@ -27,6 +27,7 @@ struct CameraScreen: View {
     @State private var locationPermission: PermissionState = .notDetermined
     @State private var isPendingNewSession: Bool = false
     @State private var isInFlight: Bool = false
+    @State private var locationNoticeKey: String?
     @State private var captureError: String?
     @State private var mediaCapture: MediaCapture?
     @State private var latestPhoto: Photo?
@@ -113,6 +114,18 @@ struct CameraScreen: View {
                 .padding(.horizontal, 24)
             }
             .padding(.bottom, 32)
+
+            if let locationNoticeKey {
+                Text(LocalizedStringKey(locationNoticeKey))
+                    .font(.footnote.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 136)
+                    .transition(.opacity)
+            }
         }
     }
 
@@ -334,16 +347,20 @@ struct CameraScreen: View {
         if cameraPermission == .notDetermined {
             cameraPermission = await deps.permissionsService.requestCamera()
         }
-        if locationPermission == .notDetermined {
-            locationPermission = await deps.permissionsService.requestLocation()
-        }
-        // 새로 granted된 경우 즉시 location updates 시작 — scenePhase 변화를 기다리지 않음.
-        startLocationUpdatesIfPermitted()
     }
 
     // MARK: - Capture flow
 
     private func tapShutter() {
+        guard !isInFlight else { return }
+        Task { @MainActor in
+            await requestLocationAtCaptureTimeIfNeeded()
+            beginCapture()
+        }
+    }
+
+    @MainActor
+    private func beginCapture() {
         guard !isInFlight else { return }
         isInFlight = true
         let capture = MediaCapture(locationService: deps.locationService) { result in
@@ -356,6 +373,16 @@ struct CameraScreen: View {
             with: deps.cameraSession.photoOutput,
             flashMode: supportedFlashMode()
         )
+    }
+
+    @MainActor
+    private func requestLocationAtCaptureTimeIfNeeded() async {
+        guard locationPermission == .notDetermined else { return }
+        locationPermission = await deps.permissionsService.requestLocation()
+        startLocationUpdatesIfPermitted()
+        if locationPermission != .granted {
+            showLocationNotice("camera_location_unavailable_notice")
+        }
     }
 
     private func supportedFlashMode() -> AVCaptureDevice.FlashMode? {
@@ -371,7 +398,7 @@ struct CameraScreen: View {
             mediaCapture = nil
         }
         do {
-            let payload = try result.get()
+            let payload = await enrichLocationIfPossible(try result.get())
             _ = try await deps.mediaStorage.saveCapture(payload)
             await refreshPending()
             await refreshLatestPhoto()
@@ -425,6 +452,34 @@ struct CameraScreen: View {
     private func startLocationUpdatesIfPermitted() {
         guard locationPermission == .granted else { return }
         deps.locationService.startUpdates()
+    }
+
+    @MainActor
+    private func enrichLocationIfPossible(_ payload: PhotoCapturePayload) async -> PhotoCapturePayload {
+        guard let location = payload.location else {
+            if locationPermission != .granted {
+                showLocationNotice("camera_location_unavailable_notice")
+            }
+            return payload
+        }
+        let enriched = await deps.locationService.reverseGeocode(location)
+        return PhotoCapturePayload(
+            data: payload.data,
+            capturedAt: payload.capturedAt,
+            location: enriched,
+            exif: payload.exif
+        )
+    }
+
+    @MainActor
+    private func showLocationNotice(_ key: String) {
+        locationNoticeKey = key
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_500_000_000)
+            if locationNoticeKey == key {
+                locationNoticeKey = nil
+            }
+        }
     }
 
     // MARK: - Alert binding

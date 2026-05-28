@@ -314,6 +314,48 @@ actor MediaStorage {
         }
     }
 
+    func fetchExportRows() async throws -> CamorkExportRows {
+        try await db.read { db in
+            let sessions = try Session
+                .order(Column("createdAt").desc)
+                .fetchAll(db)
+            let photos = try Photo
+                .order(Column("capturedAt").asc)
+                .fetchAll(db)
+            return CamorkExportRows(sessions: sessions, photos: photos)
+        }
+    }
+
+    func upsertCloudSession(_ session: Session) async throws {
+        try await db.write { db in
+            try session.save(db)
+        }
+    }
+
+    func upsertCloudPhotoMetadata(_ photo: Photo) async throws {
+        _ = try canonicalMediaFileName(for: photo)
+        try await db.write { db in
+            try photo.save(db)
+        }
+    }
+
+    /// CloudKit restore용 원본 파일 복원. 이미 로컬 원본이 있으면 덮어쓰지 않는다.
+    /// metadata upsert와 파일 복원 순서는 caller가 정한다.
+    @discardableResult
+    func restoreCloudPhotoData(id: UUID, data: Data) throws -> Bool {
+        let fileName = "\(id.uuidString).heic"
+        guard try !fs.finalExists(fileName: fileName) else { return false }
+
+        do {
+            try fs.writeStaging(fileName: fileName, data: data)
+            try fs.moveStagingToFinal(fileName: fileName)
+            return true
+        } catch {
+            try? fs.removeStaging(fileName: fileName)
+            throw error
+        }
+    }
+
     /// Photo의 raw 이미지 Data를 메모리로 로드 (Phase 3.2 PhotoDetailView 진입점).
     ///
     /// **Canonical fileName invariant**: `photo.fileName == "\(photo.id.uuidString).heic"`

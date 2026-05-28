@@ -4,12 +4,39 @@ import Testing
 @Suite("CameraScreenViewState")
 struct CameraScreenViewStateTests {
 
-    // MARK: - Happy path (camera + location 모두 granted)
+    // MARK: - Happy path (camera granted, location optional)
 
-    @Test("granted+granted + pending=false + inFlight=false → cameraActive(.idle)")
+    @Test("camera granted + location granted + pending=false + inFlight=false → cameraActive(.idle)")
     func cameraActiveIdle() {
         let v = CameraScreenViewState.compute(
             camera: .granted, location: .granted,
+            isPending: false, isInFlight: false
+        )
+        #expect(v == .cameraActive(chip: .idle))
+    }
+
+    @Test("camera granted이면 location denied여도 cameraActive — 위치는 optional metadata")
+    func locationDeniedStillCameraActive() {
+        let v = CameraScreenViewState.compute(
+            camera: .granted, location: .denied,
+            isPending: false, isInFlight: false
+        )
+        #expect(v == .cameraActive(chip: .idle))
+    }
+
+    @Test("camera granted이면 location restricted여도 cameraActive")
+    func locationRestrictedStillCameraActive() {
+        let v = CameraScreenViewState.compute(
+            camera: .granted, location: .restricted,
+            isPending: false, isInFlight: false
+        )
+        #expect(v == .cameraActive(chip: .idle))
+    }
+
+    @Test("camera granted이면 location notDetermined여도 cameraActive — prompt는 첫 촬영에서 처리")
+    func locationNotDeterminedStillCameraActive() {
+        let v = CameraScreenViewState.compute(
+            camera: .granted, location: .notDetermined,
             isPending: false, isInFlight: false
         )
         #expect(v == .cameraActive(chip: .idle))
@@ -82,35 +109,6 @@ struct CameraScreenViewStateTests {
             isPending: true, isInFlight: true
         )
         #expect(v == .permissionDenied(target: .camera))
-    }
-
-    // MARK: - Location permission (camera granted 전제)
-
-    @Test("camera=.granted + location=.denied → permissionDenied(.location)")
-    func locationDeniedAfterCameraGranted() {
-        let v = CameraScreenViewState.compute(
-            camera: .granted, location: .denied,
-            isPending: false, isInFlight: false
-        )
-        #expect(v == .permissionDenied(target: .location))
-    }
-
-    @Test("camera=.granted + location=.restricted → permissionDenied(.location)")
-    func locationRestrictedAfterCameraGranted() {
-        let v = CameraScreenViewState.compute(
-            camera: .granted, location: .restricted,
-            isPending: false, isInFlight: false
-        )
-        #expect(v == .permissionDenied(target: .location))
-    }
-
-    @Test("camera=.granted + location=.notDetermined → requestPrompt")
-    func locationNotDeterminedAfterCameraGranted() {
-        let v = CameraScreenViewState.compute(
-            camera: .granted, location: .notDetermined,
-            isPending: false, isInFlight: false
-        )
-        #expect(v == .requestPrompt)
     }
 
     // MARK: - Precedence (deterministic ordering)

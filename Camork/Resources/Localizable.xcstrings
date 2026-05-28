@@ -268,13 +268,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Camork needs camera and location access to log site visits with accurate metadata."
+            "value" : "Camork needs camera access to capture field records. Location is requested later when it can tag a capture site."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "정확한 메타데이터로 현장을 기록하려면 카메라와 위치 권한이 필요해요."
+            "value" : "현장 기록을 촬영하려면 카메라 권한이 필요해요. 위치는 촬영 장소를 기록할 때 따로 요청합니다."
+          }
+        }
+      }
+    },
+    "camera_location_unavailable_notice" : {
+      "comment" : "Camera toast shown when capture continues without location metadata.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved without location. You can allow Location in Settings later."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치 없이 저장했어요. 나중에 설정에서 위치 권한을 켤 수 있습니다."
           }
         }
       }
@@ -487,6 +505,262 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "휴지통 열기"
+          }
+        }
+      }
+    },
+    "gallery_filter_a11y" : {
+      "comment" : "Gallery toolbar date filter menu VoiceOver label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by date"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜로 필터"
+          }
+        }
+      }
+    },
+    "gallery_filter_all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체"
+          }
+        }
+      }
+    },
+    "gallery_filter_custom" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom dates"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직접 선택"
+          }
+        }
+      }
+    },
+    "gallery_filter_empty_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change the date filter to see more sites."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "더 많은 현장을 보려면 날짜 필터를 바꿔보세요."
+          }
+        }
+      }
+    },
+    "gallery_filter_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sites in this range"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기간에는 현장이 없어요"
+          }
+        }
+      }
+    },
+    "gallery_filter_end_date" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "종료일"
+          }
+        }
+      }
+    },
+    "gallery_filter_start_date" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작일"
+          }
+        }
+      }
+    },
+    "gallery_filter_this_month" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이번 달"
+          }
+        }
+      }
+    },
+    "gallery_filter_this_week" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이번 주"
+          }
+        }
+      }
+    },
+    "gallery_filter_today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘"
+          }
+        }
+      }
+    },
+    "gallery_map_empty_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sites without location still appear in the list."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치가 없는 현장은 목록에서 계속 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "gallery_map_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No mapped sites"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도에 표시할 현장이 없어요"
+          }
+        }
+      }
+    },
+    "gallery_view_mode_list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목록"
+          }
+        }
+      }
+    },
+    "gallery_view_mode_map" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Map"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도"
+          }
+        }
+      }
+    },
+    "gallery_view_mode_picker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gallery view"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "갤러리 보기"
           }
         }
       }
@@ -1544,6 +1818,402 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "휴지통 열기"
+          }
+        }
+      }
+    },
+    "settings_export_all" : {
+      "comment" : "Settings row that exports all Camork records as a zip archive.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export all records"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 자료 내보내기"
+          }
+        }
+      }
+    },
+    "settings_export_error_title" : {
+      "comment" : "Alert title when the export archive cannot be prepared.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export failed"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내보내지 못했어요"
+          }
+        }
+      }
+    },
+    "settings_export_in_progress" : {
+      "comment" : "Settings export button label while the archive is being created.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing export..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내보내기 준비 중..."
+          }
+        }
+      }
+    },
+    "settings_export_local_only_note" : {
+      "comment" : "Settings backup note for manual full archive export.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creates a local archive with metadata and original files. Keep one before replacing or resetting the device."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메타데이터와 원본 파일을 담은 로컬 백업 파일을 만듭니다. 기기 교체나 초기화 전 보관하세요."
+          }
+        }
+      }
+    },
+    "settings_section_backup" : {
+      "comment" : "Settings section header for local backup/export controls.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업"
+          }
+        }
+      }
+    },
+    "settings_section_icloud" : {
+      "comment" : "Settings section header for private iCloud backup and restore controls.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        }
+      }
+    },
+    "settings_icloud_error_title" : {
+      "comment" : "Alert title when iCloud sync or restore fails.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud failed"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 작업 실패"
+          }
+        }
+      }
+    },
+    "settings_icloud_restore" : {
+      "comment" : "Settings row that restores Camork records and originals from iCloud.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore from iCloud"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud에서 복원"
+          }
+        }
+      }
+    },
+    "settings_icloud_status_checking" : {
+      "comment" : "Settings iCloud status while checking account availability.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking iCloud account..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 계정 확인 중..."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_disabled" : {
+      "comment" : "Settings iCloud status when sync is turned off.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off by default. Turn on only when you want Camork to keep private backups in your iCloud account."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기본값은 꺼짐입니다. Camork 자료를 개인 iCloud에 보관하려면 직접 켜세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_failed" : {
+      "comment" : "Settings iCloud status after a sync or restore failure.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last iCloud operation failed."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마지막 iCloud 작업이 실패했습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_no_account" : {
+      "comment" : "Settings iCloud status when no iCloud account is available.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to iCloud on this iPhone to sync."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화하려면 이 iPhone에서 iCloud에 로그인하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_ready" : {
+      "comment" : "Settings iCloud status when account is available.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready. Metadata and original photos sync to your private iCloud database."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비됨. 메타데이터와 원본 사진을 개인 iCloud DB에 동기화합니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_restored_format" : {
+      "comment" : "Settings iCloud status after restore. First %d is sessions, second %d is photos, third %d is original files.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restored %d sites, %d photos, and %d originals."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 %d개, 사진 %d장, 원본 %d개를 복원했습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_restoring" : {
+      "comment" : "Settings iCloud status while restoring records.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restoring from iCloud..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud에서 복원 중..."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_restricted" : {
+      "comment" : "Settings iCloud status when account access is restricted.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud access is restricted on this device."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기에서 iCloud 접근이 제한되어 있습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_synced_format" : {
+      "comment" : "Settings iCloud status after sync. First %d is sessions, second %d is photos.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synced %d sites and %d photos."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현장 %d개와 사진 %d장을 동기화했습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_syncing" : {
+      "comment" : "Settings iCloud status while uploading records.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing to iCloud..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud에 동기화 중..."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_temporarily_unavailable" : {
+      "comment" : "Settings iCloud status when CloudKit is temporarily unavailable.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud is temporarily unavailable. Try again later."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "settings_icloud_status_unknown" : {
+      "comment" : "Settings iCloud status when account state cannot be determined.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't determine iCloud account status."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 계정 상태를 확인할 수 없습니다."
+          }
+        }
+      }
+    },
+    "settings_icloud_sync_now" : {
+      "comment" : "Settings row that starts an immediate iCloud sync.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync now"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금 동기화"
+          }
+        }
+      }
+    },
+    "settings_icloud_sync_toggle" : {
+      "comment" : "Settings toggle that enables or disables Camork iCloud sync.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud backup"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 백업"
           }
         }
       }

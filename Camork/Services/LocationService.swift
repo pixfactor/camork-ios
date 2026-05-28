@@ -1,6 +1,47 @@
 import CoreLocation
 import Foundation
 
+enum LocationPlaceNameFormatter {
+    static func displayName(
+        name: String?,
+        thoroughfare: String?,
+        locality: String?,
+        administrativeArea: String?,
+        country: String?
+    ) -> String? {
+        let candidates = [
+            compact([locality, thoroughfare]),
+            compact([administrativeArea, locality]),
+            name,
+            locality,
+            administrativeArea,
+            country
+        ]
+
+        return candidates
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty }
+    }
+
+    static func displayName(from placemark: CLPlacemark) -> String? {
+        displayName(
+            name: placemark.name,
+            thoroughfare: placemark.thoroughfare,
+            locality: placemark.locality,
+            administrativeArea: placemark.administrativeArea,
+            country: placemark.country
+        )
+    }
+
+    private static func compact(_ parts: [String?]) -> String? {
+        let joined = parts
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        return joined.isEmpty ? nil : joined
+    }
+}
+
 /// CoreLocation snapshot 제공자. AVFoundation callback queue(`@Sendable` closure 외부)
 /// 에서 `latestKnown()`이 **synchronously** 호출 가능해야 하므로 actor 대신 NSLock 기반
 /// thread-safe final class + `@unchecked Sendable` 채택 (설계 결정 — ADR #6
@@ -50,6 +91,28 @@ final class LocationService: NSObject, CLLocationManagerDelegate, @unchecked Sen
 
     func stopUpdates() {
         manager?.stopUpdatingLocation()
+    }
+
+    /// Capture-save 직전에 호출하는 best-effort reverse geocoding. 실패하거나 결과가
+    /// 비어 있으면 원본 snapshot을 그대로 반환해 촬영 저장 경로를 막지 않는다.
+    func reverseGeocode(_ snapshot: LocationSnapshot) async -> LocationSnapshot {
+        guard snapshot.placeName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty != false else {
+            return snapshot
+        }
+
+        let location = CLLocation(
+            latitude: snapshot.latitude,
+            longitude: snapshot.longitude
+        )
+
+        return await withCheckedContinuation { continuation in
+            CLGeocoder().reverseGeocodeLocation(location) { placemarks, _ in
+                let placeName = placemarks?
+                    .compactMap(LocationPlaceNameFormatter.displayName(from:))
+                    .first
+                continuation.resume(returning: snapshot.withPlaceName(placeName))
+            }
+        }
     }
 
     // MARK: - CLLocationManagerDelegate
