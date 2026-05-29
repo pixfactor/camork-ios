@@ -20,6 +20,7 @@
 		15620BDD74AEB365394CB457 /* SessionInfoEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48AD1B2DF3CBB981248F0A2 /* SessionInfoEditor.swift */; };
 		1DA51EEBFBEFDE36127DFA4B /* CameraScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC5AAB226ED33D6CFC78C2F /* CameraScreen.swift */; };
 		1EA7A05186D76B980FB76848 /* MediaFileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1135387DE16AF24D3D4B32C6 /* MediaFileSystem.swift */; };
+		2386AE387AA868883E91C875 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3A0AA3E01CF27DA9DC3E2509 /* PrivacyInfo.xcprivacy */; };
 		238BB0C43C9CB171DAEA083F /* MediaStorageTestHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57A1F580AB460488E3FEF55 /* MediaStorageTestHooks.swift */; };
 		256B247318CA41F0E5F3833D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C05D0B6C6E4B6A157F9012C /* Colors.swift */; };
 		2B68DBC0C1AA5D5949AA5C9B /* SessionTitlePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05E2B442B1216EF630B4CD86 /* SessionTitlePolicy.swift */; };
@@ -153,6 +154,7 @@
 		31F5475D3D092213CDF9172F /* ShareEntryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareEntryButton.swift; sourceTree = "<group>"; };
 		34C2A137B5A5A6EEE6D07249 /* ThumbnailCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCoordinatorTests.swift; sourceTree = "<group>"; };
 		37A63CE129F9BABF9CF5C2CB /* CamorkButtonStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CamorkButtonStyleTests.swift; sourceTree = "<group>"; };
+		3A0AA3E01CF27DA9DC3E2509 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3C05D0B6C6E4B6A157F9012C /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		3C9B829D3F5CAE879B4D63C5 /* AppLockControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockControllerTests.swift; sourceTree = "<group>"; };
 		4060BBD50C4F4F506321101D /* MediaKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaKind.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 			children = (
 				991350B9E5716E0F43BF7BEC /* Camork.entitlements */,
 				6C13B28107AE53591B28E00D /* CamorkApp.swift */,
+				3A0AA3E01CF27DA9DC3E2509 /* PrivacyInfo.xcprivacy */,
 				0793057E915500151F00536A /* RootTabView.swift */,
 				23982103FFF5527584024BC1 /* AppShell */,
 				5D022612BA631678EFC6D420 /* Camera */,
@@ -593,6 +596,7 @@
 			files = (
 				B60561066591C0B30242F9A8 /* Assets.xcassets in Resources */,
 				D10176543AB36929C85D6372 /* Localizable.xcstrings in Resources */,
+				2386AE387AA868883E91C875 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

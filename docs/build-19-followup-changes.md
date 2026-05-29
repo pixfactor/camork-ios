@@ -25,10 +25,10 @@ This is a Production CloudKit schema issue. Apple documents that CloudKit has se
 
 Admin checklist:
 
-- Open CloudKit Database / Dashboard for `iCloud.com.camork.app`.
-- Confirm record types exist in Development: `CamorkSession`, `CamorkPhoto`.
-- Deploy schema changes to Production.
-- Confirm Production has query support for full-record fetch/restore paths before relying on restore.
+- Open CloudKit Database / Dashboard for `iCloud.com.camork.app`. (Done 2026-05-29)
+- Confirm record types exist in Development: `CamorkSession`, `CamorkPhoto`. (Done 2026-05-29)
+- Deploy schema changes to Production. (Done 2026-05-29)
+- Confirm Production has the required record types and fields. (Done 2026-05-29; see `docs/build-21-release-readiness.md`)
 - Re-test TestFlight iCloud sync and restore on a clean device.
 
 References:
@@ -46,5 +46,5 @@ References:
 
 ## Remaining Manual Verification
 
-- iCloud cannot be fully verified until the Production schema is deployed in Apple CloudKit tools.
+- iCloud Production schema is deployed; full backup/restore still needs a fresh real-device TestFlight run.
 - Visual edge behavior still needs real-device confirmation because iOS 26 scroll/tab chrome rendering differs from Simulator and Xcode canvas.
