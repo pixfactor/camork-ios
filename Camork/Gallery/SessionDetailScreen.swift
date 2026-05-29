@@ -67,15 +67,6 @@ struct SessionDetailScreen: View {
             .navigationTitle(sessionName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        sheet = .info
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .accessibilityLabel(Text("session_detail_edit_info_a11y"))
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: Spacing.md) {
                         ShareEntryButton(
@@ -85,6 +76,12 @@ struct SessionDetailScreen: View {
                         )
 
                         Menu {
+                            Button {
+                                sheet = .info
+                            } label: {
+                                Label("session_detail_edit_info", systemImage: "pencil")
+                            }
+
                             Button(role: .destructive) {
                                 confirmSessionDelete = true
                             } label: {

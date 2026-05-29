@@ -1300,6 +1300,24 @@
         }
       }
     },
+    "session_detail_edit_info" : {
+      "comment" : "Menu action label for entering the unified name+note edit sheet from SessionDetailScreen.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit info"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정보 편집"
+          }
+        }
+      }
+    },
     "session_detail_edit_info_a11y" : {
       "comment" : "VoiceOver label for the unified name+note edit button on SessionDetailScreen.",
       "extractionState" : "manual",

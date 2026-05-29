@@ -59,12 +59,10 @@ struct SettingsScreen: View {
                         }
                     }
                     .disabled(isExporting)
-
-                    Text("settings_export_local_only_note")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                 } header: {
                     Text("settings_section_backup")
+                } footer: {
+                    Text("settings_export_local_only_note")
                 }
 
                 if isCloudSyncVisible {

@@ -128,32 +128,68 @@ struct GalleryScreen: View {
             Button {
                 dateFilter = .all
             } label: {
-                Label("gallery_filter_all", systemImage: "tray.full")
+                Label(
+                    "gallery_filter_all",
+                    systemImage: isFilterSelected(.all) ? "checkmark" : "tray.full"
+                )
             }
             Button {
                 dateFilter = .today
             } label: {
-                Label("gallery_filter_today", systemImage: "calendar")
+                Label(
+                    "gallery_filter_today",
+                    systemImage: isFilterSelected(.today) ? "checkmark" : "calendar"
+                )
             }
             Button {
                 dateFilter = .thisWeek
             } label: {
-                Label("gallery_filter_this_week", systemImage: "calendar.badge.clock")
+                Label(
+                    "gallery_filter_this_week",
+                    systemImage: isFilterSelected(.thisWeek) ? "checkmark" : "calendar.badge.clock"
+                )
             }
             Button {
                 dateFilter = .thisMonth
             } label: {
-                Label("gallery_filter_this_month", systemImage: "calendar.circle")
+                Label(
+                    "gallery_filter_this_month",
+                    systemImage: isFilterSelected(.thisMonth) ? "checkmark" : "calendar.circle"
+                )
             }
             Button {
                 openCustomDateFilter()
             } label: {
-                Label("gallery_filter_custom", systemImage: "calendar.badge.plus")
+                Label(
+                    "gallery_filter_custom",
+                    systemImage: isFilterSelected(.custom) ? "checkmark" : "calendar.badge.plus"
+                )
             }
         } label: {
-            Image(systemName: "calendar")
+            Image(systemName: isDateFilterActive ? "calendar.badge.checkmark" : "calendar")
         }
         .accessibilityLabel(Text("gallery_filter_a11y"))
+    }
+
+    /// `dateFilter`가 `.all` 이외의 어떤 상태든 활성으로 간주. toolbar 아이콘 swap의
+    /// 단일 진입점이라 분기 누락 위험을 줄인다.
+    private var isDateFilterActive: Bool {
+        if case .all = dateFilter { return false }
+        return true
+    }
+
+    /// 메뉴 항목 선택 표시. `SessionDateFilter.custom`은 associated value가 매번
+    /// 다르므로 Picker(selection:)로 안전하게 묶을 수 없어, 각 항목에 case-level 비교
+    /// 결과를 inject하는 최소 패턴으로 처리한다.
+    private func isFilterSelected(_ candidate: SessionDateFilterKind) -> Bool {
+        switch (dateFilter, candidate) {
+        case (.all, .all): return true
+        case (.today, .today): return true
+        case (.thisWeek, .thisWeek): return true
+        case (.thisMonth, .thisMonth): return true
+        case (.custom, .custom): return true
+        default: return false
+        }
     }
 
     private var customDateFilterSheet: some View {
@@ -250,6 +286,16 @@ struct GalleryScreen: View {
 private enum GalleryViewMode: Hashable {
     case list
     case map
+}
+
+/// `SessionDateFilter`의 case-only 미러. associated value(`custom(start:end:)`)을 들고 다닐
+/// 필요가 없는 비교 — 메뉴 항목 선택 표시(`isFilterSelected`)의 인자로만 사용.
+private enum SessionDateFilterKind: Hashable {
+    case all
+    case today
+    case thisWeek
+    case thisMonth
+    case custom
 }
 
 private enum GalleryChromeLayout {
